@@ -8,22 +8,57 @@ import {
   Footer,
   Nav,
   MapPage,
-  Seedhead,
+  ToolPage
 } from './Components';
 
 import AppRouteInfo from './AppRouteInfo';
 
 import { getGDDs } from './Scripts/Data';
 
-type PageProps = {
-  page: string
-};
-
 type MapPageProps = {
   url: string,
   alt: string,
   description: string[]
 };
+
+type TextProps = {
+  titlePart: string,
+  description: string[]
+};
+
+interface ReferencedTextProps extends TextProps {
+  references: string[]
+}
+
+type Row = {
+  thresholds: {
+    low: number,
+    medium: number,
+    high: number
+  },
+  name: string
+}
+type ThresholdObj = {
+  low: number,
+  medium: number,
+  high: number
+};
+
+type ChartProps = {
+  rows: Row[],
+  ranges: string[][],
+  title: string,
+  data: number,
+  colorizer: (val: number, thresholds: ThresholdObj) => string
+};
+
+type ToolPageProps = {
+  text: TextProps | ReferencedTextProps,
+  chart: ChartProps,
+  maps: string[]
+};
+
+type PropsType = MapPageProps | ToolPageProps;
 
 type GDDs = {
   gdd32: [string, number][],
@@ -36,7 +71,8 @@ type GDDs = {
 
 ///////////////////////////////////////////
 ///////////////////////////////////////////
-const lngLat = [-76.45800, 42.45800];
+const lngLat = [-75.77959, 43.72207]; // Near Watertown
+// const lngLat = [-76.45800, 42.45800]; // Ithaca
 ///////////////////////////////////////////
 ///////////////////////////////////////////
 
@@ -55,15 +91,13 @@ function App() {
   }, []);
 
   
-  const renderPage = (obj: MapPageProps | PageProps) => {
+  const renderPage = (obj: PropsType) => {
     if ('url' in obj) {
       return <MapPage {...obj} />;
     }
 
-    if ('page' in obj) {
-      if (obj.page === 'seedhead') {
-        return <Seedhead coords={lngLat} />;
-      }
+    if ('chart' in obj) {
+      return <ToolPage {...obj} data={obj.chart.data === 32 ? gdd32 : gdd50} />;
     }
 
     return <Box>{JSON.stringify(obj)}</Box>;
@@ -93,6 +127,11 @@ function App() {
         }
       }}>
         <Routes>
+          <Route
+            path='/'
+            element={<div>Home</div>}
+          />
+          
           {AppRouteInfo.map(routeInfo => 
             <Route
               key={routeInfo.path}
@@ -102,8 +141,8 @@ function App() {
           }
 
           <Route
-            path="*"
-            element={<Navigate to="/" replace />}
+            path='*'
+            element={<Navigate to='/' replace />}
           />
         </Routes>
       </Box>

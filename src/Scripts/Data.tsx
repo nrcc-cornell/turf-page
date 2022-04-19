@@ -1,5 +1,7 @@
 import { format, subDays, addDays } from 'date-fns';
 
+import roundXDigits from './Rounding';
+
 type GDDs = {
   gdd32: [string, number][],
   gdd50: [string, number][]
@@ -25,7 +27,6 @@ function getGDDForecast(today: string, lng: number, lat: number ): Promise<numbe
       return response.json();
     })
     .then(forecastData => {
-      console.log(forecastData);
       return forecastData.dlyFcstData.map((vals: string[]) => (parseFloat(vals[1]) + parseFloat(vals[2])) / 2);
     });
 }
@@ -57,7 +58,6 @@ function getGDDPast(sDate: string, eDate: string, loc: string, base: number ): P
       return response.json();
     })
     .then(data => {
-      console.log(data);
       return data.data.map((arr: [string, number][]) => arr[1]);
     });
 }
@@ -70,7 +70,7 @@ const calcGDDs = (pastDate: Date, past: number[], forecast: number[], base: numb
     return total;
   }));
 
-  return data.map((val, i) => [format(addDays(pastDate, i), 'MM-dd'), val]);
+  return data.map((val, i) => [format(addDays(pastDate, i), 'MM-dd'), roundXDigits(val, 0)]);
 };
 
 
@@ -80,12 +80,10 @@ const getGDDs = async (lngLat: number[]): Promise<GDDs> => {
   const sDate = format(pastDate, 'yyyy-MM-dd');
 
   const forecast: number[] = await getGDDForecast(today, lngLat[0], lngLat[1]);
-  console.log(forecast);
   
-  const past32: number[] = await getGDDPast(sDate, format(new Date(), 'yyyy-MM-dd'), lngLat.join(','), 32);
-  const past50: number[] = await getGDDPast(sDate, format(new Date(), 'yyyy-MM-dd'), lngLat.join(','), 50);
-  console.log(past32);
-  console.log(past50);
+  const eDate = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+  const past32: number[] = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
+  const past50: number[] = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
   
   const gdd32: [string, number][] = calcGDDs(pastDate, past32, forecast, 32);
   const gdd50: [string, number][] = calcGDDs(pastDate, past50, forecast, 50);

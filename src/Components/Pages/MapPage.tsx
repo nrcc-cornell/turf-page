@@ -2,10 +2,10 @@ import React from 'react';
 
 import {
   Card,
-  CardMedia,
-  CardContent,
-  Typography
+  CardMedia
 } from '@mui/material';
+
+import TextContent from './TextContent';
 
 type MapPageProps = {
   url: string,
@@ -29,17 +29,8 @@ export default function MapPage(props: MapPageProps) {
         image={props.url}
         alt={props.alt}
       />
-      
-      {props.description && props.description.length > 0 &&
-        <CardContent sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '14px'
-        }}>
-          <Typography variant='h3'>About This Map</Typography>
-          {props.description && props.description.map((text, i) => <Typography key={i} variant='body1'>{text}</Typography>)}
-        </CardContent>
-      }
+
+      {props.description && props.description.length > 0 && <TextContent description={props.description} titlePart='This Map' />}
     </Card>
   );
 }
