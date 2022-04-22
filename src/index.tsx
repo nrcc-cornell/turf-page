@@ -17,6 +17,7 @@ declare module '@mui/material/Typography' {
     footerContact: true;
     footerCopyright: true;
     links: true;
+    dayMapDate: true;
   }
 }
 
@@ -27,6 +28,7 @@ interface ExtendedTypographyOptions extends TypographyOptions {
   footerContact: React.CSSProperties;
   footerCopyright: React.CSSProperties;
   links: React.CSSProperties;
+  dayMapDate: React.CSSProperties;
 }
 
 
@@ -126,6 +128,9 @@ const theme = createTheme({
       color: 'white',
       fontSize: '12px',
       fontFamily: '"Roboto", "Arial", "sans-serif"'
+    },
+    dayMapDate: {
+      fontSize: '12px'
     }
   } as ExtendedTypographyOptions
 } as ThemeOptions);

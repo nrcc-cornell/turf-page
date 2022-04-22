@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 
-import { Card } from '@mui/material';
+import { Card, Box } from '@mui/material';
 
 import TextContent from './TextContent';
 import DailyChart from './DailyChart';
+import WeekMaps from './WeekMaps';
+import StyledDivider from './StyledDivider';
 
 type Row = {
   thresholds: {
@@ -33,7 +35,15 @@ type PageProps = {
     data: number,
     colorizer: (val: number, thresholds: ThresholdObj) => string
   },
-  maps: string[],
+  maps: {
+    title: string,
+    thumbs: {
+      fullSizeUrl: string,
+      thumbUrl: string,
+      alt: string,
+      date: string
+    }[]
+  }[],
   data: [string, number][]
 };
 
@@ -45,14 +55,38 @@ export default function ToolPage(props: PageProps) {
       padding: '10px',
       boxSizing: 'border-box',
       width: '90%',
-      maxWidth: 720,
-      margin: '0 auto'
+      maxWidth: 900,
+      margin: '0 auto',
+      '@media (min-width: 1465px)': {
+        maxWidth: 'none'
+      }
     }}>
       <DailyChart {...props.chart} data={props.data} />
 
-      {/* <WeekMaps />
+      <StyledDivider />
 
-      <WeekMaps /> */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        marginTop: '10px',
+        '@media (min-width: 1465px)': {
+          flexDirection: 'row',
+          gap: '15px'
+        }
+      }}>
+        {props.maps.map((thumbGroup, i) => {
+          return (
+            <Fragment key={thumbGroup.title}>
+              <WeekMaps {...thumbGroup} />
+
+              { i !== props.maps.length - 1 && <StyledDivider sx={{ '@media (min-width: 1465px)': { display: 'none' } }} />}
+            </Fragment>
+          );
+        })}
+      </Box>
+
+      <StyledDivider />
 
       <TextContent {...props.text} />
     </Card>

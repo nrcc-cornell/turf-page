@@ -16,7 +16,6 @@ const BoxSX = {
   display: 'flex',
   flexDirection: 'column',
   gap: '14px',
-  paddingLeft: '12px',
   boxSizing: 'border-box'
 };
 
@@ -33,7 +32,7 @@ export default function TextContent(props: TextProps) {
   };
   
   return (
-    <CardContent>
+    <CardContent sx={{ maxWidth: 700, margin: '0 auto' }}>
       <Typography variant='h5' sx={TitleSX}>About {props.titlePart}</Typography>
       <Box sx={BoxSX}>{props.description && renderText(props.description)}</Box>
 

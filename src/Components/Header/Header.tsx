@@ -17,7 +17,10 @@ export default function Header() {
       width: '100%',
       height: 80,
       padding: '10px',
-      backgroundColor: 'black'
+      backgroundColor: 'black',
+      '&:hover': {
+        cursor: 'default'
+      }
     }}>
       <Box sx={{
         display: 'flex',

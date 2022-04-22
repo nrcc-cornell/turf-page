@@ -75,6 +75,7 @@ export default function TemporaryDrawer() {
     if (name === '') {
       navigate('/');
       toggleDrawer({type: 'func'} as Toggle);
+      localStorage.setItem('lastPage', '/');
     } else {
       setSection(section === name ? '' : name);
     }
@@ -84,6 +85,7 @@ export default function TemporaryDrawer() {
     if (path[0] === '/') {
       navigate(path);
       toggleDrawer({type: 'func'} as Toggle);
+      localStorage.setItem('lastPage', path);
     } else {
       window.open(path, '_blank')?.focus();
     }

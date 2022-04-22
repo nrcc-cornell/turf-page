@@ -65,8 +65,8 @@ export default function DailyChart(props: ChartProps) {
 
   
   return (
-    <Box>
-      <Typography sx={{ marginLeft: '16px' }} variant='h5'>{props.title}</Typography>
+    <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
+      <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>
 
       <Box sx={{
         display: 'flex',
@@ -102,8 +102,8 @@ export default function DailyChart(props: ChartProps) {
         backgroundColor: 'black',
         boxSizing: 'border-box',
         border: '1px solid black',
-        marginTop: '8px',
-        position: 'relative'
+        position: 'relative',
+        margin: '8px auto'
       }}>
         {cells}
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 import { Box } from '@mui/material';
 
@@ -14,6 +14,18 @@ import {
 import AppRouteInfo from './AppRouteInfo';
 
 import { getGDDs } from './Scripts/Data';
+
+type Thumb = {
+  fullSizeUrl: string,
+  thumbUrl: string,
+  alt: string,
+  date: string
+};
+
+type MapThumbs = {
+  title: string,
+  thumbs: Thumb[]
+};
 
 type MapPageProps = {
   url: string,
@@ -55,7 +67,7 @@ type ChartProps = {
 type ToolPageProps = {
   text: TextProps | ReferencedTextProps,
   chart: ChartProps,
-  maps: string[]
+  maps: MapThumbs[]
 };
 
 type PropsType = MapPageProps | ToolPageProps;
@@ -79,19 +91,26 @@ const lngLat = [-75.77959, 43.72207]; // Near Watertown
 function App() {
   const [gdd32, setGdd32] = useState<[string,number][]>([]);
   const [gdd50, setGdd50] = useState<[string,number][]>([]);
-
-
+  
+  const goTo = useNavigate();
+  
+  
   useEffect(() => {
     (async () => {
       const data: GDDs = await getGDDs(lngLat);
-      console.log(data);
       setGdd32(data.gdd32);
       setGdd50(data.gdd50);
+
     })();
+
+    const lastPage = localStorage.getItem('lastPage');
+    if (lastPage) {
+      goTo(lastPage);
+    }
   }, []);
 
   
-  const renderPage = (obj: PropsType) => {
+  const renderPage = (obj: PropsType) => {    
     if ('url' in obj) {
       return <MapPage {...obj} />;
     }

@@ -1,3 +1,17 @@
+import { addDays, format } from 'date-fns';
+
+type Thumb = {
+  fullSizeUrl: string,
+  thumbUrl: string,
+  alt: string,
+  date: string
+};
+
+type MapThumbs = {
+  title: string,
+  thumbs: Thumb[]
+};
+
 type MapPageProps = {
   url: string,
   alt: string,
@@ -35,7 +49,7 @@ type ChartProps = {
 type ToolPageProps = {
   text: TextProps | ReferencedTextProps,
   chart: ChartProps,
-  maps: string[]
+  maps: MapThumbs[]
 };
 
 type PropsType = MapPageProps | ToolPageProps;
@@ -44,6 +58,27 @@ type RouteInfo = {
   path: string
   props: PropsType
 };
+
+
+const constructThumbs = (type: string, variety: string, name: string): Thumb[] => {
+  const today = new Date();
+  const thumbs: Thumb[] = [];
+
+  for (let i = 0; i < 7; i++) {
+    const date = addDays(today, i);
+
+    thumbs.push({
+      date: format(date, 'MM/dd/yy'),
+      thumbUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/thumbs/${type}/${variety}/${format(date, 'yyyyMMdd')}-${name}-Thumbnail.png`,
+      fullSizeUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/maps/${type}/${variety}/${format(date, 'yyyyMMdd')}-${name}-Map.png`,
+      alt: `link to ${name.replaceAll('-', ' ')} map for ${format(date, 'MMMM do yyyy')}`
+    });
+  }
+
+  return thumbs;
+};
+
+
 
 const routeInfo: RouteInfo[] = [
   {
@@ -229,7 +264,13 @@ const routeInfo: RouteInfo[] = [
         ranges: [['Early', 'rgb(255,0,0)'], ['Marginal', 'gold'], ['Favorable', 'rgb(0,170,0)']],
         title: 'Dandelion Control Recommendations'
       },
-      maps: []
+      maps: [{
+        title: 'Amine Maps',
+        thumbs: constructThumbs('Dandelion', 'Amine', 'Amine-Dandelion-Control')
+      },{
+        title: 'Ester Maps',
+        thumbs: constructThumbs('Dandelion', 'Ester', 'Ester-Dandelion-Control')
+      }]
     }
   },{
     path: '/turf-weed/seedhead',
@@ -272,7 +313,13 @@ const routeInfo: RouteInfo[] = [
           return backgroundColor;
         }
       },
-      maps: []
+      maps: [{
+        title: 'Embark Maps',
+        thumbs: constructThumbs('Seedhead', 'Embark', 'Embark-Seedhead-Control')
+      },{
+        title: 'Proxy Maps',
+        thumbs: constructThumbs('Seedhead', 'Proxy', 'Proxy-Seedhead-Control')
+      }]
     }
   },{
     path: '/turf-weed/gdd/accumulation',

@@ -24,6 +24,15 @@ const LinkLine = styled(Box)({
   left: '5%'
 });
 
+const btnSX = {
+  borderRadius: 0,
+  height: '100%',
+  position: 'relative',
+  '&:hover': {
+    backgroundColor: 'rgb(105,106,110)'
+  }
+};
+
 
 type GroupProp = {
   group: {
@@ -47,15 +56,6 @@ export default function NavBar({ group }: GroupProp) {
   const location = useLocation();
   const isActiveGroup = location.pathname.split('/')[1] === group.base;
 
-  const btnSX = {
-    borderRadius: 0,
-    height: '100%',
-    position: 'relative',
-    '&:hover': {
-      backgroundColor: 'rgb(105,106,110)'
-    }
-  };
-
   
   const handleOpen = (event: MouseEvent<HTMLElement>): void => {
     setAnchorEl(event.currentTarget);
@@ -70,6 +70,7 @@ export default function NavBar({ group }: GroupProp) {
     if (pathname[0] === '/') {
       navigate(pathname);
       setOpen(false);
+      localStorage.setItem('lastPage', pathname);
     } else {
       window.open(pathname, '_blank')?.focus();
     }
