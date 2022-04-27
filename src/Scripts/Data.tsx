@@ -1,21 +1,27 @@
 import { format, subDays, addDays } from 'date-fns';
 
 import roundXDigits from './Rounding';
+import DayHourly from './DayClasses';
 
-type GDDs = {
+type ToolData = {
   gdd32: [string, number][],
   gdd50: [string, number][]
 };
 
+type ToolRawData = {
+  forecast: number[],
+  days: DayHourly[]
+};
 
-function getGDDForecast(today: string, lng: number, lat: number ): Promise<number[]> {
+
+function getToolRawData(lng: number, lat: number ): Promise<ToolRawData | null> {
   return fetch('https://hrly.nrcc.cornell.edu/locHrly', {
     method: 'POST',
     body: JSON.stringify({
       'lat': lat,
       'lon': lng,
       'tzo': -5,
-      'sdate': today,
+      'sdate': format(subDays(new Date(), 11), 'yyyyMMdd08'),
       'edate': 'now'
     })
   })
@@ -26,9 +32,22 @@ function getGDDForecast(today: string, lng: number, lat: number ): Promise<numbe
 
       return response.json();
     })
-    .then(forecastData => {
-      return forecastData.dlyFcstData.map((vals: string[]) => (parseFloat(vals[1]) + parseFloat(vals[2])) / 2);
-    });
+    .then(data => {
+      console.log(data);
+
+      const days = [];
+      for (let i = 0, j = 24; j < data.hrlyData.length; i+=24, j+=24) {
+        console.log(data.hrlyData.slice(i,j));
+
+        days.push(new DayHourly(data.hrlyData.slice(i,j)));
+      }
+
+      return {
+        forecast: data.dlyFcstData.map((vals: string[]) => (parseFloat(vals[1]) + parseFloat(vals[2])) / 2),
+        days
+      };
+    })
+    .catch(() => null);
 }
 
 
@@ -74,24 +93,74 @@ const calcGDDs = (pastDate: Date, past: number[], forecast: number[], base: numb
 };
 
 
-const getGDDs = async (lngLat: number[]): Promise<GDDs> => {
-  const today = format(new Date(), 'yyyyMMdd00');
+const getToolData = async (lngLat: number[]): Promise<ToolData | null> => {
   const pastDate = subDays(new Date(), 3);
   const sDate = format(pastDate, 'yyyy-MM-dd');
 
-  const forecast: number[] = await getGDDForecast(today, lngLat[0], lngLat[1]);
+  const data: ToolRawData | null = await getToolRawData(lngLat[0], lngLat[1]);
   
-  const eDate = format(subDays(new Date(), 1), 'yyyy-MM-dd');
-  const past32: number[] = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
-  const past50: number[] = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
+  if (data) {
+    const eDate = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+    const past32: number[] = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
+    const past50: number[] = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
+    
+    const gdd32: [string, number][] = calcGDDs(pastDate, past32, data.forecast, 32);
+    const gdd50: [string, number][] = calcGDDs(pastDate, past50, data.forecast, 50);
   
-  const gdd32: [string, number][] = calcGDDs(pastDate, past32, forecast, 32);
-  const gdd50: [string, number][] = calcGDDs(pastDate, past50, forecast, 50);
-
-  return {
-    gdd32,
-    gdd50
-  };
+    return {
+      gdd32,
+      gdd50
+    };
+  } else {
+    return null;
+  }
 };
 
-export { getGDDs };
+
+
+const states = [
+  'Maine',
+  'New Hampshire',
+  'Vermont',
+  'Rhode Island',
+  'Massachusetts',
+  'Connecticut',
+  'New York',
+  'New Jersey',
+  'Pennsylvania',
+  'Delaware',
+  'Maryland',
+  'West Virginia'
+];
+
+type UserLocation = {
+  address: string,
+  lngLat: number[]
+};
+
+type ContextType = {
+  id: string,
+  wikidata?: string,
+  text: string,
+  short_code?: string
+}
+
+function getLocation( lng: number, lat: number, token: string ): Promise<false | UserLocation> {
+  return fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?limit=1&access_token=${token}`, { method: 'GET' })
+    .then(response => response.json())
+    .then(res => {
+      const region = res.features[0].context.find((c: ContextType) => c.id.split('.')[0] === 'region');
+      if (!states.includes(region.text)) throw 'Out of Bounds';
+
+      const address = res.features[0].place_name.replaceAll(', United States', '').replaceAll(/\s\d{5}/g, '');
+
+      return {
+        address,
+        lngLat: [lng, lat]
+      };
+    })
+    .catch(() => false);
+}
+
+
+export { getToolData, getLocation };

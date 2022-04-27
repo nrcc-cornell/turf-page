@@ -2,7 +2,8 @@ import React from 'react';
 
 import {
   Typography,
-  Box
+  Box,
+  CircularProgress
 } from '@mui/material';
 
 type Row = {
@@ -89,38 +90,49 @@ export default function DailyChart(props: ChartProps) {
         })}
       </Box>
 
-      <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: '80px repeat(9, auto)',
-        gridTemplateRows: `repeat(${cells.length + 1}, 20px)`,
-        '@media (max-width: 550px)': {
-          gridTemplateRows: `repeat(${cells.length}, 20px) 38px`
-        },
-        justifyItems: 'center',
-        alignItems: 'center',
-        gap: '1px',
-        backgroundColor: 'black',
-        boxSizing: 'border-box',
-        border: '1px solid black',
-        position: 'relative',
-        margin: '8px auto'
-      }}>
-        {cells}
-
-        <Box sx={HeaderSX}>Dates</Box>
-        {dates}
-
+      {props.data.length === 0 ?
         <Box sx={{
-          backgroundColor: 'blue',
-          width: '3px',
-          height: `${(cells.length + 1) * 20 + (cells.length)}px`,
+          margin: '8px auto',
+          height: 2 + (cells.length) + ((cells.length + 1) * 20),
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: 'rgb(187,187,187)'
+        }}><CircularProgress color='inherit' /></Box>
+        :
+        <Box sx={{
+          display: 'grid',
+          gridTemplateColumns: '80px repeat(9, auto)',
+          gridTemplateRows: `repeat(${cells.length + 1}, 20px)`,
           '@media (max-width: 550px)': {
-            height: `${(cells.length) * 20 + 38 + (cells.length)}px`
+            gridTemplateRows: `repeat(${cells.length}, 20px) 38px`
           },
-          position: 'absolute',
-          left: 'calc(80px + ((100% - 89px) * (1/3)))'
-        }}></Box>
-      </Box>
+          justifyItems: 'center',
+          alignItems: 'center',
+          gap: '1px',
+          backgroundColor: 'black',
+          boxSizing: 'border-box',
+          border: '1px solid black',
+          position: 'relative',
+          margin: '8px auto'
+        }}>
+          {cells}
+
+          <Box sx={HeaderSX}>Dates</Box>
+          {dates}
+
+          <Box sx={{
+            backgroundColor: 'blue',
+            width: '3px',
+            height: `${(cells.length + 1) * 20 + (cells.length)}px`,
+            '@media (max-width: 550px)': {
+              height: `${(cells.length) * 20 + 38 + (cells.length)}px`
+            },
+            position: 'absolute',
+            left: 'calc(80px + ((100% - 89px) * (1/3)))'
+          }}></Box>
+        </Box>
+      }
     </Box>
   );
 }

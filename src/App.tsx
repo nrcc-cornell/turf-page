@@ -8,12 +8,14 @@ import {
   Footer,
   Nav,
   MapPage,
-  ToolPage
+  ToolPage,
+  ShortCuttAd,
+  LocationDisplay
 } from './Components';
 
 import AppRouteInfo from './AppRouteInfo';
 
-import { getGDDs } from './Scripts/Data';
+import { getToolData } from './Scripts/Data';
 
 type Thumb = {
   fullSizeUrl: string,
@@ -72,9 +74,14 @@ type ToolPageProps = {
 
 type PropsType = MapPageProps | ToolPageProps;
 
-type GDDs = {
+type ToolData = {
   gdd32: [string, number][],
   gdd50: [string, number][]
+};
+
+type UserLocation = {
+  address: string,
+  lngLat: number[]
 };
 
 
@@ -83,31 +90,69 @@ type GDDs = {
 
 ///////////////////////////////////////////
 ///////////////////////////////////////////
-const lngLat = [-75.77959, 43.72207]; // Near Watertown
-// const lngLat = [-76.45800, 42.45800]; // Ithaca
+// const lngLat = [-75.77959, 43.72207]; // Near Watertown
+// const lngLat = [-76.46754, 42.457975]; // Ithaca
+
+// 213 Warren Road, Ithaca, New York 14850, United States
+// [
+//   0:-76.46754
+//   1:42.457975
+// ]
 ///////////////////////////////////////////
 ///////////////////////////////////////////
 
 function App() {
   const [gdd32, setGdd32] = useState<[string,number][]>([]);
   const [gdd50, setGdd50] = useState<[string,number][]>([]);
+  const [pastLocations, setPastLocations] = useState<UserLocation[]>(() => {
+    const pastLocations = localStorage.getItem('pastLocations');
+    if (pastLocations) {
+      return JSON.parse(pastLocations);
+    } else {
+      return [
+        { address: '213 Warren Road, Ithaca, New York 14850, United States', lngLat: [-76.46754, 42.457975] },
+      ];
+    }
+  });
+  const [currentLocation, setCurrentLocation] = useState<UserLocation>(() => {
+    const currentLocation = localStorage.getItem('currentLocation');
+    if (currentLocation) {
+      return JSON.parse(currentLocation);
+    } else {
+      return { address: '213 Warren Road, Ithaca, New York 14850, United States', lngLat: [-76.46754, 42.457975] };
+    }
+  });
   
   const goTo = useNavigate();
   
   
   useEffect(() => {
-    (async () => {
-      const data: GDDs = await getGDDs(lngLat);
-      setGdd32(data.gdd32);
-      setGdd50(data.gdd50);
-
-    })();
-
     const lastPage = localStorage.getItem('lastPage');
     if (lastPage) {
       goTo(lastPage);
     }
   }, []);
+  
+  useEffect(() => {
+    (async () => {
+      const data: ToolData | null = await getToolData(currentLocation.lngLat);
+      console.log(data);
+
+      if (data) {
+        setGdd32(data.gdd32);
+        setGdd50(data.gdd50);
+      } else {
+        //////////////////////////////////
+        //////////////////////////////////
+        //////////////////////////////////
+        //////////////////////////////////
+        // Handle no data / errors!!!  ///
+        //////////////////////////////////
+        //////////////////////////////////
+        //////////////////////////////////
+      }
+    })();
+  }, [currentLocation]);
 
   
   const renderPage = (obj: PropsType) => {    
@@ -122,6 +167,29 @@ function App() {
     return <Box>{JSON.stringify(obj)}</Box>;
   };
 
+  const handleChangeLocations = (action: 'add' | 'remove' | 'change', location: UserLocation): void => {
+    if (action === 'add') {
+      setPastLocations(prev => {
+        const newLocs = [...prev, location];
+        localStorage.setItem('pastLocations', JSON.stringify(newLocs));
+        return newLocs;
+      });
+    }
+
+    if (action === 'remove') {
+      setPastLocations(prev => {
+        const newLocs = prev.filter(l => !(l.lngLat[0] === location.lngLat[0] && l.lngLat[1] === location.lngLat[1]));
+        localStorage.setItem('pastLocations', JSON.stringify(newLocs));
+        return newLocs;
+      });
+    }
+
+    if (action === 'add' || action === 'change') {
+      setCurrentLocation(location);
+      localStorage.setItem('currentLocation', JSON.stringify(location));
+    }
+  };
+
 
   return (
     <Box sx={{
@@ -131,6 +199,12 @@ function App() {
       <Header />
 
       <Nav />
+
+      <LocationDisplay
+        currentLocation={currentLocation}
+        pastLocations={pastLocations}
+        handleChangeLocations={handleChangeLocations}
+      />
       
       <Box component='main' sx={{
         boxSizing: 'border-box',
@@ -167,8 +241,25 @@ function App() {
       </Box>
 
       <Footer />
+
+      <ShortCuttAd />
     </Box>
   );
 }
 
 export default App;
+
+
+// // Refactor to use retrieved location from storage or default to get GDDs
+// Create component to show current location
+// Verify that current location matches the GDDs shown
+// Create popup from clicking 'Change Location' that has past locations and locations search
+// Write necessary logic to make that all functional
+// Add map with pins, etc.
+// Write logic to make that all functional
+
+// When all of that is finished deploy, talk to Art, and tell the guys where we're at.
+// Find out what weather might be useful
+// Create weather widget OR create link for local forecasts
+
+// Work on other models

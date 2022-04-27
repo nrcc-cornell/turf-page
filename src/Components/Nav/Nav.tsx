@@ -54,8 +54,10 @@ export default function Nav() {
   const renderBurger = (): ReactNode => {
     return (
       <Box component='nav' sx={{
-        backgroundColor: 'white',
-        height: 46
+        height: 46,
+        position: 'absolute',
+        top: 83,
+        left: 10,
       }}>
         <NavDrawer />
       </Box>

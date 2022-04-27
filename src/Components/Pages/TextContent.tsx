@@ -20,7 +20,6 @@ const BoxSX = {
 };
 
 const TitleSX = {
-  marginTop: '20px',
   marginBottom: '10px'
 };
 

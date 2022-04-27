@@ -62,7 +62,7 @@ export default function ToolPage(props: PageProps) {
       }
     }}>
       <DailyChart {...props.chart} data={props.data} />
-
+      
       <StyledDivider />
 
       <Box sx={{

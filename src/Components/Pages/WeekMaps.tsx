@@ -57,7 +57,7 @@ export default function WeekMaps(props: WeekMapsProps) {
       }}>
         <Box sx={BoxSX}>
           {props.thumbs.map((thumb, i) =>
-            <MapThumb key={i} {...thumb} border={i === bigMap ? '2px dashed blue' : '1px solid rgba(0,0,0,0.12)'} changeMap={() => setBigMap(i)} />
+            <MapThumb key={i} {...thumb} border={i === bigMap ? '2px solid rgb(150,150,250)' : '1px solid rgba(0,0,0,0.12)'} changeMap={() => setBigMap(i)} />
           )}
         </Box>
 
