@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 
 import {
   Box,
-  Typography
+  Typography,
+  CircularProgress
 } from '@mui/material';
 import MapThumb from './MapThumb';
 
@@ -24,7 +25,6 @@ const BoxSX = {
   justifyContent: 'center',
   gap: '5px',
   '@media (max-width: 720px)': {
-    // gap: '5px'
     flexDirection: 'row'
   },
   '@media (max-width: 620px)': {
@@ -36,6 +36,9 @@ const BoxSX = {
 
 export default function WeekMaps(props: WeekMapsProps) {
   const [bigMap, setBigMap] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const loaded = () => setLoading(!loading);
   
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -61,19 +64,33 @@ export default function WeekMaps(props: WeekMapsProps) {
           )}
         </Box>
 
+        <Box sx={{
+          display: loading ? 'flex' : 'none',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: 'calc(100% - 65px)',
+          maxWidth: 700,
+          color: 'rgb(187,187,187)',
+          objectFit: 'contain',
+          '@media (max-width: 720px)': {
+            width: '100%'
+          }
+        }}>
+          <CircularProgress color='inherit' />
+        </Box>
+
         <Box
           component='img'
+          onLoad={loaded}
           src={props.thumbs[bigMap].fullSizeUrl}
           alt={props.thumbs[bigMap].alt}
           sx={{
+            display: loading ? 'none' : 'block',
             width: 'calc(100% - 65px)',
             maxWidth: 700,
             objectFit: 'contain',
             '@media (max-width: 720px)': {
               width: '100%'
-            },
-            '@media (min-width: 1465px)': {
-              maxWidth: 'none'
             }
           }}
         />

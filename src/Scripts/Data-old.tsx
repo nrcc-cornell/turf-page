@@ -14,14 +14,14 @@ type ToolRawData = {
 };
 
 
-function getToolRawData(lng: number, lat: number ): Promise<ToolRawData | null> {
+function getToolRawData(lng: number, lat: number, gdd32: number, gdd50: number ): Promise<DayHourly[] | null> {
   return fetch('https://hrly.nrcc.cornell.edu/locHrly', {
     method: 'POST',
     body: JSON.stringify({
       'lat': lat,
       'lon': lng,
       'tzo': -5,
-      'sdate': format(subDays(new Date(), 11), 'yyyyMMdd08'),
+      'sdate': format(subDays(new Date(), 19), 'yyyyMMdd08'),
       'edate': 'now'
     })
   })
@@ -33,28 +33,40 @@ function getToolRawData(lng: number, lat: number ): Promise<ToolRawData | null> 
       return response.json();
     })
     .then(data => {
+      const hourly = data.hrlyData.concat(data.fcstData);
+
       const days = [];
-      for (let i = 0, j = 24; j < data.hrlyData.length; i+=24, j+=24) {
-        days.push(new DayHourly(data.hrlyData.slice(i,j)));
+
+      console.log(data);
+      console.log(hourly);
+
+      console.log('start: ', gdd32);
+      for (let i = 0, j = 24, k = 0; j < hourly.length; i+=24, j+=24, k++) {
+        const newDay = new DayHourly(data.hrlyData.slice(i,j));
+        const avg = newDay.maxtMintAvg();
+        
+        gdd32 += Math.max(0, avg - 32);
+        gdd50 += Math.max(0, avg - 50);
+
+        console.log(newDay.date, newDay.avgTemp(), avg, gdd32);
+
+        newDay.gdd32 = gdd32;
+        newDay.gdd50 = gdd50;
+        days.push(newDay);
       }
 
-      return {
-        forecast: data.dlyFcstData.map((vals: string[]) => (parseFloat(vals[1]) + parseFloat(vals[2])) / 2),
-        days
-      };
+      return days;
     })
     .catch(() => null);
 }
 
 
-
-function getGDDPast(sDate: string, eDate: string, loc: string, base: number ): Promise<number[]> {
+function getGDDPast(date: string, loc: string, base: number ): Promise<number> {
   return fetch('https://grid2.rcc-acis.org/GridData', {
     method: 'POST',
     body: JSON.stringify({
       'loc': loc,
-      'sdate': sDate,
-      'edate': eDate,
+      'date': date,
       'grid': 'nrcc-model',
       'elems': [{
         'name': 'gdd',
@@ -72,40 +84,34 @@ function getGDDPast(sDate: string, eDate: string, loc: string, base: number ): P
 
       return response.json();
     })
-    .then(data => {
-      return data.data.map((arr: [string, number][]) => arr[1]);
-    });
+    .then(data => data.data[0][1]);
 }
 
 
-const calcGDDs = (pastDate: Date, past: number[], forecast: number[], base: number): [string, number][] => {
-  let total = past[past.length - 1];
-  const data = past.concat(forecast.map(num => {
-    total += Math.max(0, num - base);
-    return total;
-  }));
-
-  return data.map((val, i) => [format(addDays(pastDate, i), 'MM-dd'), roundXDigits(val, 0)]);
-};
-
-
 const getToolData = async (lngLat: number[]): Promise<ToolData | null> => {
-  const pastDate = subDays(new Date(), 3);
-  const sDate = format(pastDate, 'yyyy-MM-dd');
-
-  const data: ToolRawData | null = await getToolRawData(lngLat[0], lngLat[1]);
+  const today = new Date();
+  const date = format(subDays(today, 19), 'yyyy-MM-dd');
+  console.log(date, lngLat);
+  const earliestGDD32: number = await getGDDPast(date, lngLat.join(','), 32);
+  const earliestGDD50: number = await getGDDPast(date, lngLat.join(','), 50);
+  const data: DayHourly[] | null = await getToolRawData(lngLat[0], lngLat[1], earliestGDD32, earliestGDD50);
   
   if (data) {
-    const eDate = format(subDays(new Date(), 1), 'yyyy-MM-dd');
-    const past32: number[] = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
-    const past50: number[] = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
+    const thirty = data.map(d => [d.gdd32, d.date]);
+    // const fifty = data.map(d => d.gdd50);
+
+    console.log(thirty);
+    // console.log(fifty);
+
+    // const past32: number[] = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
+    // const past50: number[] = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
     
-    const gdd32: [string, number][] = calcGDDs(pastDate, past32, data.forecast, 32);
-    const gdd50: [string, number][] = calcGDDs(pastDate, past50, data.forecast, 50);
+    // const gdd32: [string, number][] = calcGDDs(pastDate, past32, data.forecast, 32);
+    // const gdd50: [string, number][] = calcGDDs(pastDate, past50, data.forecast, 50);
   
     return {
-      gdd32,
-      gdd50
+      gdd32: [],
+      gdd50: []
     };
   } else {
     return null;

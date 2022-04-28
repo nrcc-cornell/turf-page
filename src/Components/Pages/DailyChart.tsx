@@ -96,7 +96,7 @@ export default function DailyChart(props: ChartProps) {
           height: 2 + (cells.length) + ((cells.length + 1) * 20),
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center',
+          alignItems: 'flex-end',
           color: 'rgb(187,187,187)'
         }}><CircularProgress color='inherit' /></Box>
         :

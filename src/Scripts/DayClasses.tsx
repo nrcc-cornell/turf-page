@@ -1,4 +1,5 @@
 import roundXDigits from './Rounding';
+import { addDays } from 'date-fns';
 
 const FToC = (f: number) => (f - 32) * (5/9);
 const CToF = (c: number) => (c * (9/5)) + 32;
@@ -22,9 +23,14 @@ class Hour {
 
 
 export default class DayHourly {
+  date: Date;
   data: Hour[];
+  gdd32 = 0;
+  gdd50 = 0;
 
   constructor(data: string[][]) {
+    this.date = addDays(new Date(data[0][0]), 1);
+  
     let wasWet = false;
     this.data = data.map(d => {
       const newHour = new Hour(d, wasWet);
@@ -80,5 +86,10 @@ export default class DayHourly {
       if (d.temp > 69 && d.temp + d.rhum > 150) count++;
       return count;
     }, 0);
+  }
+
+  maxtMintAvg(): number {
+    console.log(this.maxTemp(), this.minTemp(), this.maxTemp() + this.minTemp(), this.date);
+    return (this.maxTemp() + this.minTemp()) / 2;
   }
 }
