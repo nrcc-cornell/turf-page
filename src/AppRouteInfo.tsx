@@ -42,7 +42,7 @@ type ChartProps = {
   rows: Row[],
   ranges: string[][],
   title: string,
-  data: number,
+  data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStressIndex',
   colorizer: (val: number, thresholds: ThresholdObj) => string
 };
 
@@ -60,22 +60,35 @@ type RouteInfo = {
 };
 
 
-const constructThumbs = (type: string, variety: string, name: string): Thumb[] => {
+const constructThumbs = (type: string, variety: string | null, name: string): Thumb[] => {
   const today = new Date();
   const thumbs: Thumb[] = [];
 
-  for (let i = 0; i < 7; i++) {
+  variety = variety ? '/' + variety : '';
+
+  for (let i = 0; i < 6; i++) {
     const date = addDays(today, i);
 
     thumbs.push({
       date: format(date, 'MM/dd/yy'),
-      thumbUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/thumbs/${type}/${variety}/${format(date, 'yyyyMMdd')}-${name}-Thumbnail.png`,
-      fullSizeUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/maps/${type}/${variety}/${format(date, 'yyyyMMdd')}-${name}-Map.png`,
+      thumbUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/thumbs/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Thumbnail.png`,
+      fullSizeUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/maps/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Map.png`,
       alt: `link to ${name.replaceAll('-', ' ')} map for ${format(date, 'MMMM do yyyy')}`
     });
   }
 
   return thumbs;
+};
+
+const riskRanges = [['No Risk', 'rgb(0,170,0)'], ['Moderate', 'gold'], ['High', 'rgb(255,0,0)']];
+const riskColorizer = function(val: number, thresholds: ThresholdObj) {
+  if (val <= thresholds.low) {
+    return 'rgb(0,170,0)';
+  } else if (val <= thresholds.high) {
+    return 'gold';
+  } else {
+    return 'rgb(255,0,0)';
+  }
 };
 
 
@@ -99,22 +112,30 @@ const routeInfo: RouteInfo[] = [
         ]
       },
       chart: {
-        data: 32,
+        data: 'anthracnose',
         rows: [{
           thresholds: {
-            low: 0,
+            low: 0.4,
             medium: 0,
-            high: 0
+            high: 1.5
           },
-          name: ''
+          name: 'Daily'
+        },{
+          thresholds: {
+            low: 0.4,
+            medium: 0,
+            high: 1.5
+          },
+          name: '7 Day Avg'
         }],
-        ranges: [],
-        title: '',
-        colorizer: function(val: number, thresholds: ThresholdObj) {
-          return '';
-        }
+        ranges: riskRanges,
+        title: 'Anthracnose Risk Estimates',
+        colorizer: riskColorizer,
       },
-      maps: []
+      maps: [{
+        title: 'Anthracnose Risk Maps',
+        thumbs: constructThumbs('Anthracnose', null, 'Anthracnose-Risk')
+      }]
     }
   },{
     path: '/disease/brown-patch',
@@ -135,22 +156,30 @@ const routeInfo: RouteInfo[] = [
         ]
       },
       chart: {
-        data: 32,
+        data: 'brownPatch',
         rows: [{
           thresholds: {
-            low: 0,
+            low: 0.4,
             medium: 0,
-            high: 0
+            high: 0.9
           },
-          name: ''
+          name: 'Daily'
+        },{
+          thresholds: {
+            low: 0.4,
+            medium: 0,
+            high: 0.9
+          },
+          name: '7 Day Avg'
         }],
-        ranges: [],
-        title: '',
-        colorizer: function(val: number, thresholds: ThresholdObj) {
-          return '';
-        }
+        ranges: riskRanges,
+        title: 'Brown Patch Risk Estimates',
+        colorizer: riskColorizer
       },
-      maps: []
+      maps: [{
+        title: 'Brown Patch Risk Maps',
+        thumbs: constructThumbs('Brown-Patch', null, 'Brown-Patch-Risk')
+      }]
     }
   },{
     path: '/disease/dollarspot',
@@ -171,22 +200,30 @@ const routeInfo: RouteInfo[] = [
         ]
       },
       chart: {
-        data: 32,
+        data: 'dollarspot',
         rows: [{
           thresholds: {
-            low: 0,
+            low: 0.4,
             medium: 0,
-            high: 0
+            high: 0.7
           },
-          name: ''
+          name: 'Daily'
+        },{
+          thresholds: {
+            low: 0.4,
+            medium: 0,
+            high: 0.7
+          },
+          name: '7 Day Avg'
         }],
-        ranges: [],
-        title: '',
-        colorizer: function(val: number, thresholds: ThresholdObj) {
-          return '';
-        }
+        ranges: riskRanges,
+        title: 'Dollarspot Risk Estimates',
+        colorizer: riskColorizer
       },
-      maps: []
+      maps: [{
+        title: 'Dollarspot Risk Maps',
+        thumbs: constructThumbs('Dollarspot', null, 'Dollarspot-Risk')
+      }]
     }
   },{
     path: '/disease/pythium-blight',
@@ -206,22 +243,30 @@ const routeInfo: RouteInfo[] = [
         ]
       },
       chart: {
-        data: 32,
+        data: 'pythiumBlight',
         rows: [{
           thresholds: {
-            low: 0,
+            low: 0.4,
             medium: 0,
-            high: 0
+            high: 3.6
           },
-          name: ''
+          name: 'Daily'
+        },{
+          thresholds: {
+            low: 0.4,
+            medium: 0,
+            high: 3.6
+          },
+          name: '7 Day Avg'
         }],
-        ranges: [],
-        title: '',
-        colorizer: function(val: number, thresholds: ThresholdObj) {
-          return '';
-        }
+        ranges: riskRanges,
+        title: 'Pythium Blight Risk Estimates',
+        colorizer: riskColorizer
       },
-      maps: []
+      maps: [{
+        title: 'Pythium Blight Risk Maps',
+        thumbs: constructThumbs('Pythium-Blight', null, 'Pythium-Blight-Risk')
+      }]
     }
   },{
     path: '/turf-weed/dandelion',
@@ -236,7 +281,7 @@ const routeInfo: RouteInfo[] = [
         ]
       },
       chart: {
-        data: 50,
+        data: 'gdd50',
         rows: [{
           thresholds: {
             low: 150,
@@ -283,7 +328,7 @@ const routeInfo: RouteInfo[] = [
         ]
       },
       chart: {
-        data: 32,
+        data: 'gdd32',
         rows: [{
           thresholds: {
             low: 350,
@@ -475,22 +520,31 @@ const routeInfo: RouteInfo[] = [
         ]
       },
       chart: {
-        data: 32,
+        data: 'heatStressIndex',
         rows: [{
           thresholds: {
-            low: 0,
+            low: 2,
             medium: 0,
-            high: 0
+            high: 5
           },
-          name: ''
+          name: 'Daily'
         }],
-        ranges: [],
-        title: '',
+        ranges: riskRanges,
+        title: 'Heat Stress Index Estimates',
         colorizer: function(val: number, thresholds: ThresholdObj) {
-          return '';
+          if (val < thresholds.low) {
+            return 'rgb(0,170,0)';
+          } else if (val <= thresholds.high) {
+            return 'gold';
+          } else {
+            return 'rgb(255,0,0)';
+          }
         }
       },
-      maps: []
+      maps: [{
+        title: 'Heat Stress Index Maps',
+        thumbs: constructThumbs('Heat-Stress', null, 'Heat-Stress-Risk')
+      }]
     }
   },{
     path: '/temperature/departure',

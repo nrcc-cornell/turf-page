@@ -26,11 +26,11 @@ export default function MapThumb(props: MapThumbProps) {
       sx={{
         border: props.border,
         width: 65,
-        '@media (max-width: 605px)': {
-          width: 94
+        '@media (max-width: 720px)': {
+          width: 'calc(16% - 7px)',
         },
-        '@media (max-width: 495px)': {
-          width: '23%'
+        '@media (max-width: 550px)': {
+          width: 65
         },
         '&:hover': {
           cursor: 'pointer',

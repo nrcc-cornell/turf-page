@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 
 type UserLocation = {
   address: string,
-  lngLat: number[]
+  lngLat: [number,number]
 };
 
 type PopupContent = UserLocation & {
@@ -34,7 +34,7 @@ export default function Markers(props: MarkersProps) {
           longitude={loc.lngLat[0]}
           latitude={loc.lngLat[1]}
           onClick={(e) => props.onMarkerClick(e, loc)}
-          style={{ zIndex: isSelected ? 2 : 1 }}
+          style={{ zIndex: isSelected ? 2 : 1, top: -20 }}
         >
           <Box
             className={isSelected ? 'curr-marker' : 'marker'}

@@ -25,10 +25,14 @@ const BoxSX = {
   justifyContent: 'center',
   gap: '5px',
   '@media (max-width: 720px)': {
+    width: '98%',
+    justifyContent: 'space-around',
     flexDirection: 'row'
   },
-  '@media (max-width: 620px)': {
-    flexWrap: 'wrap'
+  '@media (max-width: 550px)': {
+    flexWrap: 'wrap',
+    width: 225,
+    gap: '10px'
   }
 };
 
@@ -38,7 +42,12 @@ export default function WeekMaps(props: WeekMapsProps) {
   const [bigMap, setBigMap] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const loaded = () => setLoading(!loading);
+  const loaded = () => setLoading(false);
+
+  const handleChangeMap = (i: number) => {
+    setBigMap(i);
+    setLoading(true);
+  };
   
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -60,7 +69,7 @@ export default function WeekMaps(props: WeekMapsProps) {
       }}>
         <Box sx={BoxSX}>
           {props.thumbs.map((thumb, i) =>
-            <MapThumb key={i} {...thumb} border={i === bigMap ? '2px solid rgb(150,150,250)' : '1px solid rgba(0,0,0,0.12)'} changeMap={() => setBigMap(i)} />
+            <MapThumb key={i} {...thumb} border={i === bigMap ? '2px solid rgb(150,150,250)' : '1px solid rgba(0,0,0,0.12)'} changeMap={() => handleChangeMap(i)} />
           )}
         </Box>
 
@@ -69,7 +78,7 @@ export default function WeekMaps(props: WeekMapsProps) {
           justifyContent: 'center',
           alignItems: 'center',
           width: 'calc(100% - 65px)',
-          maxWidth: 700,
+          maxWidth: 557.34,
           color: 'rgb(187,187,187)',
           objectFit: 'contain',
           '@media (max-width: 720px)': {
@@ -87,7 +96,7 @@ export default function WeekMaps(props: WeekMapsProps) {
           sx={{
             display: loading ? 'none' : 'block',
             width: 'calc(100% - 65px)',
-            maxWidth: 700,
+            maxWidth: 557.34,
             objectFit: 'contain',
             '@media (max-width: 720px)': {
               width: '100%'

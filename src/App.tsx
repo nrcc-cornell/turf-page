@@ -62,7 +62,7 @@ type ChartProps = {
   rows: Row[],
   ranges: string[][],
   title: string,
-  data: number,
+  data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStressIndex',
   colorizer: (val: number, thresholds: ThresholdObj) => string
 };
 
@@ -74,14 +74,27 @@ type ToolPageProps = {
 
 type PropsType = MapPageProps | ToolPageProps;
 
+type DateValue = [ string, number ];
+
+type Tool = {
+  Daily: DateValue[],
+  '7 Day Avg': DateValue[]
+};
+
 type ToolData = {
-  gdd32: [string, number][],
-  gdd50: [string, number][]
+  gdd32: DateValue[],
+  gdd50: DateValue[],
+  anthracnose: Tool,
+  brownPatch: Tool,
+  dollarspot: Tool,
+  pythiumBlight: Tool,
+  heatStressIndex: Tool,
+  todayFromAcis: boolean
 };
 
 type UserLocation = {
   address: string,
-  lngLat: number[]
+  lngLat: [number, number]
 };
 
 
@@ -102,15 +115,14 @@ type UserLocation = {
 ///////////////////////////////////////////
 
 function App() {
-  const [gdd32, setGdd32] = useState<[string,number][]>([]);
-  const [gdd50, setGdd50] = useState<[string,number][]>([]);
+  const [toolData, setToolData] = useState<ToolData | null>(null);
   const [pastLocations, setPastLocations] = useState<UserLocation[]>(() => {
     const pastLocations = localStorage.getItem('pastLocations');
     if (pastLocations) {
       return JSON.parse(pastLocations);
     } else {
       return [
-        { address: '213 Warren Road, Ithaca, New York 14850, United States', lngLat: [-76.46754, 42.457975] },
+        { address: '213 Warren Road, Ithaca, New York', lngLat: [-76.46754, 42.457975] },
       ];
     }
   });
@@ -119,7 +131,7 @@ function App() {
     if (currentLocation) {
       return JSON.parse(currentLocation);
     } else {
-      return { address: '213 Warren Road, Ithaca, New York 14850, United States', lngLat: [-76.46754, 42.457975] };
+      return { address: '213 Warren Road, Ithaca, New York', lngLat: [-76.46754, 42.457975] };
     }
   });
   
@@ -135,22 +147,9 @@ function App() {
   
   useEffect(() => {
     (async () => {
-      const data: ToolData | null = await getToolData(currentLocation.lngLat);
+      const data = await getToolData(currentLocation.lngLat);
       console.log(data);
-
-      if (data) {
-        setGdd32(data.gdd32);
-        setGdd50(data.gdd50);
-      } else {
-        //////////////////////////////////
-        //////////////////////////////////
-        //////////////////////////////////
-        //////////////////////////////////
-        // Handle no data / errors!!!  ///
-        //////////////////////////////////
-        //////////////////////////////////
-        //////////////////////////////////
-      }
+      setToolData(data);
     })();
   }, [currentLocation]);
 
@@ -161,7 +160,7 @@ function App() {
     }
 
     if ('chart' in obj) {
-      return <ToolPage {...obj} data={obj.chart.data === 32 ? gdd32 : gdd50} />;
+      return <ToolPage {...obj} data={toolData === null ? toolData : toolData[obj.chart.data]} todayFromAcis={toolData === null ? false : toolData.todayFromAcis} />;
     }
 
     return <Box>{JSON.stringify(obj)}</Box>;
@@ -209,7 +208,7 @@ function App() {
       <Box component='main' sx={{
         boxSizing: 'border-box',
         padding: '20px',
-        minHeight: 'calc(100vh - 273px)',
+        minHeight: 'calc(100vh - 326px)',
         '@media (max-width: 862px)': {
           minHeight: 'calc(100vh - 294px)',
           padding: '20px 12px'

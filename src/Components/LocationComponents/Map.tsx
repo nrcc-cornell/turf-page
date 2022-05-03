@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 import { Box } from '@mui/material';
 
@@ -11,11 +11,12 @@ import Map, { Popup, ViewState } from 'react-map-gl';
 import Markers from './Markers';
 
 import { getLocation } from '../../Scripts/Data';
+import MapBar from './MapBar';
 
 
 type UserLocation = {
   address: string,
-  lngLat: number[]
+  lngLat: [number, number]
 };
 
 type PopupContent = UserLocation & {
@@ -29,6 +30,8 @@ type MapProps = {
   handleClose: () => void
 };
 
+const bounds = { south: 37.09, west: -82.7542 };
+
 
 
 export default function MapComp( props: MapProps) {
@@ -39,17 +42,24 @@ export default function MapComp( props: MapProps) {
     zoom: 12
   });
 
+  const mapRef = useRef<any | null>(null);
+
 
   const handlePanning = (view: ViewState) => {
-    if (view.latitude > 47.53 || view.latitude < 37.09) {
+    if (view.latitude > 47.53 || view.latitude < bounds.south) {
       view.latitude = viewState.latitude;
     }
 
-    if (view.longitude > -66.89 || view.longitude < -82.72) {
+    if (view.longitude > -66.89 || view.longitude < bounds.west) {
       view.longitude = viewState.longitude;
     }
 
-    setViewState(view);
+    setViewState(prev => {
+      return {
+        ...prev,
+        ...view
+      };
+    });
   };
 
   const handleMarkerClick = (e: mapboxgl.MapboxEvent<MouseEvent>, loc: UserLocation) => {
@@ -74,10 +84,19 @@ export default function MapComp( props: MapProps) {
   };
 
   const handleMapClick = async (e: mapboxgl.MapLayerMouseEvent) => {
-    const newLocation: UserLocation | false = await getLocation(e.lngLat.lng, e.lngLat.lat, token);
-
-    if (newLocation) {
-      props.handleChangeLocations('add', newLocation);
+    const lng = e.lngLat.lng;
+    const lat = e.lngLat.lat;
+    
+    if (lng >= bounds.west && lat >= bounds.south) {
+      const newLocation: UserLocation | false = await getLocation(lng, lat, token);
+  
+      if (newLocation && mapRef.current) {
+        props.handleChangeLocations('add', newLocation);
+        mapRef.current.flyTo({
+          center: newLocation.lngLat,
+          essential: true
+        });
+      }
     }
   };
 
@@ -89,8 +108,7 @@ export default function MapComp( props: MapProps) {
       position: 'relative'
     }}>
       <Map
-        {...viewState}
-        onMove={evt => handlePanning(evt.viewState)}
+        ref={mapRef}
         mapStyle='mapbox://styles/mapbox/satellite-streets-v11'
         boxZoom={false}
         dragRotate={false}
@@ -98,6 +116,7 @@ export default function MapComp( props: MapProps) {
         touchZoomRotate={false}
         doubleClickZoom={false}
         attributionControl={false}
+        onMove={evt => handlePanning(evt.viewState)}
         onClick={handleMapClick}
       >
         <Markers
@@ -108,7 +127,6 @@ export default function MapComp( props: MapProps) {
           onMarkerClick={handleMarkerClick}
           onMarkerRightClick={handleMarkerRightClick}
         />
-
         {
           popup && <Popup
             longitude={popup.lngLat[0]}
@@ -128,6 +146,13 @@ export default function MapComp( props: MapProps) {
           </Popup>
         }
       </Map>
+
+      <MapBar
+        token={token}
+        bounds={bounds}
+        handleChangeLocations={props.handleChangeLocations}
+        mapRef={mapRef}
+      />
     </Box>
   );
 }

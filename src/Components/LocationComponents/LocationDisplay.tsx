@@ -7,7 +7,7 @@ import LocationModal from './LocationModal';
 
 type UserLocation = {
   address: string,
-  lngLat: number[]
+  lngLat: [number,number]
 };
 
 type DisplayProps = {

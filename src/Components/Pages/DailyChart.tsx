@@ -21,21 +21,30 @@ type ThresholdObj = {
   high: number
 };
 
+type DateValue = [ string, number ];
+
+type Tool = {
+  Daily: DateValue[],
+  '7 Day Avg': DateValue[]
+};
+
 type ChartProps = {
   rows: Row[],
   ranges: string[][],
   title: string,
-  data: [string, number][],
-  colorizer: (val: number, thresholds: ThresholdObj) => string
+  data: [string, number][] | Tool | null,
+  colorizer: (val: number, thresholds: ThresholdObj) => string,
+  todayFromAcis: boolean
 };
 
 const DateSX = {
   height: '100%',
   width: '100%',
-  textAlign: 'center',
   boxSizing: 'border-box',
-  padding: '3px 2px',
-  fontSize: '14px'
+  fontSize: '14px',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center'
 };
 
 const HeaderSX = {
@@ -49,25 +58,164 @@ const HeaderSX = {
 };
 
 
-
-export default function DailyChart(props: ChartProps) {
-  const dates = props.data.map((arr, i) => <Box key={arr[0]} sx={{ ...DateSX, backgroundColor: i > 2 ? 'rgb(204,238,255)' : 'rgb(204,255,204)' }}>{arr[0]}</Box>);
-  
-  const cells = props.rows.map(rowInfo => {
+const constructCells = (data: [string, number][] | Tool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string): JSX.Element[][] => {
+  return rows.map(rowInfo => {
     const row = [<Box key={rowInfo.name} sx={HeaderSX}>{rowInfo.name}</Box>];
     
-    props.data.forEach((arr, i) => {
-      const backgroundColor = props.colorizer(arr[1], rowInfo.thresholds);
+    const d = data instanceof Array ? data : data[rowInfo.name as 'Daily' | '7 Day Avg'];
+
+    d.forEach((arr, i) => {
+      const backgroundColor = colorizer(arr[1], rowInfo.thresholds);
       row.push(<Box key={rowInfo.name + i} sx={{ backgroundColor, height: '100%', width: '100%' }} />);
     });
 
     return row;
   });
+};
 
+
+const constructDates = (data: [string, number][], todayIsObserved: boolean) => {
+  const todayIdx = todayIsObserved ? 3 : 2;
+  return data.map((arr, i) => <Box key={arr[0]} sx={{
+    ...DateSX,
+    backgroundColor: i > todayIdx ? 'rgb(204,238,255)' : 'rgb(204,255,204)'
+  }}>
+    <Box sx={{
+      width: 'fit-content',
+      '@media (max-width: 510px)': {
+        width: '20px'
+      }
+    }}>{arr[0]}</Box>
+  </Box>);
+};
+
+
+const renderChart = (data: [string, number][] | Tool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string, todayFromAcis: boolean) => {
+  const dates = constructDates(data instanceof Array ? data : data['Daily'], todayFromAcis );
+  const cells = constructCells(data, rows, colorizer);
+
+  const lineSX = { width: '40px', height: '2px', backgroundColor: 'rgb(120,120,120)', position: 'relative' };
   
+  const arrowSX = {
+    content: '""',
+    height: 6,
+    width: 6,
+    position: 'absolute',
+    top: -3,
+    transform: 'rotate(45deg)'
+  };
+
+  const beforeSX = {
+    '&::before': {
+      ...arrowSX,
+      borderLeft: '2px solid rgb(120,120,120)',
+      borderBottom: '2px solid rgb(120,120,120)',
+      left: 0
+    }
+  };
+
+  const afterSX = {
+    '&::after': {
+      ...arrowSX,
+      borderRight: '2px solid rgb(120,120,120)',
+      borderTop: '2px solid rgb(120,120,120)',
+      right: 0
+    }
+  };
+
+  return (
+    <>
+      <Box sx={{
+        display: 'flex',
+        position: 'relative',
+        gap: '15px',
+        alignItems: 'center',
+        paddingLeft: `calc((100% - 89px) * ${todayFromAcis ? 4/9 : 3/9} - 32px)`,
+        paddingBottom: '5px',
+        marginTop: '8px',
+        width: 'fit-content'
+      }}>
+        <Box sx={{ ...lineSX, ...beforeSX }}></Box>
+        <Typography variant='underChart'>Observed</Typography>
+        <Box sx={{
+          backgroundColor: 'blue',
+          width: '3px',
+          height: `${(cells.length) * 20 + 60 + (cells.length)}px`,
+          position: 'absolute',
+          top: -3,
+          // left: `calc(82px + ((100% - 89px) * (1/3)))`
+          right: '107.22px',
+          zIndex: 1
+        }}></Box>
+        <Typography variant='underChart'>Forecast</Typography>
+        <Box sx={{ ...lineSX, ...afterSX }}></Box>
+      </Box>
+
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: '80px repeat(9, auto)',
+        gridTemplateRows: `38px repeat(${cells.length}, 20px)`,
+        justifyItems: 'center',
+        alignItems: 'center',
+        gap: '1px',
+        backgroundColor: 'black',
+        boxSizing: 'border-box',
+        border: '1px solid black',
+        position: 'relative',
+        margin: '0px auto 8px auto'
+      }}>
+        <Box sx={{ ...HeaderSX, padding: '3px 2px 3px 28px' }}>As of 8am on</Box>
+        {dates}
+
+        {cells}
+      </Box>
+      
+      
+    </>
+  );
+};
+
+const renderLoading = (numRows: number) => {
+  return (
+    <Box sx={{
+      margin: '8px auto',
+      height: 2 + numRows + ((numRows + 1) * 20),
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'flex-end',
+      color: 'rgb(187,187,187)'
+    }}><CircularProgress color='inherit' /></Box>
+  );
+};
+
+const renderNoData = (numRows: number) => {
+  return (
+    <Box sx={{
+      margin: '8px auto',
+      height: 2 + numRows + ((numRows + 1) * 20),
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'flex-end',
+      color: 'rgb(187,187,187)',
+      fontStyle: 'italic'
+    }}>No Data to Display</Box>
+  );
+};
+
+
+
+export default function DailyChart(props: ChartProps) {
   return (
     <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
       <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>
+
+      
+
+      {!props.data ? renderLoading(props.rows.length) :
+        (props.data instanceof Array ?
+          props.data.length === 0 ? renderNoData(props.rows.length) : renderChart(props.data, props.rows, props.colorizer, props.todayFromAcis)
+          :
+          props.data['Daily'].length === 0 ? renderNoData(props.rows.length) : renderChart(props.data, props.rows, props.colorizer, props.todayFromAcis))}
 
       <Box sx={{
         display: 'flex',
@@ -89,50 +237,6 @@ export default function DailyChart(props: ChartProps) {
           );
         })}
       </Box>
-
-      {props.data.length === 0 ?
-        <Box sx={{
-          margin: '8px auto',
-          height: 2 + (cells.length) + ((cells.length + 1) * 20),
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-end',
-          color: 'rgb(187,187,187)'
-        }}><CircularProgress color='inherit' /></Box>
-        :
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: '80px repeat(9, auto)',
-          gridTemplateRows: `repeat(${cells.length + 1}, 20px)`,
-          '@media (max-width: 550px)': {
-            gridTemplateRows: `repeat(${cells.length}, 20px) 38px`
-          },
-          justifyItems: 'center',
-          alignItems: 'center',
-          gap: '1px',
-          backgroundColor: 'black',
-          boxSizing: 'border-box',
-          border: '1px solid black',
-          position: 'relative',
-          margin: '8px auto'
-        }}>
-          {cells}
-
-          <Box sx={HeaderSX}>Dates</Box>
-          {dates}
-
-          <Box sx={{
-            backgroundColor: 'blue',
-            width: '3px',
-            height: `${(cells.length + 1) * 20 + (cells.length)}px`,
-            '@media (max-width: 550px)': {
-              height: `${(cells.length) * 20 + 38 + (cells.length)}px`
-            },
-            position: 'absolute',
-            left: 'calc(80px + ((100% - 89px) * (1/3)))'
-          }}></Box>
-        </Box>
-      }
     </Box>
   );
 }

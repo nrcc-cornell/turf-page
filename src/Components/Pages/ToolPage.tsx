@@ -22,6 +22,13 @@ type ThresholdObj = {
   high: number
 };
 
+type DateValue = [ string, number ];
+
+type Tool = {
+  Daily: DateValue[],
+  '7 Day Avg': DateValue[]
+};
+
 type PageProps = {
   text: {
     description: string[],
@@ -32,7 +39,7 @@ type PageProps = {
     rows: Row[],
     ranges: string[][],
     title: string,
-    data: number,
+    data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStressIndex',
     colorizer: (val: number, thresholds: ThresholdObj) => string
   },
   maps: {
@@ -44,7 +51,8 @@ type PageProps = {
       date: string
     }[]
   }[],
-  data: [string, number][]
+  data: [string, number][] | Tool | null,
+  todayFromAcis: boolean
 };
 
 
@@ -55,13 +63,13 @@ export default function ToolPage(props: PageProps) {
       padding: '10px',
       boxSizing: 'border-box',
       width: '90%',
-      maxWidth: 900,
+      maxWidth: 800,
       margin: '0 auto',
       '@media (min-width: 1465px)': {
-        maxWidth: 'none'
+        maxWidth: 1475
       }
     }}>
-      <DailyChart {...props.chart} data={props.data} />
+      <DailyChart {...props.chart} data={props.data} todayFromAcis={props.todayFromAcis} />
       
       <StyledDivider />
 

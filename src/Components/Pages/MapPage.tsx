@@ -19,7 +19,7 @@ type MapPageProps = {
 export default function MapPage(props: MapPageProps) {
   const [loading, setLoading] = useState(true);
 
-  const loaded = () => setLoading(!loading);
+  const loaded = () => setLoading(false);
 
   return (
     <Card variant='outlined' sx={{

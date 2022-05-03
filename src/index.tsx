@@ -18,6 +18,7 @@ declare module '@mui/material/Typography' {
     footerCopyright: true;
     links: true;
     dayMapDate: true;
+    underChart: true;
   }
 }
 
@@ -29,6 +30,7 @@ interface ExtendedTypographyOptions extends TypographyOptions {
   footerCopyright: React.CSSProperties;
   links: React.CSSProperties;
   dayMapDate: React.CSSProperties;
+  underChart: React.CSSProperties;
 }
 
 
@@ -131,6 +133,10 @@ const theme = createTheme({
     },
     dayMapDate: {
       fontSize: '12px'
+    },
+    underChart: {
+      fontSize: '12px',
+      color: 'rgb(120,120,120)'
     }
   } as ExtendedTypographyOptions
 } as ThemeOptions);

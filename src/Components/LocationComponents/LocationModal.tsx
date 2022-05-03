@@ -5,10 +5,9 @@ import {
   Modal,
   Fade,
   Typography,
-  Icon,
   IconButton
 } from '@mui/material';
-import { Close, WbSunny } from '@mui/icons-material';
+import { Close } from '@mui/icons-material';
 
 import Map from './Map';
 import StyledTooltip from './StyledTooltip';
@@ -34,7 +33,7 @@ const style = {
 
 type UserLocation = {
   address: string,
-  lngLat: number[]
+  lngLat: [number,number]
 };
 
 type ModalProps = {
@@ -120,11 +119,12 @@ export default function LocationModal(props: ModalProps) {
 
             <IconButton onClick={handleClose} sx={{
               position: 'absolute',
-              top: 3,
-              right: 3,
-              backgroundColor: 'white',
+              top: 8,
+              right: 5,
+              backgroundColor: 'rgb(240,240,240)',
+              zIndex: 3,
               '&:hover': {
-                backgroundColor: 'rgb(230,230,230)'
+                backgroundColor: 'rgb(220,220,220)'
               }
             }}>
               <Close sx={{ fontSize: '13px', color: 'black' }} />
