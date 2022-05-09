@@ -40,37 +40,24 @@ type ChartProps = {
   todayFromAcis: boolean
 };
 
-const dateSX = (i: number) => ({
-  backgroundColor: 'white',
+const DateSX = {
   height: '100%',
   width: '100%',
   boxSizing: 'border-box',
   fontSize: '14px',
   display: 'flex',
   justifyContent: 'center',
-  alignItems: 'center',
-  textAlign: 'center',
-  padding: '0px 2px',
-  '@media (max-width: 593px)': {
-    borderLeft: i === 0 ? 'none' : '1px solid rgb(240,240,240)'
-  },
-  '@media (max-width: 380px)': {
-    fontSize: '12px'
-  }
-});
+  alignItems: 'center'
+};
 
 const HeaderSX = {
   backgroundColor: 'white',
   height: '100%',
   width: '100%',
-  padding: '5px 2px',
-  textAlign: 'center',
+  padding: '3px 2px',
+  textAlign: 'right',
   boxSizing: 'border-box',
-  fontSize: '14px',
-  borderRight: '1px solid rgb(240,240,240)',
-  '@media (max-width: 380px)': {
-    fontSize: '12px'
-  }
+  fontSize: '14px'
 };
 
 
@@ -83,27 +70,7 @@ const constructCells = (data: [string, number][] | Tool | HSTool, rows: Row[], c
 
     d.forEach((arr: number[], i: number) => {
       const backgroundColor = colorizer(arr[1], rowInfo.thresholds);
-      row.push(
-        <Box key={rowInfo.name + i} sx={{
-          height: '100%',
-          width: '100%',
-          backgroundColor: 'white',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          <Box sx={{
-            backgroundColor,
-            height: 15,
-            width: 15,
-            borderRadius: '50%',
-            '@media (max-width: 380px)': {
-              height: 11,
-              width: 11
-            }            
-          }} />
-        </Box>
-      );
+      row.push(<Box key={rowInfo.name + i} sx={{ backgroundColor, height: '100%', width: '100%' }} />);
     });
 
     return row;
@@ -111,8 +78,18 @@ const constructCells = (data: [string, number][] | Tool | HSTool, rows: Row[], c
 };
 
 
-const constructDates = (data: [string, number][]) => {
-  return data.map((arr, i) => <Box key={arr[0]} sx={dateSX(i)}>
+const constructDates = (data: [string, number][], todayIsObserved: boolean) => {
+  let todayIdx = 0;
+  if (data.length === 9) {
+    todayIdx = todayIsObserved ? 3 : 2;
+  } else {
+    todayIdx = todayIsObserved ? 4 : 3;
+  }
+
+  return data.map((arr, i) => <Box key={arr[0]} sx={{
+    ...DateSX,
+    backgroundColor: i > todayIdx ? 'rgb(204,238,255)' : 'rgb(204,255,204)'
+  }}>
     <Box sx={{
       width: 'fit-content',
       '@media (max-width: 510px)': {
@@ -125,10 +102,10 @@ const constructDates = (data: [string, number][]) => {
 
 const renderChart = (data: [string, number][] | Tool | HSTool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string, todayFromAcis: boolean) => {
   const sample = data instanceof Array ? data : data['Daily'];
-  const dates = constructDates(sample);
+  const dates = constructDates(sample, todayFromAcis );
   const cells = constructCells(data, rows, colorizer);
 
-  const lineSX = { width: '40px', height: '2px', backgroundColor: 'rgb(200,200,200)', position: 'relative' };
+  const lineSX = { width: '40px', height: '2px', backgroundColor: 'rgb(120,120,120)', position: 'relative' };
   
   const arrowSX = {
     content: '""',
@@ -142,8 +119,8 @@ const renderChart = (data: [string, number][] | Tool | HSTool, rows: Row[], colo
   const beforeSX = {
     '&::before': {
       ...arrowSX,
-      borderLeft: '2px solid rgb(200,200,200)',
-      borderBottom: '2px solid rgb(200,200,200)',
+      borderLeft: '2px solid rgb(120,120,120)',
+      borderBottom: '2px solid rgb(120,120,120)',
       left: 0
     }
   };
@@ -151,20 +128,18 @@ const renderChart = (data: [string, number][] | Tool | HSTool, rows: Row[], colo
   const afterSX = {
     '&::after': {
       ...arrowSX,
-      borderRight: '2px solid rgb(200,200,200)',
-      borderTop: '2px solid rgb(200,200,200)',
+      borderRight: '2px solid rgb(120,120,120)',
+      borderTop: '2px solid rgb(120,120,120)',
       right: 0
     }
   };
 
-  let smallMLeft, mLeft;
+  let pLeft;
   if (sample.length === 9) {
-    mLeft = `calc((100% - 89px) * ${todayFromAcis ? 4/9 : 3/9} - 33px)`;
-    smallMLeft = `calc((100% - 66px) * ${todayFromAcis ? 4/9 : 3/9} - 49px)`;
+    pLeft = `calc((100% - 89px) * ${todayFromAcis ? 4/9 : 3/9} - 32px)`;
   } else {
     // Might always be 4/10
-    mLeft = `calc((100% - 89px) * ${todayFromAcis ? 5/10 : 4/10} - 31px)`;
-    smallMLeft = `calc((100% - 66px) * ${todayFromAcis ? 5/10 : 4/10} - 48px)`;
+    pLeft = `calc((100% - 89px) * ${todayFromAcis ? 5/10 : 4/10} - 32px)`;
   }
 
   return (
@@ -172,25 +147,22 @@ const renderChart = (data: [string, number][] | Tool | HSTool, rows: Row[], colo
       <Box sx={{
         display: 'flex',
         position: 'relative',
-        justifyContent: 'space-between',
+        gap: '15px',
         alignItems: 'center',
-        marginLeft: mLeft,
+        paddingLeft: pLeft,
+        paddingBottom: '5px',
         marginTop: '8px',
-        width: 225,
-        top: 2,
-        '@media (max-width: 380px)': {
-          marginLeft: smallMLeft,
-        }
+        width: 'fit-content'
       }}>
         <Box sx={{ ...lineSX, ...beforeSX }}></Box>
         <Typography variant='underChart'>Observed</Typography>
         <Box sx={{
-          backgroundColor: 'rgb(225,225,225)',
+          backgroundColor: 'blue',
           width: '3px',
-          height: `${(cells.length) * 25 + 50 + (cells.length)}px`,
+          height: `${(cells.length) * 20 + 60 + (cells.length)}px`,
           position: 'absolute',
           top: -3,
-          left: '114px',
+          right: '107.22px',
           zIndex: 1
         }}></Box>
         <Typography variant='underChart'>Forecast</Typography>
@@ -200,23 +172,23 @@ const renderChart = (data: [string, number][] | Tool | HSTool, rows: Row[], colo
       <Box sx={{
         display: 'grid',
         gridTemplateColumns: `80px repeat(${sample.length}, auto)`,
-        gridTemplateRows: `38px repeat(${cells.length}, 25px)`,
-        rowGap: '1px',
-        backgroundColor: 'rgb(240,240,240)',
+        gridTemplateRows: `38px repeat(${cells.length}, 20px)`,
         justifyItems: 'center',
         alignItems: 'center',
+        gap: '1px',
+        backgroundColor: 'black',
         boxSizing: 'border-box',
+        border: '1px solid black',
         position: 'relative',
-        margin: '0px auto 8px auto',
-        '@media (max-width: 380px)': {
-          gridTemplateColumns: `66px repeat(${sample.length}, auto)`,
-        }
+        margin: '0px auto 8px auto'
       }}>
-        <Box sx={{ ...HeaderSX, padding: '5px 12px'}}>As of 8am on</Box>
+        <Box sx={{ ...HeaderSX, padding: '3px 2px 3px 28px' }}>As of 8am on</Box>
         {dates}
 
         {cells}
       </Box>
+      
+      
     </>
   );
 };
@@ -266,47 +238,22 @@ export default function DailyChart(props: ChartProps) {
       <Box sx={{
         display: 'flex',
         width: '100%',
+        gap: '8px',
         justifyContent: 'center',
-        marginTop: '22px',
-        '@media (max-width: 380px)': {
-          marginTop: '12px',
-        }
+        marginTop: '12px'
       }}>
-        <Box sx={{
-          width: 'fit-content',
-          display: 'flex',
-          gap: '12px',
-          border: '1px solid rgb(240,240,240)',
-          borderRadius: '5px',
-          padding: '6px 12px'
-        }}>
-          {props.ranges.map(arr => {
-            return (
-              <Box key={arr[0]} sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '3px'
-              }}>
-                <Box sx={{
-                  backgroundColor: arr[1],
-                  height: 15,
-                  width: 15,
-                  borderRadius: 8,
-                  '@media (max-width: 380px)': {
-                    height: 11,
-                    width: 11,
-                  }
-                }}></Box>
-                <Box sx={{
-                  fontSize: '16px',
-                  '@media (max-width: 380px)': {
-                    fontSize: '12px',
-                  }
-                }}>{arr[0]}</Box>
-              </Box>
-            );
-          })}
-        </Box>
+        {props.ranges.map(arr => {
+          return (
+            <Box key={arr[0]} sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px'
+            }}>
+              <Box sx={{ backgroundColor: arr[1], height: 15, width: 15, borderRadius: 8 }}></Box>
+              <Box>{arr[0]}</Box>
+            </Box>
+          );
+        })}
       </Box>
     </Box>
   );

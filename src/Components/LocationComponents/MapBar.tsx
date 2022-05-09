@@ -30,7 +30,7 @@ export default function MapBar(props: MapBarProps ) {
   const [address, setAddress] = useState('');
 
   const handleSearch = (): void => {
-    fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address.replaceAll(' ', '%20')}.json?proximity=-75.37,43.21&country=US&types=postcode,place,address&access_token=${props.token}`, { method: 'GET' })
+    fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address.split(' ').join('%20')}.json?proximity=-75.37,43.21&country=US&types=postcode,place,address&access_token=${props.token}`, { method: 'GET' })
       .then(response => response.json())
       .then(jData => {
         const newLocation = jData.features.reduce((acc: UserLocation | false, feat: any) => {
@@ -86,7 +86,7 @@ export default function MapBar(props: MapBarProps ) {
       left: 0,
       right: 0,
       height: 45,
-      zIndex: 2
+      zIndex: 4
     }}>
       <TextField
         size='small'

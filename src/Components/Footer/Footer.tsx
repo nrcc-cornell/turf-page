@@ -6,23 +6,27 @@ type ImgOptions = {
   href: string;
   src: string;
   alt: string;
-  width: string;
+  width: number;
   rounded?: boolean;
 }
 
 function ImgBox(obj: ImgOptions) {
   return (
     <Box sx={{
-      width: obj.width,
+      width: obj.width + 'px',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
+      '@media (max-width: 450px)': {
+        width: obj.width * 0.7
+      }
     }}>
       <a href={obj.href} rel='noopener noreferrer' target='_blank'>
-        <img
+        <Box
+          component='img'
           src={`${process.env.PUBLIC_URL}/Assets/${obj.src}`}
           alt={obj.alt}
-          style={{
+          sx={{
             backgroundColor: 'white',
             padding: '1px',
             width: '100%',
@@ -39,17 +43,17 @@ const imgs: ImgOptions[] = [{
   href: 'https://turf.cals.cornell.edu/',
   alt: 'Turfgrass logo',
   src: 'CUTurfLogo.jpg',
-  width: '200px'
+  width: 200
 },{
   href: 'https://www.nrcc.cornell.edu',
   alt: 'NRCC Logo',
   src: 'nrcc-logo-square.png',
-  width: '65px'
+  width: 65
 },{
   href: 'https://www.ncei.noaa.gov/regional/regional-climate-centers',
   alt: 'RCC Logo',
   src: 'noaa-rcc-logo.png',
-  width: '65px',
+  width: 65,
   rounded: true
 }];
 
@@ -73,7 +77,10 @@ export default function Footer() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        height: '100%'
+        height: '100%',
+        '@media (max-width: 450px)': {
+          width: 108
+        }
       }}>
         <Box sx={{
           display: 'flex',
@@ -98,7 +105,10 @@ export default function Footer() {
         <Box sx={{
           display: 'flex',
           justifyContent: 'space-around',
-          width: 200
+          width: 200,
+          '@media (max-width: 450px)': {
+            width: 140
+          }
         }}>
           {ImgBox(imgs[1])}
           {ImgBox(imgs[2])}

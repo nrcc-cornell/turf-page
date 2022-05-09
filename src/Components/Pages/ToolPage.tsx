@@ -24,8 +24,11 @@ type ThresholdObj = {
 
 type DateValue = [ string, number ];
 
-type Tool = {
-  Daily: DateValue[],
+type HSTool = {
+  Daily: DateValue[]
+};
+
+type Tool = HSTool & {
   '7 Day Avg': DateValue[]
 };
 
@@ -39,7 +42,7 @@ type PageProps = {
     rows: Row[],
     ranges: string[][],
     title: string,
-    data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStressIndex',
+    data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress',
     colorizer: (val: number, thresholds: ThresholdObj) => string
   },
   maps: {
@@ -51,13 +54,15 @@ type PageProps = {
       date: string
     }[]
   }[],
-  data: [string, number][] | Tool | null,
+  data: [string, number][] | Tool | HSTool | null,
   todayFromAcis: boolean
 };
 
 
 
 export default function ToolPage(props: PageProps) {
+  const isDoubleMap = props.data instanceof Array;
+  
   return (
     <Card variant='outlined' sx={{
       padding: '10px',
@@ -66,7 +71,12 @@ export default function ToolPage(props: PageProps) {
       maxWidth: 800,
       margin: '0 auto',
       '@media (min-width: 1465px)': {
-        maxWidth: 1475
+        maxWidth: isDoubleMap ? 1475 : 800
+      },
+      '@media (max-width: 430px)': {
+        width: '100%',
+        padding: '10px 0px',
+        border: 'none'
       }
     }}>
       <DailyChart {...props.chart} data={props.data} todayFromAcis={props.todayFromAcis} />

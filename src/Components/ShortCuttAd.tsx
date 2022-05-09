@@ -19,8 +19,9 @@ export default function ShortCuttAd() {
   return (
     <Box sx={{
       position: 'fixed',
-      top: 200,
+      bottom: 120,
       right: 0,
+      zIndex: 3
     }}>
       <Box
         onClick={() => setShow(true)}
@@ -29,7 +30,7 @@ export default function ShortCuttAd() {
           top: 0,
           right: 0,
           padding: '20px 0px 20px 5px',
-          backgroundColor: 'rgb(240,240,240)',
+          backgroundColor: 'rgb(242,249,188)',
           border: '1px solid rgb(210,210,210)',
           borderRight: 'none',
           borderRadius: '5px 0px 0px 5px',
@@ -45,7 +46,7 @@ export default function ShortCuttAd() {
         onMouseLeave={() => setShow(false)}
         sx={{
           position: 'absolute',
-          top: 0,
+          bottom: -60,
           right: 0,
           transform: show ? 'translateX(0px)' : 'translateX(300px)',
           transitionDuration: '500ms',

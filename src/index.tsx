@@ -19,6 +19,8 @@ declare module '@mui/material/Typography' {
     links: true;
     dayMapDate: true;
     underChart: true;
+    mapPage: true;
+    homeMap: true;
   }
 }
 
@@ -31,19 +33,12 @@ interface ExtendedTypographyOptions extends TypographyOptions {
   links: React.CSSProperties;
   dayMapDate: React.CSSProperties;
   underChart: React.CSSProperties;
+  mapPage: React.CSSProperties;
+  homeMap: React.CSSProperties;
 }
 
 
 const theme = createTheme({
-  // breakpoints: {
-  //   values: {
-  //     xs: 410,
-  //     sm: 600,
-  //     md: 900,
-  //     lg: 1200,
-  //     xl: 1536,
-  //   },
-  // },
   'palette': {
     'primary': {
       'main': '#1976d2',
@@ -76,6 +71,12 @@ const theme = createTheme({
       fontSize: '1.7rem',
       fontFamily: '"Raleway", "Helvetica Neue", "Helvetica", "Roboto", "Arial", "sans-serif"',
     },
+    h5: {
+      fontSize: '1.5rem',
+      ['@media screen and (max-width: 380px)']: {
+        fontSize: '1.35rem'
+      }
+    },
     subtitle1: {
       fontSize: '1.4rem',
       fontStyle: 'italic',
@@ -86,8 +87,11 @@ const theme = createTheme({
       fontFamily: '"EB Garamond", "Arial", "serif"',
       fontWeight: 600,
       fontSize: '2rem',
-      ['@media screen and (max-width: 475px)']: {
+      ['@media screen and (max-width: 510px)']: {
         fontSize: '1.75rem'
+      },
+      ['@media screen and (max-width: 400px)']: {
+        fontSize: '1.35rem'
       }
     },
     headerSub: {
@@ -98,8 +102,11 @@ const theme = createTheme({
       ['@media screen and (max-width: 550px)']: {
         fontSize: '1rem'
       },
-      ['@media screen and (max-width: 475px)']: {
+      ['@media screen and (max-width: 510px)']: {
         fontSize: '0.9rem'
+      },
+      ['@media screen and (max-width: 400px)']: {
+        fontSize: '0.7rem'
       }
     },
     headerSecondary: {
@@ -107,8 +114,11 @@ const theme = createTheme({
       fontFamily: '"Roboto", "Arial", "sans-serif"',
       fontVariant: 'small-caps',
       color: 'white',
-      ['@media screen and (max-width: 475px)']: {
+      ['@media screen and (max-width: 510px)']: {
         fontSize: '0.9rem'
+      },
+      ['@media screen and (max-width: 400px)']: {
+        fontSize: '0.7rem'
       }
     },
     footerContact: {
@@ -124,6 +134,9 @@ const theme = createTheme({
       fontSize: '14px',
       ['@media screen and (max-width: 720px)']: {
         fontSize: '12px'
+      },
+      ['@media screen and (max-width: 450px)']: {
+        fontSize: '10px'
       }
     },
     links: {
@@ -136,7 +149,17 @@ const theme = createTheme({
     },
     underChart: {
       fontSize: '12px',
-      color: 'rgb(120,120,120)'
+      color: 'rgb(180,180,180)'
+    },
+    mapPage: {
+      '@media (max-width: 400px)': {
+        fontSize: '14px'
+      }
+    },
+    homeMap: {
+      fontSize: '16px',
+      textAlign: 'center',
+      marginBottom: '10px',
     }
   } as ExtendedTypographyOptions
 } as ThemeOptions);

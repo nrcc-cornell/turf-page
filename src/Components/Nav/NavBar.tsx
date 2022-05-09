@@ -51,7 +51,7 @@ type GroupProp = {
 export default function NavBar({ group }: GroupProp) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
-  const hyphenName = group.name.replaceAll(' ', '-');
+  const hyphenName = group.name.split(' ').join('-');
   const navigate = useNavigate();
   const location = useLocation();
   const isActiveGroup = location.pathname.split('/')[1] === group.base;
@@ -107,6 +107,7 @@ export default function NavBar({ group }: GroupProp) {
         onMouseLeave={handleClose}
         placement='bottom'
         transition
+        sx={{ zIndex: 3 }}
       >
         {({ TransitionProps }) => (
           <Grow

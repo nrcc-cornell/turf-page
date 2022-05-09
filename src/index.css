@@ -8,7 +8,7 @@ h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
 del, dfn, em, img, ins, kbd, q, s, samp,
 small, strike, strong, tt, var,
-b, u, center,
+u, center,
 dl, dt, dd, ol, ul, li,
 fieldset, form, label, legend,
 table, caption, tbody, tfoot, thead, tr, th, td,
@@ -132,4 +132,47 @@ code {
   height: 40px;
   width: 20px;
   background-image: url('./Components/LocationComponents/pin-red.svg');
+}
+
+.aFormula, .pFormula {
+  font-size: 14px;
+  width: fit-content;
+  font-style: italic;
+  margin: 0;
+  margin-left: 20px;
+}
+
+@media only screen and (max-width: 745px) {
+  .aFormula {
+    font-size: 13px;
+  }
+}
+
+@media only screen and (max-width: 616px) {
+  .aFormula {
+    width: 243px;
+    margin: 0 auto;
+  }
+
+  .pFormula {
+    width: fit-content;
+    margin: 0;
+    margin-left: 20px;
+  }
+}
+
+@media only screen and (max-width: 390px) {
+  .pFormula {
+    width: 163px;
+    margin: 0 auto;
+    text-align: center;
+  }
+}
+
+@media only screen and (max-width: 380px) {
+  .aFormula {
+    width: 200px;
+    margin: 0 auto;
+    text-align: center;
+  }
 }

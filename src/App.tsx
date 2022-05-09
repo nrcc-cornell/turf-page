@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 import { Box } from '@mui/material';
 
@@ -9,13 +9,17 @@ import {
   Nav,
   MapPage,
   ToolPage,
+  GDDPage,
   ShortCuttAd,
-  LocationDisplay
+  LocationDisplay,
+  Home
 } from './Components';
 
-import AppRouteInfo from './AppRouteInfo';
+import { AppRouteInfo } from './AppRouteInfo';
 
 import { getToolData } from './Scripts/Data';
+import MultiMapPage from './Components/Pages/MultiMapPage';
+import StyledCard from './Components/Pages/StyledCard';
 
 type Thumb = {
   fullSizeUrl: string,
@@ -33,6 +37,15 @@ type MapPageProps = {
   url: string,
   alt: string,
   description: string[]
+};
+
+type MultiMapPageProps = MapPageProps & {
+  title: string
+};
+
+type GDDPageProps = {
+  data: 'gdd32' | 'gdd50',
+  maps: MapPageProps[]
 };
 
 type TextProps = {
@@ -62,7 +75,7 @@ type ChartProps = {
   rows: Row[],
   ranges: string[][],
   title: string,
-  data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStressIndex',
+  data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress',
   colorizer: (val: number, thresholds: ThresholdObj) => string
 };
 
@@ -72,12 +85,15 @@ type ToolPageProps = {
   maps: MapThumbs[]
 };
 
-type PropsType = MapPageProps | ToolPageProps;
+type PropsType = GDDPageProps | MultiMapPageProps[] | MapPageProps | ToolPageProps;
 
 type DateValue = [ string, number ];
 
-type Tool = {
-  Daily: DateValue[],
+type HSTool = {
+  Daily: DateValue[]
+};
+
+type Tool = HSTool & {
   '7 Day Avg': DateValue[]
 };
 
@@ -88,7 +104,7 @@ type ToolData = {
   brownPatch: Tool,
   dollarspot: Tool,
   pythiumBlight: Tool,
-  heatStressIndex: Tool,
+  heatStress: HSTool,
   todayFromAcis: boolean
 };
 
@@ -98,21 +114,6 @@ type UserLocation = {
 };
 
 
-
-
-
-///////////////////////////////////////////
-///////////////////////////////////////////
-// const lngLat = [-75.77959, 43.72207]; // Near Watertown
-// const lngLat = [-76.46754, 42.457975]; // Ithaca
-
-// 213 Warren Road, Ithaca, New York 14850, United States
-// [
-//   0:-76.46754
-//   1:42.457975
-// ]
-///////////////////////////////////////////
-///////////////////////////////////////////
 
 function App() {
   const [toolData, setToolData] = useState<ToolData | null>(null);
@@ -136,34 +137,45 @@ function App() {
   });
   
   const goTo = useNavigate();
+  const reqPage = useLocation().pathname;
   
   
   useEffect(() => {
-    const lastPage = localStorage.getItem('lastPage');
-    if (lastPage) {
-      goTo(lastPage);
+    if (reqPage === '/') {
+      const lastPage = localStorage.getItem('lastPage');
+      if (lastPage) {
+        goTo(lastPage);
+      }
+    } else {
+      localStorage.setItem('lastPage', reqPage);
     }
   }, []);
-  
+
   useEffect(() => {
     (async () => {
       const data = await getToolData(currentLocation.lngLat);
-      console.log(data);
       setToolData(data);
     })();
   }, [currentLocation]);
 
-  
-  const renderPage = (obj: PropsType) => {    
-    if ('url' in obj) {
-      return <MapPage {...obj} />;
+  const renderPage = (info: PropsType) => {    
+    if (info instanceof Array) {
+      return <StyledCard variant='outlined'><MultiMapPage maps={info} /></StyledCard>;
+    }
+    
+    if ('url' in info) {
+      return <MapPage {...info} />;
+    }
+    
+    if ('chart' in info) {
+      return <ToolPage {...info} data={toolData === null ? toolData : toolData[info.chart.data]} todayFromAcis={toolData === null ? false : toolData.todayFromAcis} />;
     }
 
-    if ('chart' in obj) {
-      return <ToolPage {...obj} data={toolData === null ? toolData : toolData[obj.chart.data]} todayFromAcis={toolData === null ? false : toolData.todayFromAcis} />;
+    if ('maps' in info) {
+      return <GDDPage {...info} data={toolData === null ? toolData : toolData[info.data]} base={info.data.slice(3)} todayFromAcis={toolData === null ? false : toolData.todayFromAcis}/>;
     }
 
-    return <Box>{JSON.stringify(obj)}</Box>;
+    return <Box>{JSON.stringify(info)}</Box>;
   };
 
   const handleChangeLocations = (action: 'add' | 'remove' | 'change', location: UserLocation): void => {
@@ -192,7 +204,7 @@ function App() {
 
   return (
     <Box sx={{
-      minWidth: 400,
+      minWidth: 320,
       position: 'relative'
     }}>
       <Header />
@@ -208,20 +220,23 @@ function App() {
       <Box component='main' sx={{
         boxSizing: 'border-box',
         padding: '20px',
+        width: '100%',
         minHeight: 'calc(100vh - 326px)',
         '@media (max-width: 862px)': {
-          minHeight: 'calc(100vh - 294px)',
           padding: '20px 12px'
         },
+        '@media (max-width: 847px)': {
+          minHeight: 'calc(100vh - 347px)'
+        },
         '@media (max-width: 639px)': {
-          minHeight: 'calc(100vh - 286px)',
+          minHeight: 'calc(100vh - 293px)',
           padding: '20px 6px'
         }
       }}>
         <Routes>
           <Route
             path='/'
-            element={<div>Home</div>}
+            element={<Home />}
           />
           
           {AppRouteInfo.map(routeInfo => 

@@ -5,6 +5,7 @@ import {
   Typography,
   Box
 } from '@mui/material';
+import StyledDivider from './StyledDivider';
 
 type TextProps = {
   titlePart: string,
@@ -27,16 +28,17 @@ const TitleSX = {
 
 export default function TextContent(props: TextProps) {
   const renderText = (arr: string[]) => {
-    return arr.map((text, i) => <Typography key={i} variant='body1' sx={{ textAlign: 'justify', lineHeight: '1.2' }} dangerouslySetInnerHTML={{__html: text}}></Typography>);
+    return arr.map((text, i) => <Typography key={i} variant='mapPage' sx={{ textAlign: 'justify', lineHeight: '1.2' }} dangerouslySetInnerHTML={{__html: text}}></Typography>);
   };
   
   return (
     <CardContent sx={{ maxWidth: 700, margin: '0 auto' }}>
-      <Typography variant='h5' sx={TitleSX}>About {props.titlePart}</Typography>
+      <Typography variant='h5' sx={TitleSX}>{props.titlePart}</Typography>
       <Box sx={BoxSX}>{props.description && renderText(props.description)}</Box>
 
       {'references' in props &&
         <>
+          <StyledDivider />
           <Typography variant='h5' sx={TitleSX}>References</Typography>
           <Box sx={BoxSX}>{props?.references && renderText(props.references)}</Box>
         </>

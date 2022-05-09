@@ -3,6 +3,8 @@ import Footer from './Footer/Footer';
 import Nav from './Nav/Nav';
 import MapPage from './Pages/MapPage';
 import ToolPage from './Pages/ToolPage';
+import GDDPage from './Pages/GDDPage';
+import Home from './Pages/Home';
 
 import ShortCuttAd from './ShortCuttAd';
 
@@ -15,6 +17,8 @@ export {
   Nav,
   MapPage,
   ToolPage,
+  GDDPage,
   ShortCuttAd,
-  LocationDisplay
+  LocationDisplay,
+  Home
 };

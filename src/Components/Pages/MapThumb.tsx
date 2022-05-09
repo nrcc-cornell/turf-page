@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   Card,
   CardContent,
   CardMedia,
-  Typography
+  Typography,
+  Box
 } from '@mui/material';
 
 type MapThumbProps = {
@@ -19,6 +20,8 @@ type MapThumbProps = {
 
 
 export default function MapThumb(props: MapThumbProps) {
+  const [error, setError] = useState(false);
+  
   return (
     <Card
       variant='outlined'
@@ -38,11 +41,29 @@ export default function MapThumb(props: MapThumbProps) {
         }
       }}
     >
-      <CardMedia
-        component='img'
-        image={props.thumbUrl}
-        alt={props.alt}
-      />
+      {error ? 
+        <CardMedia
+          component={Box}
+          sx={{
+            backgroundColor: 'rgb(240,240,240)',
+            fontSize: '10px',
+            fontStyle: 'italic',
+            height: 'calc(100% - 26px)',
+            minHeight: 70,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            textAlign: 'center'
+          }}
+        ><span>Img Failed to Load</span></CardMedia>
+        :
+        <CardMedia
+          component='img'
+          image={props.thumbUrl}
+          alt={props.alt}
+          onError={() => setError(true)}
+        />
+      }
     
       <CardContent sx={{
         padding: '6px !important',

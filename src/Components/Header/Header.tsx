@@ -14,13 +14,18 @@ export default function Header() {
   return (
     <Box component='header' sx={{
       boxSizing: 'border-box',
+      display: 'flex',
+      alignItems: 'center',
       width: '100%',
       height: 80,
-      padding: '10px',
+      padding: '0px 10px',
       backgroundColor: 'black',
       '&:hover': {
         cursor: 'default'
-      }
+      },
+      '@media (max-width: 350px)': {
+        padding: '0px 2px'
+      },
     }}>
       <Box sx={{
         display: 'flex',
@@ -34,23 +39,43 @@ export default function Header() {
         }
       }}>
         <InnerBox sx={{ gap: '2px' }}>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Box sx={{ position: 'relative' }}>
-              <img src={`${process.env.PUBLIC_URL}/Assets/smallGolfBall.png`} alt='Cornell logo on a golf ball' />
-              <Box sx={{ width: 38, height: 38, borderRadius: '50%', border: '2px solid black', position: 'absolute', top: -1, left: -2 }} />
+              <Box
+                component='img'
+                sx={{
+                  height: 32,
+                  width: 32,
+                  backgroundColor: 'white',
+                  borderRadius: '50%',
+                  padding: '1px',
+                  boxSizing: 'border-box',
+                  '@media (max-width: 400px)': {
+                    height: 24,
+                    width: 24
+                  }
+                }}
+                src={`${process.env.PUBLIC_URL}/Assets/cornell_seal.svg`} alt='Cornell logo on a golf ball'
+              />
             </Box>
             <Typography variant='headerMain'>Fore Cast</Typography>
           </Box>
           <Typography variant='headerSub'>Weather for the Turf Industry</Typography>
         </InnerBox>
         <InnerBox sx={{
-          '@media (max-width: 450px)': {
+          '@media (max-width: 875px)': {
+            width: 230
+          },
+          '@media (max-width: 510px)': {
             width: 175
-          }
+          },
+          // '@media (max-width: 350px)': {
+          //   width: 150
+          // }
         }}>
           <Typography variant='headerSecondary'>Cornell University</Typography>
           <Box sx={{ backgroundColor: 'rgb(179,27,27)', height: '1px', width: '80%', margin: '3px auto' }}></Box>
-          <Typography variant='headerSecondary'>Atmospheric Sciences and Turf Team</Typography>
+          <Typography variant='headerSecondary'>Atmospheric Sciences and School of Integrative Plant Science</Typography>
         </InnerBox>
       </Box>
     </Box>

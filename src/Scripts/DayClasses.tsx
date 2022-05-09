@@ -16,10 +16,8 @@ class Hour {
   dewpoint: number;
 
   constructor(data: string[], wetOverride: boolean) {
+    // Hour data returned from API sometimes has different lengths and therefore needs to be adjust to a standard format for use. This conditional handles that case.
     if (data.length === 12) {
-      // ["date"                      ,"flags",   "temp","rhum","dwpt","lwet","wspd","wdir","srad","tsky","pop12","qpf"],
-      // ["2022-04-01T15:00:00-04:00","   C  C   ","38.9","67", "29.0","60",  "15",  "290",  "26", "85",  "64",   "0.010"],
-
       if (data[11] === 'M') {
         data.splice(2, 0, parseInt(data[10]) > 60 ? '1' : '0');
       } else {
@@ -32,6 +30,7 @@ class Hour {
     this.precip = parseFloat(data[2]);
     this.dewpoint = FToC(parseFloat(data[5]));
     
+    // Temp is converted from F to C because most of the index formulas using temp require C. The min and max getter functions in the DayHourly class have the ability to convert back to F if necessary
     this.temp = FToC(parseFloat(data[3]));
     this.rhum = parseFloat(data[4]);
     this.rained = parseFloat(data[2]) > 0;
@@ -64,12 +63,14 @@ export default class DayHourly {
     return this.data.filter(d => d.wet).length;
   }
 
-  maxTemp(): number {
-    return Math.max(...this.data.map(d => d.temp));
+  maxTemp(inF?: boolean): number {
+    const temp = Math.max(...this.data.map(d => d.temp));
+    return inF ? CToF(temp) : temp;
   }
 
-  minTemp(): number {
-    return Math.min(...this.data.map(d => d.temp));
+  minTemp(inF?: boolean): number {
+    const temp = Math.min(...this.data.map(d => d.temp));
+    return inF ? CToF(temp) : temp;
   }
 
   avgTemp(): number {
@@ -85,13 +86,6 @@ export default class DayHourly {
     }, 0);
   }
 
-  numGTRHumAndT(rHumThreshold: number, tThreshold: number): number {
-    return this.data.reduce((count, d) => {
-      if (d.rhum > rHumThreshold && d.temp > tThreshold) count++;
-      return count;
-    }, 0);
-  }
-
   avgRH(): number {
     return this.data.reduce((sum,d) => {
       return sum += d.rhum;
@@ -100,7 +94,8 @@ export default class DayHourly {
 
   hsiHours(): number {
     return this.data.slice(12).reduce((count, d) => {
-      if (d.temp > CToF(69) && d.temp + d.rhum > 150) count++;
+      const fTemp = CToF(d.temp);
+      if (fTemp > 69 && fTemp + d.rhum > 150) count++;
       return count;
     }, 0);
   }

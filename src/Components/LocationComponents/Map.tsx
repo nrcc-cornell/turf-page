@@ -12,6 +12,7 @@ import Markers from './Markers';
 
 import { getLocation } from '../../Scripts/Data';
 import MapBar from './MapBar';
+import roundXDigits from '../../Scripts/Rounding';
 
 
 type UserLocation = {
@@ -32,6 +33,11 @@ type MapProps = {
 
 const bounds = { south: 37.09, west: -82.7542 };
 
+function isTouchDevice() {
+  return (('ontouchstart' in window) ||
+     (navigator.maxTouchPoints > 0));
+}
+
 
 
 export default function MapComp( props: MapProps) {
@@ -42,8 +48,8 @@ export default function MapComp( props: MapProps) {
     zoom: 12
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any | null>(null);
-
 
   const handlePanning = (view: ViewState) => {
     if (view.latitude > 47.53 || view.latitude < bounds.south) {
@@ -65,7 +71,6 @@ export default function MapComp( props: MapProps) {
   const handleMarkerClick = (e: mapboxgl.MapboxEvent<MouseEvent>, loc: UserLocation) => {
     e.originalEvent.stopPropagation();
     props.handleChangeLocations('change', loc);
-    // props.handleClose();
   };
 
   const handleMarkerRightClick = (loc: UserLocation, isSelected: boolean) => {
@@ -94,6 +99,7 @@ export default function MapComp( props: MapProps) {
         props.handleChangeLocations('add', newLocation);
         mapRef.current.flyTo({
           center: newLocation.lngLat,
+          speed: 0.8,
           essential: true
         });
       }
@@ -108,12 +114,12 @@ export default function MapComp( props: MapProps) {
       position: 'relative'
     }}>
       <Map
+        {...viewState}
         ref={mapRef}
         mapStyle='mapbox://styles/mapbox/satellite-streets-v11'
         boxZoom={false}
         dragRotate={false}
         touchPitch={false}
-        touchZoomRotate={false}
         doubleClickZoom={false}
         attributionControl={false}
         onMove={evt => handlePanning(evt.viewState)}
@@ -134,13 +140,29 @@ export default function MapComp( props: MapProps) {
             closeOnClick={false}
             closeButton={false}
             onClose={() => setPopup(null)}
+            offset={{
+              'center': [0, 0],
+              'left': [12, 0],
+              'right': [-12, 0],
+              'top': [0, -6],
+              'top-left': [10, 3],
+              'top-right': [-20, 3],
+              'bottom': [0, -16],
+              'bottom-left': [10, -12],
+              'bottom-right' : [-20, -12]
+            }}
+            style={{ zIndex: 4 }}
           >
             <h3>{popup.address}</h3>
-            <h4>Coordinates: {popup.lngLat.join(', ')}</h4>
+            <h4>Coordinates: {roundXDigits(popup.lngLat[0], 5)}, {roundXDigits(popup.lngLat[1], 5)}</h4>
             {
               popup.isSelected ? '' : <>
                 <h5>Click to Use</h5>
-                <h5>Right Click to Remove</h5>
+                {isTouchDevice() ? 
+                  <h5>Click and Hold to Remove</h5>
+                  :
+                  <h5>Right Click to Remove</h5>
+                }
               </>
             }
           </Popup>

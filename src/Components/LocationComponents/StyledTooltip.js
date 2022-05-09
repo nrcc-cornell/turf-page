@@ -10,6 +10,8 @@ const StyledTooltip = styled(({ className, ...props }) => (
     color: 'rgba(0, 0, 0, 0.87)',
     boxShadow: theme.shadows[1],
     fontSize: 11,
+    marginBottom: '2px !important',
+    marginTop: '2px !important'
   },
 }));
 

@@ -117,7 +117,9 @@ export default function TemporaryDrawer() {
           backgroundColor: 'black',
           color: 'white',
           width: 300,
-          paddingTop: 20
+          paddingTop: 20,
+          paddingBottom: 20,
+          boxSizing: 'border-box'
         }}}
       >
         <Box

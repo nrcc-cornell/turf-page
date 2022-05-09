@@ -20,14 +20,17 @@ const style = {
   transform: 'translate(-50%, -50%)',
   height: '80vh',
   width: '80vw',
-  minHeight: 400,
-  minWidth: 400,
+  minHeight: 315,
+  minWidth: 336,
   boxShadow: 24,
   border: '10px solid rgb(79,88,93)',
   borderRadius: '4px',
   p: 0,
   '&:focus-visible': {
     outline: 'none'
+  },
+  '@media (max-width: 350px)': {
+    minWidth: '100vw'
   }
 };
 
@@ -122,7 +125,7 @@ export default function LocationModal(props: ModalProps) {
               top: 8,
               right: 5,
               backgroundColor: 'rgb(240,240,240)',
-              zIndex: 3,
+              zIndex: 5,
               '&:hover': {
                 backgroundColor: 'rgb(220,220,220)'
               }

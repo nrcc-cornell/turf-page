@@ -18,6 +18,15 @@ type MapPageProps = {
   description: string[]
 };
 
+type MultiMapPageProps = MapPageProps & {
+  title: string
+};
+
+type GDDPageProps = {
+  data: 'gdd32' | 'gdd50',
+  maps: MapPageProps[]
+};
+
 type TextProps = {
   titlePart: string,
   description: string[]
@@ -42,7 +51,7 @@ type ChartProps = {
   rows: Row[],
   ranges: string[][],
   title: string,
-  data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStressIndex',
+  data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress',
   colorizer: (val: number, thresholds: ThresholdObj) => string
 };
 
@@ -52,11 +61,16 @@ type ToolPageProps = {
   maps: MapThumbs[]
 };
 
-type PropsType = MapPageProps | ToolPageProps;
+type PropsType = GDDPageProps | MultiMapPageProps[] | MapPageProps | ToolPageProps;
 
 type RouteInfo = {
   path: string
   props: PropsType
+};
+
+type HomeMap = {
+  url: string,
+  alt: string
 };
 
 
@@ -73,7 +87,7 @@ const constructThumbs = (type: string, variety: string | null, name: string): Th
       date: format(date, 'MM/dd/yy'),
       thumbUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/thumbs/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Thumbnail.png`,
       fullSizeUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/maps/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Map.png`,
-      alt: `link to ${name.replaceAll('-', ' ')} map for ${format(date, 'MMMM do yyyy')}`
+      alt: `link to ${name.split('-').join(' ')} map for ${format(date, 'MMMM do yyyy')}`
     });
   }
 
@@ -95,20 +109,20 @@ const riskColorizer = function(val: number, thresholds: ThresholdObj) {
 
 const routeInfo: RouteInfo[] = [
   {
-    path: '/disease/anthracnose',
+    path: '/disease-stress/anthracnose',
     props: {
       text: {
         titlePart: 'Anthracnose Disease Risk',
         description: [
           'The Anthracnose risk index is based on the model of <i>Danneberger et al. (1984)</i> (see references below) with slight modifications for compatibility with available gridded weather observations. The model combines leaf wetness (Lw) and air temperature (T) into a single index (Ia) that is used to estimate the risk of an outbreak. The equation describing the index is:',
-          `<span style='font-style: italic;margin-left: 20px;'>Ia = 4.0233 - 0.2283(Lw) - 0.5303(T) - 0.0013(Lw<sup>2</sup>) + 0.0197(T<sup>2</sup>) + 0.0155(T × Lw)`,
+          `<div class='aFormula'>Ia = 4.0233 - 0.2283(Lw) - 0.5303(T) - 0.0013(Lw<sup>2</sup>) + 0.0197(T<sup>2</sup>) + 0.0155(T × Lw)</div>`,
           'Lw is the average number of hours per day that leaf wetness was present during the previous three days. Any hourly weather observation that reports either rainfall or a dew point that is less than three degrees (°C) lower than the air temperature indicates leaf wetness, indicates the occurrence leaf wetness during that hour and the next hour. T is the average air temperature (°C) for the previous three days.',
           `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated when the index exceeds 1.5. <span style='color: gold; font-weight: bold'>Moderate risk</span> corresponds to index values between 0.4 and 1.5. <span style='color: green; font-weight: bold'>Low risk</span> is assumed for index values of 0.4 or less. In general higher index values occur with higher temperatures and more prolonged leaf wetness.`,
           `The weekly index values reflect the longer-term persistence of Anthracnose risk. They are simply a 7-day average of the daily index values. High, Moderate and low risk are based on the same index thresholds, but using 7-day averages rather than daily values. In general, <span style='color: red; font-weight: bold'>high weekly risk</span> indicates consistent (4 or more days) of moderate to high daily risk, <span style='color: gold; font-weight: bold'>moderate weekly risk</span> indicates 2 or 3 days of moderate to high daily risk and <span style='color: green; font-weight: bold'>low weekly risk</span> indicates 2 or fewer days of moderate risk.`,
           `The weather data used to compute the Anthracnose index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted risk uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
         ],
         references: [
-          'Danneberger, T.K., J.M. Vargas Jr., and A.L. Jones, 1984: <i>A model for weather-based forecasting of anthracnose on annual bluegrass.</i> Phytopathology, 74, 448-451'
+          '<b>Danneberger, T.K., J.M. Vargas Jr., and A.L. Jones, 1984</b>: <i>A model for weather-based forecasting of anthracnose on annual bluegrass.</i> Phytopathology, 74, 448-451'
         ]
       },
       chart: {
@@ -138,7 +152,7 @@ const routeInfo: RouteInfo[] = [
       }]
     }
   },{
-    path: '/disease/brown-patch',
+    path: '/disease-stress/brown-patch',
     props: {
       text: {
         titlePart: 'Brown Patch Disease Risk',
@@ -152,7 +166,7 @@ const routeInfo: RouteInfo[] = [
           `The weather data used to compute the Brown Patch index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted risk uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
         ],
         references: [
-          `Fidanza, M.A. P.H. Dernoeden, and A. P. Grybauskas, 1996: <i>Development and field validation of a brown patch warning model for perennial ryegrass turf.</i> Phytopathology 86, 385-390. Plant Disease, 67: 1126-1129`
+          `<b>Fidanza, M.A. P.H. Dernoeden, and A. P. Grybauskas, 1996</b>: <i>Development and field validation of a brown patch warning model for perennial ryegrass turf.</i> Phytopathology 86, 385-390. Plant Disease, 67: 1126-1129`
         ]
       },
       chart: {
@@ -182,7 +196,7 @@ const routeInfo: RouteInfo[] = [
       }]
     }
   },{
-    path: '/disease/dollarspot',
+    path: '/disease-stress/dollarspot',
     props: {
       text: {
         titlePart: 'Dollarspot Disease Risk',
@@ -195,8 +209,9 @@ const routeInfo: RouteInfo[] = [
           `The weather data used to compute the Dollarspot index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted risk uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
         ],
         references: [
-          'Mills, S.G. and Rothwell, J.D. 1982: <i>Predicting diseases - the hygrothermograph.</i> Greenmaster, 18(4), 14-15',
-          'Hall, R. 1984: <i>Relationship between weather factors and dollar spot of creeping bentgrass.</i> Can. J. Plant Sci. 64: 167-174'
+          '<b>DeGaetano, A. T., and Rossi, F. S. 2007</b>: <i>Long-term trends in meteorological conditions favorable for dollar spot in eastern portions of the United States.</i> Online. Applied Turfgrass Science doi:<a href=https://doi.org/10.1094/ATS-2007-1217-02-RS rel=noreferrer target=_blank>https://doi.org/10.1094/ATS-2007-1217-02-RS</a>.',
+          '<b>Hall, R. 1984</b>: <i>Relationship between weather factors and dollar spot of creeping bentgrass.</i> Can. J. Plant Sci. 64: 167-174',
+          '<b>Mills, S.G. and Rothwell, J.D. 1982</b>: <i>Predicting diseases - the hygrothermograph.</i> Greenmaster, 18(4), 14-15',
         ]
       },
       chart: {
@@ -226,20 +241,20 @@ const routeInfo: RouteInfo[] = [
       }]
     }
   },{
-    path: '/disease/pythium-blight',
+    path: '/disease-stress/pythium-blight',
     props: {
       text: {
         titlePart: 'Pythium Blight Disease Risk',
         description: [
           'The Pythium Blight risk index is based on the model of <i>Nutter et al. (1983)</i> (see references below) with slight modifications for compatibility with available gridded weather observations. The model combines relative humidity and air temperature into a single index (Ipb) that is used to estimate the risk of an outbreak. The equation describing the index is:',
-          `<span style='font-style: italic;margin-left: 20px;'>Ipb = (T<sub>max</sub> - 86) + (T<sub>min</sub> - 68) + 0.5(RH<sub>89</sub> - 6)</span>`,
+          `<div class='pFormula'>Ipb = (T<sub>max</sub> - 86) + (T<sub>min</sub> - 68) + 0.5(RH<sub>89</sub> - 6)</div>`,
           'T<sub>max</sub> and T<sub>min</sub> are daily maximum and minimum temperature, respectively and RH<sub>89</sub> is the number of hours in the day that RH exceeds 89%.',
           `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated when the average of the index over previous 3 days exceeds 3.6. Moderate risk corresponds to 3-day average index values between 0.4 and 3.6. Low risk is assumed for 3-day average index values of 0.4 or less. In general, higher index values occur with higher temperatures and relative humidity.`,
           `The weekly index values reflect the longer-term persistence of Pythium Blight risk. They are simply a 7-day average of the daily index values. High, Moderate and low risk are based on the same index thresholds, but using the 7-day average rather than daily values. In general, <span style='color: red; font-weight: bold'>high weekly risk</span> indicates consistent (4 or more days) of moderate to high daily risk, <span style='color: gold; font-weight: bold'>moderate weekly risk</span> indicates 2 or 3 days of moderate to high daily risk and <span style='color: green; font-weight: bold'>low weekly risk</span> indicates 2 or fewer days with moderate risk.`,
           `The weather data used to compute the Pythium Blight index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted risk uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
         ],
         references: [
-          'Nutter, F.W., H. Cole, and R.D. Schein, 1983: <i>Disease forecasting systems for warm weather pythium blight of turfgrass.</i> Plant Dis. 67:1126'
+          '<b>Nutter, F.W., H. Cole, and R.D. Schein, 1983</b>: <i>Disease forecasting systems for warm weather pythium blight of turfgrass.</i> Plant Dis. 67:1126'
         ]
       },
       chart: {
@@ -269,7 +284,45 @@ const routeInfo: RouteInfo[] = [
       }]
     }
   },{
-    path: '/turf-weed/dandelion',
+    path: '/disease-stress/heat-stress',
+    props: {
+      text: {
+        titlePart: 'the Heat Stress Index',
+        description: [
+          'The Heat Stress Index is simply the number of nighttime (8 pm to 7 am) hours in which the temperature exceeds 69°F and the sum of temperature and relative humidity exceeds 150.',
+          `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated for a heat stress index of 5 or more hours. <span style='color: gold; font-weight: bold'>Moderate risk</span> is associated with a heat stress index of 2-4 hours. <span style='color: green; font-weight: bold'>Low risk</span> is assumed otherwise.`,
+          `The weather data used to compute the Heat Stress Index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted heat stress uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
+        ]
+      },
+      chart: {
+        data: 'heatStress',
+        rows: [{
+          thresholds: {
+            low: 2,
+            medium: 0,
+            high: 5
+          },
+          name: 'Daily'
+        }],
+        ranges: riskRanges,
+        title: 'Heat Stress Index Estimates',
+        colorizer: function(val: number, thresholds: ThresholdObj) {
+          if (val < thresholds.low) {
+            return 'rgb(0,170,0)';
+          } else if (val <= thresholds.high) {
+            return 'gold';
+          } else {
+            return 'rgb(255,0,0)';
+          }
+        }
+      },
+      maps: [{
+        title: 'Heat Stress Index Maps',
+        thumbs: constructThumbs('Heat-Stress', null, 'Heat-Stress-Risk')
+      }]
+    }
+  },{
+    path: '/seedhead-weed/dandelion',
     props: {
       text: {
         titlePart: 'Dandelion Control Recommendations',
@@ -318,7 +371,7 @@ const routeInfo: RouteInfo[] = [
       }]
     }
   },{
-    path: '/turf-weed/seedhead',
+    path: '/seedhead-weed/seedhead',
     props: {
       text: {
         titlePart: 'Seedhead Control Recommendations',
@@ -367,23 +420,110 @@ const routeInfo: RouteInfo[] = [
       }]
     }
   },{
-    path: '/turf-weed/gdd/accumulation',
+    path: '/season/gdd/32',
     props: {
-      url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdd32.png',
-      alt: '7 Day average base 32°F GDD accumulation',
+      data: 'gdd32',
+      maps: [{
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdd32.png',
+        alt: '7 Day average base 32°F GDD accumulation',
+        description: [
+          'This map shows base 32°F GDD accumulation since February 1.',
+          'Growing degree days (GDD) are a means by which turf and weed development can be monitored. Base 32°F GDD accumulation is an experimental measure for predicting ideal annual bluegrass seedhead development and potential assessment with plant growth regulators. Preliminary data suggests that the ideal application time might be from 400 to 600 GDD for Proxy and 500 to 650 GDD for Embark.'
+        ]
+      },{
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/wgdd32fcst.png',
+        alt: 'Forecast base 32°F GDD accumulation',
+        description: [
+          'This map shows the forecast for base 32°F GDD accumulation over the next week. The forecast is based on guidance from the National Weather Service 7-day temperature forecast.',
+          'Growing degree days (GDD) are a means by which turf and weed development can be monitored. Base 32°F GDD accumulation is an experimental measure for predicting ideal annual bluegrass seedhead development and potential assessment with plant growth regulators. Preliminary data suggests that the ideal application time might be from 400 to 600 GDD for Proxy and 500 to 650 GDD for Embark.'
+        ]
+      }]
+    }
+  },{
+    path: '/season/gdd/50',
+    props: {
+      data: 'gdd50',
+      maps: [{
+        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wgdd.png',
+        alt: '7 Day average base 50°F GDD accumulation',
+        description: [
+          'Degree days are a means by which turf and weed development can be monitored.',
+          'This map shows the number of base 50°F growing degree days (GDD) that have accumulated over the last 7 days.'
+        ]
+      },{
+        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wgddfcst.png',
+        alt: 'Base 50°F GDD accumulation forecast',
+        description: [
+          'Degree days are a means by which turf and weed development can be monitored.',
+          'This map shows the forecast for base 50°F GDD accumulation over the next week. The forecast is based on guidance from the National Weather Service 7-day temperature forecast.'
+        ]
+      }]
+    }
+  },{
+    path: '/season/gdd/differences/gdd',
+    props: [{
+      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdd.png',
+      alt: 'Base 50°F GDD accumulation since March 15',
+      title: 'Accumulation since March 15 Map',
       description: [
-        'This map shows base 32°F GDD accumulation since February 1.',
-        'Growing degree days (GDD) are a means by which turf and weed development can be monitored. Base 32°F GDD accumulation is an experimental measure for predicting ideal annual bluegrass seedhead development and potential assessment with plant growth regulators. Preliminary data suggests that the ideal application time might be from 400 to 600 GDD for Proxy and 500 to 650 GDD for Embark.'
+        'Degree days are a means by which turf and weed development can be monitored.',
+        'This map shows the total accumulation of base 50°F GDD from March 15 until the current day.'
+      ]
+    },{
+      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifg.png',
+      alt: 'Difference in base 50°F GGD accumulation over last year',
+      title: 'Difference from Last Year Map',
+      description: [
+        'Degree days are a means by which turf and weed development can be monitored.',
+        'In terms of GDD, the comparisons are able to answer the question, "How different is the GDD accumulation in the current growing season from the same day in the previous season ?" A mapped value of -25 indicates that the GDD accummulation in the current year is 25 GGD less than was accumulated in the previous year. For example, if 48 GDD have accumulated by April 7 this year, a value of -25 would indicate that 73 GDD had already been accumulated by April 7 of the previous year.'
+      ]
+    },{
+      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdptg.png',
+      alt: 'Base 50°F GGD accumulation difference from "normal"',
+      title: 'Difference from "Normal" Map',
+      description: [
+        'Degree days are a means by which turf and weed development can be monitored.',
+        'In terms of GDD, the comparisons are able to answer the question, "When during an average growing season did the current 50°F GDD accumulation occur ?" A mapped value of 22 indicates that GDD accumulation in the current season is greater the historical average accumulation.',
+        'For example, if 78 GDD have been accumulated by April 7 of the current year, a value of 22 would indicate that, historically, an average of only 53 GDD have accumulated by April 7.'
+      ]
+    }]
+  },{
+    path: '/season/gdd/differences/days',
+    props: [{
+      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifd.png',
+      alt: 'Difference in base 50°F GDD accumulation over last year',
+      title: 'Difference from Last Year Map',
+      description: [
+        'Degree days are a means by which turf and weed development can be monitored.',
+        `In terms of days, the GDD comparisons are able to answer the question, "When during the previous growing season did the current 50°F GDD accumulation occur ?" A mapped value of -7 indicates that the current season is 7 days behind the previous year's accumulation. If 58 GDD were accumulated on April 7, 2017, a value of -7 would indicate that 58 GDD had already been accumulated on April 1, 2016.`
+      ]
+    },{
+      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdptd.png',
+      alt: 'Base 50°F GDD accumulation difference from "normal"',
+      title: 'Difference from "Normal" Map',
+      description: [
+        'Degree days are a means by which turf and weed development can be monitored.',
+        'In terms of days, the GDD comparisons are able to answer the question, "When during an average growing season did the current 50°F GDD accumulation occur ?" A mapped value of -7 indicates that the current season is 7 days behind the average season accumulation.',
+        'For example, if 58 GDD have accumulated by April 7 of this year, then a value of -7 would indicate that historically, an average of 58 GDD have already accumulated by April 1.'
+      ]
+    }]
+  },{
+    path: '/season/temperature-departure',
+    props: {
+      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wtdpt.png',
+      alt: 'Temperature departure (°F)',
+      description: [
+        'The average of the temperatures over past 30 years on any particular day is commonly called the "normal". As depicted here, "departure" is the difference between the average temperature (°F) over the last 7 days and average of the normal temperatures for the same 7 days.',
+        'Negative values indicate areas where temperatures are cooler than normal. Positive values indicate areas where temperatures are warmer than normal.'
       ]
     }
   },{
-    path: '/turf-weed/gdd/forecast',
+    path: '/season/soil-temperature',
     props: {
-      url: 'https://www.nrcc.cornell.edu/dyn_images/grass/wgdd32fcst.png',
-      alt: 'Forecast base 32°F GDD accumulation',
+      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/soilTemp.png',
+      alt: 'Temperature (°F) of the soil 2" below the surface',
       description: [
-        'This map shows the forecast for base 32°F GDD accumulation over the next week. The forecast is based on guidance from the National Weather Service 7-day temperature forecast.',
-        'Growing degree days (GDD) are a means by which turf and weed development can be monitored. Base 32°F GDD accumulation is an experimental measure for predicting ideal annual bluegrass seedhead development and potential assessment with plant growth regulators. Preliminary data suggests that the ideal application time might be from 400 to 600 GDD for Proxy and 500 to 650 GDD for Embark.'
+        'Temperature (°F) of the soil 2" below the surface.'
       ]
     }
   },{
@@ -406,27 +546,30 @@ const routeInfo: RouteInfo[] = [
     }
   },{
     path: '/irrigation/moisture-deficit',
-    props: {
+    props: [{
       url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wdfct.png',
       alt: 'Moisture deficit over last 7 days',
+      title: 'Observed Moisture Deficit Map',
       description: [
         'Moisture deficit is the difference between rainfall and evapotranspiration.',
-        'This map depicts total mositure deficet for the past week. Negative values indicate that evapotranspiration exceeded precipitation. Positive values indicate the precipitation exceeded evapotranspiration.',
+        'This map depicts total moisture deficit for the past week. Negative values indicate that evapotranspiration exceeded precipitation. Positive values indicate the precipitation exceeded evapotranspiration.',
         'Data on this map is useful for assessing irrigation requirements.'
       ]
-    }
+    },{
+      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/dfct_fcst.png',
+      alt: 'Forecast moisture deficit over next 3 days',
+      title: 'Moisture Deficit Forecast',
+      description: [
+        'Moisture deficit is the difference between rainfall and evapotranspiration.',
+        'This map displays the forecast moisture deficit for the next 3-days. Negative values indicate that evapotranspiration will exceeded precipitation over the next 3 days. Positive values indicate the precipitation will exceed evapotranspiration.',
+        'Data on this map is useful for assessing irrigation requirements.'
+      ]
+    }]
   },{
     path: '/irrigation/topsoil-moisture/current',
     props: {
       url: 'http://www.cpc.ncep.noaa.gov/products/monitoring_and_data/soilmmap.gif',
       alt: 'USDA Topsil Moisture (% State Area)',
-      description: []
-    }
-  },{
-    path: '/irrigation/topsoil-moisture/current-vs-5-year-mean',
-    props: {
-      url: 'http://www.cpc.ncep.noaa.gov/products/monitoring_and_data/5yrcomp.gif',
-      alt: 'USDA Topsil Moisture - Current vs. 5-year Mean',
       description: []
     }
   },{
@@ -436,138 +579,45 @@ const routeInfo: RouteInfo[] = [
       alt: 'USDA Topsil Moisture - Current vs. 10-year Mean',
       description: []
     }
-  },{
-    path: '/50gdd/7-day',
-    props: {
-      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wgdd.png',
-      alt: '7 Day average base 50°F GDD accumulation',
-      description: [
-        'Degree days are a means by which turf and weed development can be monitored.',
-        'This map shows the number of base 50°F growing degree days (GDD) that have accumulated over the last 7 days.'
-      ]
-    }
-  },{
-    path: '/50gdd/forecast',
-    props: {
-      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wgddfcst.png',
-      alt: 'Base 50°F GDD accumulation forecast',
-      description: [
-        'Degree days are a means by which turf and weed development can be monitored.',
-        'This map shows the forecast for base 50°F GDD accumulation over the next week. The forecast is based on guidance from the National Weather Service 7-day temperature forecast.'
-      ]
-    }
-  },{
-    path: '/50gdd/since',
-    props: {
-      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdd.png',
-      alt: 'Base 50°F GDD accumulation since March 15',
-      description: [
-        'Degree days are a means by which turf and weed development can be monitored.',
-        'This map shows the total accumulation of base 50°F GDD from March 15 until the current day.'
-      ]
-    }
-  },{
-    path: '/50gdd/difference/year/days',
-    props: {
-      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifd.png',
-      alt: 'Difference in base 50°F GDD accumulation over last year',
-      description: [
-        'Degree days are a means by which turf and weed development can be monitored.',
-        `In terms of days, the GDD comparisons are able to answer the question, "When during the previous growing season did the current 50°F GDD accumulation occur ?" A mapped value of -7 indicates that the current season is 7 days behind the previous year's accumulation. If 58 GDD were accumulated on April 7, 2017, a value of -7 would indicate that 58 GDD had already been accumulated on April 1, 2016.`
-      ]
-    }
-  },{
-    path: '/50gdd/difference/year/gdd',
-    props: {
-      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifg.png',
-      alt: 'Difference in base 50°F GGD accumulation over last year',
-      description: [
-        'Degree days are a means by which turf and weed development can be monitored.',
-        'In terms of GDD, the comparisons are able to answer the question, "How different is the GDD accumulation in the current growing season from the same day in the previous season ?" A mapped value of -25 indicates that the GDD accummulation in the current year is 25 GGD less than was accumulated in the previous year. For example, if 48 GDD have accumulated by April 7 this year, a value of -25 would indicate that 73 GDD had already been accumulated by April 7 of the previous year.'
-      ]
-    }
-  },{
-    path: '/50gdd/difference/normal/days',
-    props: {
-      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdptd.png',
-      alt: 'Base 50°F GDD accumulation difference from "normal"',
-      description: [
-        'Degree days are a means by which turf and weed development can be monitored.',
-        'In terms of days, the GDD comparisons are able to answer the question, "When during an average growing season did the current 50°F GDD accumulation occur ?" A mapped value of -7 indicates that the current season is 7 days behind the average season accumulation.',
-        'For example, if 58 GDD have accumulated by April 7 of this year, then a value of -7 would indicate that historically, an average of 58 GDD have already accumulated by April 1.'
-      ]
-    }
-  },{
-    path: '/50gdd/difference/normal/gdd',
-    props: {
-      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdptg.png',
-      alt: 'Base 50°F GGD accumulation difference from "normal"',
-      description: [
-        'Degree days are a means by which turf and weed development can be monitored.',
-        'In terms of GDD, the comparisons are able to answer the question, "When during an average growing season did the current 50°F GDD accumulation occur ?" A mapped value of 22 indicates that GDD accumulation in the current season is greater the historical average accumulation.',
-        'For example, if 78 GDD have been accumulated by April 7 of the current year, a value of 22 would indicate that, historically, an average of only 53 GDD have accumulated by April 7.'
-      ]
-    }
-  },{
-    path: '/temperature/heat-stress',
-    props: {
-      text: {
-        titlePart: 'the Heat Stress Index',
-        description: [
-          'The Heat Stress Index is simply the number of nighttime (8 pm to 7 am) hours in which the temperature exceeds 69°F and the sum of temperature and relative humidity exceeds 150.',
-          `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated for a heat stress index of 5 or more hours. <span style='color: gold; font-weight: bold'>Moderate risk</span> is associated with a heat stress index of 2-4 hours. <span style='color: green; font-weight: bold'>Low risk</span> is assumed otherwise.`,
-          `The weather data used to compute the Heat Stress Index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted heat stress uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
-        ]
-      },
-      chart: {
-        data: 'heatStressIndex',
-        rows: [{
-          thresholds: {
-            low: 2,
-            medium: 0,
-            high: 5
-          },
-          name: 'Daily'
-        }],
-        ranges: riskRanges,
-        title: 'Heat Stress Index Estimates',
-        colorizer: function(val: number, thresholds: ThresholdObj) {
-          if (val < thresholds.low) {
-            return 'rgb(0,170,0)';
-          } else if (val <= thresholds.high) {
-            return 'gold';
-          } else {
-            return 'rgb(255,0,0)';
-          }
-        }
-      },
-      maps: [{
-        title: 'Heat Stress Index Maps',
-        thumbs: constructThumbs('Heat-Stress', null, 'Heat-Stress-Risk')
-      }]
-    }
-  },{
-    path: '/temperature/departure',
-    props: {
-      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wtdpt.png',
-      alt: 'Temperature departure (°F)',
-      description: [
-        'The average of the temperatures over past 30 years on any particular day is commonly called the "normal". As depicted here, "departure" is the difference between the average temperature (°F) over the last 7 days and average of the normal temperatures for the same 7 days.',
-        'Negative values indicate areas where temperatures are cooler than normal. Positive values indicate areas where temperatures are warmer than normal.'
-      ]
-    }
-  },{
-    path: '/temperature/soil',
-    props: {
-      url: 'http://www.nrcc.cornell.edu/dyn_images/grass/soilTemp.png',
-      alt: 'Temperature (°F) of the soil 2" below the surface',
-      description: [
-        'Temperature (°F) of the soil 2" below the surface.'
-      ]
-    }
   }
 ];
 
+const frontPageMaps: HomeMap[] = routeInfo.map(page => {
+  if (page.props instanceof Array) {
+    return page.props.map(m => {
+      return {
+        url: m.url,
+        alt: m.alt
+      };
+    });
+  }
 
+  if ('chart' in page.props) {
+    return page.props.maps.map(m => {
+      return {
+        url: m.thumbs[0].fullSizeUrl,
+        alt: `Today's ` + m.title.slice(0 ,-1)
+      };
+    });
+  }
 
-export default routeInfo;
+  if ('maps' in page.props) {
+    return page.props.maps.map(m => {
+      return {
+        url: m.url,
+        alt: m.alt
+      };
+    });
+  }
+
+  if ('url' in page.props) {
+    return {
+      url: page.props.url,
+      alt: page.props.alt
+    };
+  }
+
+  return [];
+}).flat();
+
+export { routeInfo as AppRouteInfo, frontPageMaps };
