@@ -23,7 +23,6 @@ const style = {
   boxSizing: 'border-box',
   display: 'flex',
   flexDirection: 'column',
-  gap: '10px',
   '&:focus-visible': {
     outline: 'none'
   },
@@ -100,6 +99,7 @@ export default function Home() {
                 select
                 value={fm}
                 onChange={(e) => handleChange(e.target.value, i)}
+                sx={{ marginBottom: '10px' }}
               >
                 {favMaps.length > 2 &&
                   <MenuItem
@@ -142,16 +142,13 @@ export default function Home() {
       </Modal>
       
       <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 50%)',
-        gridTemplateRows: `repeat(${Math.ceil(favMaps.length / 2)}, ${100 / Math.ceil(favMaps.length / 2)}%)`,
-        boxSizing: 'border-box',
-        '@media (max-width: 800px)': {
-          gridTemplateColumns: 'repeat(1, 100%)',
-          gridTemplateRows: `repeat(${favMaps.length}, auto)`
-        }
+        display: 'flex',
+        flexWrap: 'wrap',
+        boxSizing: 'border-box'
       }}>
-        {favMaps.map((n, i) => <MapPage key={i} {...frontPageMaps[n]} title={frontPageMaps[n].alt} description={[]} />)}
+        {favMaps.map((n, i) => <Box key={i} sx={{ width: '50%', '@media (max-width: 750px)': { width: '100%' } }}>
+          <MapPage {...frontPageMaps[n]} title={frontPageMaps[n].alt} description={[]} />
+        </Box>)}
       </Box>
     </StyledCard>
   );

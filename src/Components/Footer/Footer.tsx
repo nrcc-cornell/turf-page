@@ -66,7 +66,6 @@ export default function Footer() {
       backgroundColor: 'rgb(242,242,242)',
       width: '100%',
       height: 160,
-      gap: '7%',
       display: 'flex',
       justifyContent: 'center',
       textAlign: 'center',
@@ -77,6 +76,7 @@ export default function Footer() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
+        marginRight: '7%',
         height: '100%',
         '@media (max-width: 450px)': {
           width: 108
@@ -85,7 +85,6 @@ export default function Footer() {
         <Box sx={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 1
         }}>
           <Typography variant='footerContact' sx={{ color: 'rgb(179,27,27)', fontWeight: 'bold' }}>Contact NRCC</Typography>
           <Typography variant='footerContact'>1123 Bradfield Hall, Cornell University, Ithaca, NY 14853</Typography>
@@ -98,10 +97,9 @@ export default function Footer() {
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
-        gap: 1
+        justifyContent: 'center'
       }}>
-        {ImgBox(imgs[0])}
+        <Box sx={{ marginBottom: '8px' }}>{ImgBox(imgs[0])}</Box>
         <Box sx={{
           display: 'flex',
           justifyContent: 'space-around',

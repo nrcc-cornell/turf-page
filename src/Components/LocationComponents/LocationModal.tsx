@@ -62,7 +62,6 @@ export default function LocationModal(props: ModalProps) {
     <Box>
       <Box sx={{
         display: 'flex',
-        gap: '6px',
         justifyContent: 'center'
       }}>
         <StyledTooltip
@@ -93,6 +92,7 @@ export default function LocationModal(props: ModalProps) {
             fontStyle: 'italic',
             textDecoration: 'underline',
             textAlign: 'center',
+            marginLeft: '6px',
             '&:hover': {
               cursor: 'pointer',
               color: 'rgb(50,50,255)',

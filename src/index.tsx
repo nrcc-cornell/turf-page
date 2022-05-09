@@ -123,11 +123,15 @@ const theme = createTheme({
     },
     footerContact: {
       fontSize: '14px',
+      lineHeight: '22px',
       ['@media screen and (max-width: 636px)']: {
         fontSize: '11px'
       },
       ['@media screen and (max-width: 555px)']: {
         fontSize: '9px'
+      },
+      ['@media screen and (max-width: 450px)']: {
+        lineHeight: '14px'
       }
     },
     footerCopyright: {

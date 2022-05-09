@@ -16,7 +16,6 @@ type TextProps = {
 const BoxSX = {
   display: 'flex',
   flexDirection: 'column',
-  gap: '14px',
   boxSizing: 'border-box'
 };
 
@@ -28,7 +27,7 @@ const TitleSX = {
 
 export default function TextContent(props: TextProps) {
   const renderText = (arr: string[]) => {
-    return arr.map((text, i) => <Typography key={i} variant='mapPage' sx={{ textAlign: 'justify', lineHeight: '1.2' }} dangerouslySetInnerHTML={{__html: text}}></Typography>);
+    return arr.map((text, i) => <Typography key={i} variant='mapPage' sx={{ textAlign: 'justify', lineHeight: '1.2', margin: '7px 0px' }} dangerouslySetInnerHTML={{__html: text}}></Typography>);
   };
   
   return (

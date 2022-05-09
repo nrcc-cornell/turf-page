@@ -72,8 +72,7 @@ export default function ShortCuttAd() {
       
         <Box sx={{
           display: 'flex',
-          flexDirection: 'column',
-          gap: '12px'
+          flexDirection: 'column'
         }}>
           <a href='https://turf.cals.cornell.edu/news/shortcutt-newsletter/' target='_blank' rel='noreferrer'>
             <Box
@@ -89,7 +88,7 @@ export default function ShortCuttAd() {
               }}
             />
           </a>
-          <Typography align='center' sx={{ fontStyle: 'italic', lineHeight: '20px' }}>An In-Season Weekly Management Tool For All Turfgrass Managers</Typography>
+          <Typography align='center' sx={{ margin: '12px 0px', fontStyle: 'italic', lineHeight: '20px' }}>An In-Season Weekly Management Tool For All Turfgrass Managers</Typography>
           <a href='https://turf.cals.cornell.edu/news/shortcutt-newsletter/' target='_blank' rel='noreferrer' style={{ textDecoration: 'none' }}><Typography align='center' sx={{ color: 'rgb(0,170,0)', '&:hover': { color: 'rgb(0,130,0)' } }}>Click to learn more!</Typography></a>
         </Box>
       </Box>

@@ -23,7 +23,6 @@ const BoxSX = {
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
-  gap: '5px',
   '@media (max-width: 720px)': {
     width: '98%',
     justifyContent: 'space-around',
@@ -31,8 +30,7 @@ const BoxSX = {
   },
   '@media (max-width: 550px)': {
     flexWrap: 'wrap',
-    width: 225,
-    gap: '10px'
+    width: 225
   }
 };
 
@@ -69,7 +67,15 @@ export default function WeekMaps(props: WeekMapsProps) {
       }}>
         <Box sx={BoxSX}>
           {props.thumbs.map((thumb, i) =>
-            <MapThumb key={i} {...thumb} border={i === bigMap ? '2px solid rgb(150,150,250)' : '1px solid rgba(0,0,0,0.12)'} changeMap={() => handleChangeMap(i)} />
+            <Box key={i} sx={{
+              margin: '3px',
+              width: 65,
+              '@media (max-width: 550px)': {
+                margin: '5px'
+              }
+            }}>
+              <MapThumb {...thumb} border={i === bigMap ? '2px solid rgb(150,150,250)' : '1px solid rgba(0,0,0,0.12)'} changeMap={() => handleChangeMap(i)} />
+            </Box>
           )}
         </Box>
 

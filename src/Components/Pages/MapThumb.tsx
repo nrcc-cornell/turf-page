@@ -28,13 +28,7 @@ export default function MapThumb(props: MapThumbProps) {
       onClick={props.changeMap}
       sx={{
         border: props.border,
-        width: 65,
-        '@media (max-width: 720px)': {
-          width: 'calc(16% - 7px)',
-        },
-        '@media (max-width: 550px)': {
-          width: 65
-        },
+        width: '100%',
         '&:hover': {
           cursor: 'pointer',
           backgroundColor: 'rgba(0,0,0,0.1)'

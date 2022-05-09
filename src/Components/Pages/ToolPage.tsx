@@ -86,17 +86,23 @@ export default function ToolPage(props: PageProps) {
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px',
         marginTop: '10px',
         '@media (min-width: 1465px)': {
-          flexDirection: 'row',
-          gap: '15px'
+          flexDirection: 'row'
         }
       }}>
         {props.maps.map((thumbGroup, i) => {
           return (
             <Fragment key={thumbGroup.title}>
-              <WeekMaps {...thumbGroup} />
+              <Box sx={{
+                flexGrow: 1,
+                margin: '5px 0px',
+                '@media (min-width: 1465px)': {
+                  margin: '0px 8px'
+                }
+              }}>
+                <WeekMaps {...thumbGroup} />
+              </Box>
 
               { i !== props.maps.length - 1 && <StyledDivider sx={{ '@media (min-width: 1465px)': { display: 'none' } }} />}
             </Fragment>

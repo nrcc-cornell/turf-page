@@ -275,7 +275,6 @@ export default function DailyChart(props: ChartProps) {
         <Box sx={{
           width: 'fit-content',
           display: 'flex',
-          gap: '12px',
           border: '1px solid rgb(240,240,240)',
           borderRadius: '5px',
           padding: '6px 12px'
@@ -285,13 +284,14 @@ export default function DailyChart(props: ChartProps) {
               <Box key={arr[0]} sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '3px'
+                margin: '0 6px'
               }}>
                 <Box sx={{
                   backgroundColor: arr[1],
                   height: 15,
                   width: 15,
                   borderRadius: 8,
+                  marginRight: '3px',
                   '@media (max-width: 380px)': {
                     height: 11,
                     width: 11,

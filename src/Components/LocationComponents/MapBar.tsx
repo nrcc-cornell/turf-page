@@ -78,7 +78,6 @@ export default function MapBar(props: MapBarProps ) {
     <Box sx={{
       display: 'flex',
       alignItems: 'center',
-      gap: 1,
       backgroundColor: 'white',
       paddingLeft: '12px',
       position: 'absolute',
@@ -98,6 +97,7 @@ export default function MapBar(props: MapBarProps ) {
         sx={{
           width: '62.5%',
           maxWidth: 500,
+          marginRight: '8px',
           '& .MuiInputBase-input': {
             fontSize: '12px',
             padding: '6px 8px'

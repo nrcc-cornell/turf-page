@@ -38,26 +38,25 @@ export default function Header() {
           margin: '0 auto'
         }
       }}>
-        <InnerBox sx={{ gap: '2px' }}>
-          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Box sx={{ position: 'relative' }}>
-              <Box
-                component='img'
-                sx={{
-                  height: 32,
-                  width: 32,
-                  backgroundColor: 'white',
-                  borderRadius: '50%',
-                  padding: '1px',
-                  boxSizing: 'border-box',
-                  '@media (max-width: 400px)': {
-                    height: 24,
-                    width: 24
-                  }
-                }}
-                src={`${process.env.PUBLIC_URL}/Assets/cornell_seal.svg`} alt='Cornell logo on a golf ball'
-              />
-            </Box>
+        <InnerBox>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '2px' }}>
+            <Box
+              component='img'
+              sx={{
+                height: 32,
+                width: 32,
+                backgroundColor: 'white',
+                borderRadius: '50%',
+                padding: '1px',
+                marginRight: '8px',
+                boxSizing: 'border-box',
+                '@media (max-width: 400px)': {
+                  height: 24,
+                  width: 24
+                }
+              }}
+              src={`${process.env.PUBLIC_URL}/Assets/cornell_seal.svg`} alt='Cornell seal'
+            />
             <Typography variant='headerMain'>Fore Cast</Typography>
           </Box>
           <Typography variant='headerSub'>Weather for the Turf Industry</Typography>
