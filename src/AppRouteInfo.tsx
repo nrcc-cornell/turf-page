@@ -1,78 +1,5 @@
 import { addDays, format } from 'date-fns';
 
-type Thumb = {
-  fullSizeUrl: string,
-  thumbUrl: string,
-  alt: string,
-  date: string
-};
-
-type MapThumbs = {
-  title: string,
-  thumbs: Thumb[]
-};
-
-type MapPageProps = {
-  url: string,
-  alt: string,
-  description: string[]
-};
-
-type MultiMapPageProps = MapPageProps & {
-  title: string
-};
-
-type GDDPageProps = {
-  data: 'gdd32' | 'gdd50',
-  maps: MapPageProps[]
-};
-
-type TextProps = {
-  titlePart: string,
-  description: string[]
-};
-
-interface ReferencedTextProps extends TextProps {
-  references: string[]
-}
-
-type ThresholdObj = {
-  low: number,
-  medium: number,
-  high: number
-};
-
-type Row = {
-  thresholds: ThresholdObj,
-  name: string
-}
-
-type ChartProps = {
-  rows: Row[],
-  ranges: string[][],
-  title: string,
-  data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress',
-  colorizer: (val: number, thresholds: ThresholdObj) => string
-};
-
-type ToolPageProps = {
-  text: TextProps | ReferencedTextProps,
-  chart: ChartProps,
-  maps: MapThumbs[]
-};
-
-type PropsType = GDDPageProps | MultiMapPageProps[] | MapPageProps | ToolPageProps;
-
-type RouteInfo = {
-  path: string
-  props: PropsType
-};
-
-type HomeMap = {
-  url: string,
-  alt: string
-};
-
 
 const constructThumbs = (type: string, variety: string | null, name: string): Thumb[] => {
   const today = new Date();
@@ -586,6 +513,7 @@ const frontPageMaps: HomeMap[] = routeInfo.map(page => {
   if (page.props instanceof Array) {
     return page.props.map(m => {
       return {
+        path: page.path,
         url: m.url,
         alt: m.alt
       };
@@ -595,6 +523,7 @@ const frontPageMaps: HomeMap[] = routeInfo.map(page => {
   if ('chart' in page.props) {
     return page.props.maps.map(m => {
       return {
+        path: page.path,
         url: m.thumbs[0].fullSizeUrl,
         alt: `Today's ` + m.title.slice(0 ,-1)
       };
@@ -604,6 +533,7 @@ const frontPageMaps: HomeMap[] = routeInfo.map(page => {
   if ('maps' in page.props) {
     return page.props.maps.map(m => {
       return {
+        path: page.path,
         url: m.url,
         alt: m.alt
       };
@@ -612,6 +542,7 @@ const frontPageMaps: HomeMap[] = routeInfo.map(page => {
 
   if ('url' in page.props) {
     return {
+      path: page.path,
       url: page.props.url,
       alt: page.props.alt
     };

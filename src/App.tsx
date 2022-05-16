@@ -21,98 +21,6 @@ import { getToolData } from './Scripts/Data';
 import MultiMapPage from './Components/Pages/MultiMapPage';
 import StyledCard from './Components/Pages/StyledCard';
 
-type Thumb = {
-  fullSizeUrl: string,
-  thumbUrl: string,
-  alt: string,
-  date: string
-};
-
-type MapThumbs = {
-  title: string,
-  thumbs: Thumb[]
-};
-
-type MapPageProps = {
-  url: string,
-  alt: string,
-  description: string[]
-};
-
-type MultiMapPageProps = MapPageProps & {
-  title: string
-};
-
-type GDDPageProps = {
-  data: 'gdd32' | 'gdd50',
-  maps: MapPageProps[]
-};
-
-type TextProps = {
-  titlePart: string,
-  description: string[]
-};
-
-interface ReferencedTextProps extends TextProps {
-  references: string[]
-}
-
-type Row = {
-  thresholds: {
-    low: number,
-    medium: number,
-    high: number
-  },
-  name: string
-}
-type ThresholdObj = {
-  low: number,
-  medium: number,
-  high: number
-};
-
-type ChartProps = {
-  rows: Row[],
-  ranges: string[][],
-  title: string,
-  data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress',
-  colorizer: (val: number, thresholds: ThresholdObj) => string
-};
-
-type ToolPageProps = {
-  text: TextProps | ReferencedTextProps,
-  chart: ChartProps,
-  maps: MapThumbs[]
-};
-
-type PropsType = GDDPageProps | MultiMapPageProps[] | MapPageProps | ToolPageProps;
-
-type DateValue = [ string, number ];
-
-type HSTool = {
-  Daily: DateValue[]
-};
-
-type Tool = HSTool & {
-  '7 Day Avg': DateValue[]
-};
-
-type ToolData = {
-  gdd32: DateValue[],
-  gdd50: DateValue[],
-  anthracnose: Tool,
-  brownPatch: Tool,
-  dollarspot: Tool,
-  pythiumBlight: Tool,
-  heatStress: HSTool,
-  todayFromAcis: boolean
-};
-
-type UserLocation = {
-  address: string,
-  lngLat: [number, number]
-};
-
 
 
 function App() {
@@ -168,7 +76,14 @@ function App() {
     }
     
     if ('chart' in info) {
-      return <ToolPage {...info} data={toolData === null ? toolData : toolData[info.chart.data]} todayFromAcis={toolData === null ? false : toolData.todayFromAcis} />;
+      return <ToolPage
+        {...info}
+        data={toolData === null ? toolData : toolData[info.chart.data]}
+        seasonData={(
+          toolData === null || info.chart.data === 'gdd32' || info.chart.data === 'gdd50'
+        ) ? null : toolData.season[info.chart.data]}
+        todayFromAcis={toolData === null ? false : toolData.todayFromAcis}
+      />;
     }
 
     if ('maps' in info) {

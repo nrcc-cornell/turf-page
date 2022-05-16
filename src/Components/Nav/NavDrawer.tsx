@@ -44,9 +44,7 @@ const StyledListIcon = styled(ListItemIcon)({
   color: 'rgb(234,246,126)'
 });
 
-type Toggle = {
-  type: string;
-};
+
 
 
 

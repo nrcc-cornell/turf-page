@@ -34,21 +34,8 @@ const btnSX = {
 };
 
 
-type GroupProp = {
-  group: {
-    base: string;
-    name: string;
-    icon: JSX.Element;
-    items: {
-      pathname: string;
-      label: string;
-    }[];
-  }
-};
 
-
-
-export default function NavBar({ group }: GroupProp) {
+export default function NavBar({ group }: NavBarProp) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
   const hyphenName = group.name.split(' ').join('-');

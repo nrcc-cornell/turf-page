@@ -15,21 +15,6 @@ import MapBar from './MapBar';
 import roundXDigits from '../../Scripts/Rounding';
 
 
-type UserLocation = {
-  address: string,
-  lngLat: [number, number]
-};
-
-type PopupContent = UserLocation & {
-  isSelected: boolean
-};
-
-type MapProps = {
-  currentLocation: UserLocation,
-  pastLocations: UserLocation[],
-  handleChangeLocations: (a: 'add' | 'remove' | 'change', b: UserLocation) => void,
-  handleClose: () => void
-};
 
 const bounds = { south: 37.09, west: -82.7542 };
 

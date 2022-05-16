@@ -10,13 +10,7 @@ import {
 
 import TextContent from './TextContent';
 import StyledDivider from './StyledDivider';
-
-type MapPageProps = {
-  url: string,
-  alt: string,
-  description: string[],
-  title?: string | boolean
-};
+import { Description } from '@mui/icons-material';
 
 
 
@@ -107,7 +101,12 @@ export default function MapPage(props: MapPageProps) {
           onLoad={loaded}
           image={props.url}
           alt={props.alt}
-          sx={{ display: loading ? 'none' : 'block' }}
+          sx={{
+            display: loading ? 'none' : 'block',
+            '&:hover': {
+              cursor: props.description.length === 0 ? 'pointer' : 'default'
+            }
+          }}
         />
       }
 

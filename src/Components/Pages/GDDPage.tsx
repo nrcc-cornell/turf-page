@@ -6,22 +6,6 @@ import MultiMapPage from './MultiMapPage';
 import StyledCard from './StyledCard';
 
 
-type DateValue = [ string, number ];
-
-type MapPageProps = {
-  url: string,
-  alt: string,
-  description: string[]
-};
-
-type GDDProps = {
-  maps: MapPageProps[],
-  data: DateValue[] | null,
-  todayFromAcis: boolean,
-  base: string
-};
-
-
 
 export default function GDDPage(props: GDDProps) {
   return (

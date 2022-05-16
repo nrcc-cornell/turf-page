@@ -6,39 +6,7 @@ import {
   CircularProgress
 } from '@mui/material';
 
-type Row = {
-  thresholds: {
-    low: number,
-    medium: number,
-    high: number
-  },
-  name: string
-}
 
-type ThresholdObj = {
-  low: number,
-  medium: number,
-  high: number
-};
-
-type DateValue = [ string, number ];
-
-type HSTool = {
-  Daily: DateValue[]
-};
-
-type Tool = HSTool & {
-  '7 Day Avg': DateValue[]
-};
-
-type ChartProps = {
-  rows: Row[],
-  ranges: string[][],
-  title: string,
-  data: [string, number][] | Tool | HSTool | null,
-  colorizer: (val: number, thresholds: ThresholdObj) => string,
-  todayFromAcis: boolean
-};
 
 const dateSX = (i: number) => ({
   backgroundColor: 'white',
@@ -74,7 +42,7 @@ const HeaderSX = {
 };
 
 
-const constructCells = (data: [string, number][] | Tool | HSTool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string): JSX.Element[][] => {
+const constructCells = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string): JSX.Element[][] => {
   return rows.map(rowInfo => {
     const row = [<Box key={rowInfo.name} sx={HeaderSX}>{rowInfo.name}</Box>];
     
@@ -111,8 +79,8 @@ const constructCells = (data: [string, number][] | Tool | HSTool, rows: Row[], c
 };
 
 
-const constructDates = (data: [string, number][]) => {
-  return data.map((arr, i) => <Box key={arr[0]} sx={dateSX(i)}>
+const constructDates = (data: StrDateValue[] | DateValue[]) => {
+  return data.map((arr, i) => <Box key={arr[1] + 'i' + i} sx={dateSX(i)}>
     <Box sx={{
       width: 'fit-content',
       '@media (max-width: 510px)': {
@@ -123,7 +91,7 @@ const constructDates = (data: [string, number][]) => {
 };
 
 
-const renderChart = (data: [string, number][] | Tool | HSTool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string, todayFromAcis: boolean) => {
+const renderChart = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string, todayFromAcis: boolean) => {
   const sample = data instanceof Array ? data : data['Daily'];
   const dates = constructDates(sample);
   const cells = constructCells(data, rows, colorizer);
@@ -250,7 +218,7 @@ const renderNoData = (numRows: number) => {
 
 
 
-export default function DailyChart(props: ChartProps) {
+export default function DailyChart(props: DailyChartProps) {
   return (
     <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
       <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>

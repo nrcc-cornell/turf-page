@@ -6,14 +6,6 @@ import {
   CircularProgress
 } from '@mui/material';
 
-type DateValue = [ string, number ];
-
-type ChartProps = {
-  data: DateValue[] | null,
-  todayFromAcis: boolean,
-  title: string
-};
-
 
 const dateSX = (i: number) => ({
   backgroundColor: 'white',
@@ -49,7 +41,7 @@ const HeaderSX = {
 };
 
 
-const constructCells = (data: DateValue[]) => {
+const constructCells = (data: StrDateValue[]) => {
   const GDDSx = {
     height: '100%',
     width: '100%',
@@ -68,7 +60,7 @@ const constructCells = (data: DateValue[]) => {
 };
 
 
-const constructDates = (data: [string, number][]) => {
+const constructDates = (data: StrDateValue[]) => {
   return data.map((arr, i) => <Box key={arr[0]} sx={dateSX(i)}>
     <Box sx={{
       width: 'fit-content',
@@ -80,7 +72,7 @@ const constructDates = (data: [string, number][]) => {
 };
 
 
-const renderChart = (data: DateValue[], todayFromAcis: boolean) => {
+const renderChart = (data: StrDateValue[], todayFromAcis: boolean) => {
   const dates = constructDates(data);
   const cells = constructCells(data);
 
@@ -192,7 +184,9 @@ const renderNotChart = (a: 'loading' | 'empty') => {
 
 
 
-export default function ListChart(props: ChartProps) {
+export default function ListChart(props: ListChartProps) {
+  console.log(props);
+  
   return (
     <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
       <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>

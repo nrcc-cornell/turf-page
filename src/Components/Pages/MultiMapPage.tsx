@@ -6,18 +6,6 @@ import StyledDivider from './StyledDivider';
 import MapPage from './MapPage';
 
 
-type MapPageProps = {
-  url: string,
-  alt: string,
-  description: string[],
-  title?: string
-};
-
-type MultiMapPage = {
-  maps: MapPageProps[]
-};
-
-
 
 export default function MultiMapPage(props: MultiMapPage) {
   return (

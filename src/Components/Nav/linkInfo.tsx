@@ -8,17 +8,6 @@ import {
   Water,
 } from '@mui/icons-material';
 
-type NavItem = {
-  pathname: string;
-  label: string;
-};
-
-type MenuObj = {
-  base: string;
-  name: string;
-  icon: JSX.Element;
-  items: NavItem[];
-};
 
 const menuGroups: MenuObj[] = [
   {

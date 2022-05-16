@@ -6,57 +6,7 @@ import TextContent from './TextContent';
 import DailyChart from './DailyChart';
 import WeekMaps from './WeekMaps';
 import StyledDivider from './StyledDivider';
-
-type Row = {
-  thresholds: {
-    low: number,
-    medium: number,
-    high: number
-  },
-  name: string
-}
-
-type ThresholdObj = {
-  low: number,
-  medium: number,
-  high: number
-};
-
-type DateValue = [ string, number ];
-
-type HSTool = {
-  Daily: DateValue[]
-};
-
-type Tool = HSTool & {
-  '7 Day Avg': DateValue[]
-};
-
-type PageProps = {
-  text: {
-    description: string[],
-    titlePart: string,
-    references?: string[],
-  }
-  chart: {
-    rows: Row[],
-    ranges: string[][],
-    title: string,
-    data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress',
-    colorizer: (val: number, thresholds: ThresholdObj) => string
-  },
-  maps: {
-    title: string,
-    thumbs: {
-      fullSizeUrl: string,
-      thumbUrl: string,
-      alt: string,
-      date: string
-    }[]
-  }[],
-  data: [string, number][] | Tool | HSTool | null,
-  todayFromAcis: boolean
-};
+import SeasonChart from './SeasonChart';
 
 
 
@@ -82,6 +32,13 @@ export default function ToolPage(props: PageProps) {
       <DailyChart {...props.chart} data={props.data} todayFromAcis={props.todayFromAcis} />
       
       <StyledDivider />
+
+      {props.seasonData &&
+        <>
+          <SeasonChart data={props.seasonData} colorizer={props.chart.colorizer} thresholds={props.chart.rows[0].thresholds} />
+          <StyledDivider />
+        </>
+      }
 
       <Box sx={{
         display: 'flex',

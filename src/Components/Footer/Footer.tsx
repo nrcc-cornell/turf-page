@@ -2,13 +2,7 @@ import React from 'react';
 
 import { Box, Typography }from '@mui/material';
 
-type ImgOptions = {
-  href: string;
-  src: string;
-  alt: string;
-  width: number;
-  rounded?: boolean;
-}
+
 
 function ImgBox(obj: ImgOptions) {
   return (

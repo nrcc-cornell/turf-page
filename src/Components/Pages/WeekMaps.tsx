@@ -7,17 +7,6 @@ import {
 } from '@mui/material';
 import MapThumb from './MapThumb';
 
-type Thumb = {
-  fullSizeUrl: string,
-  thumbUrl: string,
-  alt: string,
-  date: string
-};
-
-type WeekMapsProps = {
-  title: string,
-  thumbs: Thumb[]
-};
 
 const BoxSX = {
   display: 'flex',

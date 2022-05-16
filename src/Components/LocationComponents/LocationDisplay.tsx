@@ -5,17 +5,6 @@ import { Box, Typography } from '@mui/material';
 import StyledTooltip from './StyledTooltip';
 import LocationModal from './LocationModal';
 
-type UserLocation = {
-  address: string,
-  lngLat: [number,number]
-};
-
-type DisplayProps = {
-    currentLocation: UserLocation,
-    pastLocations: UserLocation[],
-    handleChangeLocations: (a: 'add' | 'remove' | 'change', b: UserLocation) => void
-};
-
 
 
 export default function LocationDisplay(props: DisplayProps) {

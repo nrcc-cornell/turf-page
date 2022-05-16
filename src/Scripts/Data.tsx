@@ -3,37 +3,6 @@ import { format, subDays, addDays, isWithinInterval, parseISO, isSameDay } from 
 import roundXDigits from './Rounding';
 import DayHourly from './DayClasses';
 
-type StrDateValue = [ string, number ];
-type DateValue = [ Date, number ];
-
-type HSTool = {
-  Daily: StrDateValue[]
-};
-
-type Tool = HSTool & { '7 Day Avg': StrDateValue[] };
-
-type Indices = {
-  anthracnose: Tool,
-  brownPatch: Tool,
-  dollarspot: Tool,
-  pythiumBlight: Tool,
-  heatStress: HSTool
-};
-
-type ToolData = Indices & {
-  gdd32: StrDateValue[],
-  gdd50: StrDateValue[],
-  todayFromAcis: boolean
-};
-
-type DayValues = {
-  anthracnose: [string, number][],
-  brownPatch: [string, number][],
-  dollarspot: [string, number][],
-  pythiumBlight: [string, number][],
-  heatStress: [string, number][]
-};
-
 
 const emptyIndices = {
   anthracnose: {
@@ -54,6 +23,13 @@ const emptyIndices = {
   },
   heatStress: {
     Daily: []
+  },
+  season: {
+    anthracnose: [],
+    brownPatch: [],
+    dollarspot: [],
+    pythiumBlight: [],
+    heatStress: []
   }
 };
 
@@ -104,7 +80,7 @@ function getToolRawData(lng: number, lat: number ): Promise<DayHourly[] | null> 
       'lat': lat,
       'lon': lng,
       'tzo': -5,
-      'sdate': format(subDays(new Date(), 19), 'yyyyMMdd08'),   // Explanation for '08' above
+      'sdate': format(subDays(new Date(new Date().getFullYear(), 2, 1), 7), 'yyyyMMdd08'),   // Explanation for '08' above
       'edate': 'now'
     })
   })
@@ -212,7 +188,7 @@ const calcIndices = (days: DayHourly[]): Indices => {
   };
 
   // Loop starts where it does to ensure that you can look back several days where necessary and find data
-  for (let i = days.length - 16; i < days.length; i++) {
+  for (let i = 6; i < days.length; i++) {
     const day = days[i];
     const currDay = format(day.date, 'MM-dd');
 
@@ -228,19 +204,22 @@ const calcIndices = (days: DayHourly[]): Indices => {
   const indices = JSON.parse(JSON.stringify(emptyIndices));
   Object.keys(dayValues).forEach(risk => {
     if (risk === 'anthracnose') {
+      indices.season[risk] = dayValues[risk];
       indices[risk] = {
         // Daily for anthracnose is the days' index, not an average. 
-        Daily: dayValues[risk].slice(6),
-        '7 Day Avg': xDayAverage(7, dayValues[risk])
+        Daily: dayValues[risk].slice(-10),
+        '7 Day Avg': xDayAverage(7, dayValues[risk].slice(-16))
       };
     } else if (risk === 'heatStress') {
+      indices.season[risk] = xDayAverage(3, dayValues[risk]);
       indices[risk] = {
-        Daily: xDayAverage(3, dayValues[risk].slice(4))                                             // Sliced to ensure the proper number of days are returned
+        Daily: indices.season[risk].slice(-10)                                                      // Sliced to ensure the proper number of days are returned
       };
     } else if (risk === 'brownPatch' || risk === 'dollarspot' || risk === 'pythiumBlight') {
+      indices.season[risk] = xDayAverage(3, dayValues[risk]);
       indices[risk] = {
-        Daily: xDayAverage(3, dayValues[risk].slice(4)),                                            // Sliced to ensure the proper number of days are returned
-        '7 Day Avg': xDayAverage(7, dayValues[risk])
+        Daily: indices.season[risk].slice(-10),                                                     // Sliced to ensure the proper number of days are returned
+        '7 Day Avg': xDayAverage(7, dayValues[risk].slice(-16))
       };
     }
   });
@@ -444,5 +423,68 @@ function getLocation( lng: number, lat: number, token: string ): Promise<false |
     .catch(() => false);
 }
 
+const radarStations = [{
+  sid: 'KCBW',
+  lngLat: [-67.80642, 46.03917]
+},{
+  sid: 'KGYX',
+  lngLat: [-70.25636, 43.89131]
+},{
+  sid: 'KCXX',
+  lngLat: [-73.16639, 44.51111]
+},{
+  sid: 'KTYX',
+  lngLat: [-75.68, 43.75583]
+},{
+  sid: 'KBUF',
+  lngLat: [-78.73694, 42.94861]
+},{
+  sid: 'KBGM',
+  lngLat: [-75.98472, 42.19969]
+},{
+  sid: 'KENX',
+  lngLat: [-74.06408, 42.58656]
+},{
+  sid: 'KBOX',
+  lngLat: [-71.13686, 41.95578]
+},{
+  sid: 'KOKX',
+  lngLat: [-72.86392, 40.86553]
+},{
+  sid: 'KCLE',
+  lngLat: [-81.86, 41.41306]
+},{
+  sid: 'KPBZ',
+  lngLat: [-80.21794, 40.53167]
+},{
+  sid: 'KCCX',
+  lngLat: [-78.00389, 40.92306]
+},{
+  sid: 'KDIX',
+  lngLat: [-74.41072, 39.94694]
+},{
+  sid: 'KDOX',
+  lngLat: [-75.44, 38.82556]
+},{
+  sid: 'KLWX',
+  lngLat: [-77.4875, 38.97611]
+},{
+  sid: 'KRLX',
+  lngLat: [-81.72278, 38.31111]
+},{
+  sid: 'KILN',
+  lngLat: [-83.82167, 39.42028]
+},{
+  sid: 'KJKL',
+  lngLat: [-83.31306, 37.59083]
+},{
+  sid: 'KFCX',
+  lngLat: [-80.27417, 37.02417]
+},{
+  sid: 'KAKQ',
+  lngLat: [-77.0075, 36.98389]
+}];
 
-export { getToolData, getLocation, states };
+
+
+export { getToolData, getLocation, states, radarStations };

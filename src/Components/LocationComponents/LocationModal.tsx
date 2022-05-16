@@ -34,17 +34,6 @@ const style = {
   }
 };
 
-type UserLocation = {
-  address: string,
-  lngLat: [number,number]
-};
-
-type ModalProps = {
-    currentLocation: UserLocation,
-    pastLocations: UserLocation[],
-    handleChangeLocations: (a: 'add' | 'remove' | 'change', b: UserLocation) => void
-};
-
 
 
 export default function LocationModal(props: ModalProps) {

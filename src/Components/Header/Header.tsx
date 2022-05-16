@@ -67,10 +67,7 @@ export default function Header() {
           },
           '@media (max-width: 510px)': {
             width: 175
-          },
-          // '@media (max-width: 350px)': {
-          //   width: 150
-          // }
+          }
         }}>
           <Typography variant='headerSecondary'>Cornell University</Typography>
           <Box sx={{ backgroundColor: 'rgb(179,27,27)', height: '1px', width: '80%', margin: '3px auto' }}></Box>

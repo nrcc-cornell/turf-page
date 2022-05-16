@@ -9,21 +9,6 @@ import {
 
 import { states } from '../../Scripts/Data';
 
-type MapBarProps = {
-  token: string,
-  bounds: {
-    south: number,
-    west: number
-  },
-  handleChangeLocations: (a: 'add' | 'change' | 'remove', b: UserLocation) => void,
-  mapRef: any
-};
-
-type UserLocation = {
-  address: string,
-  lngLat: [number, number]
-};
-
 
 
 export default function MapBar(props: MapBarProps ) {

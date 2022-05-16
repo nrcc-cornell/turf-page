@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { Box, Button, Divider, MenuItem, Modal, TextField } from '@mui/material';
+import {
+  Box,
+  Button,
+  Divider,
+  MenuItem,
+  Modal,
+  TextField
+} from '@mui/material';
 
 import StyledCard from './StyledCard';
 import MapPage from './MapPage';
@@ -44,6 +52,8 @@ const btnSX = {
 export default function Home() {
   const [favMaps, setFavMaps] = useState<number[]>([]);
   const [open, setOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -146,9 +156,18 @@ export default function Home() {
         flexWrap: 'wrap',
         boxSizing: 'border-box'
       }}>
-        {favMaps.map((n, i) => <Box key={i} sx={{ width: '50%', '@media (max-width: 750px)': { width: '100%' } }}>
-          <MapPage {...frontPageMaps[n]} title={frontPageMaps[n].alt} description={[]} />
-        </Box>)}
+        {favMaps.map((n, i) => 
+          <Box
+            key={i}
+            sx={{
+              width: '50%',
+              '@media (max-width: 750px)': { width: '100%' }
+            }}
+            onClick={() => navigate(frontPageMaps[n].path)}
+          >
+            <MapPage {...frontPageMaps[n]} title={frontPageMaps[n].alt} description={[]} />
+          </Box>)
+        }
       </Box>
     </StyledCard>
   );

@@ -8,15 +8,6 @@ import {
   Box
 } from '@mui/material';
 
-type MapThumbProps = {
-  date: string,
-  thumbUrl: string,
-  fullSizeUrl: string,
-  alt: string,
-  border: string,
-  changeMap: () => void
-};
-
 
 
 export default function MapThumb(props: MapThumbProps) {

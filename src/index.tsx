@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 // import reportWebVitals from './reportWebVitals';
 
 import { createTheme, ThemeProvider, ThemeOptions } from '@mui/material';
@@ -173,11 +173,11 @@ const container = document.getElementById('root') as Element;
 const root = createRoot(container);
 root.render(
   <React.StrictMode>
-    <BrowserRouter basename='/be99/turf-grass'>
+    <HashRouter>
       <ThemeProvider theme={theme}>
         <App />
       </ThemeProvider>
-    </BrowserRouter>
+    </HashRouter>
   </React.StrictMode>
 );
 

@@ -8,6 +8,7 @@ import {
 import { Close, ArrowBackIos } from '@mui/icons-material';
 
 
+
 export default function ShortCuttAd() {
   const [show, setShow] = useState(true);
 
