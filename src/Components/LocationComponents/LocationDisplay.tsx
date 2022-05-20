@@ -11,14 +11,18 @@ export default function LocationDisplay(props: DisplayProps) {
   return (
     <Box sx={{
       width: '100%',
-      backgroundColor: 'rgb(189,187,187)',
+      backgroundColor: 'rgb(242, 240, 240)',
       padding: '6px',
       boxSizing: 'border-box',
       display: 'flex',
-      justifyContent: 'flex-end'
+      justifyContent: 'flex-end',
+      '@media (max-width: 640px)': {
+        backgroundColor: 'rgb(179,27,27)',
+        color: 'white'
+      }
     }}>
       <Box sx={{
-        width: '55%',
+        width: '70%',
         maxWidth: 'fit-content'
       }}>
         <StyledTooltip

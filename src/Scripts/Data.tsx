@@ -1,4 +1,4 @@
-import { format, subDays, addDays, isWithinInterval, parseISO, isSameDay } from 'date-fns';
+import { format, subDays, addDays, isWithinInterval, parseISO, isSameDay, isAfter } from 'date-fns';
 
 import roundXDigits from './Rounding';
 import DayHourly from './DayClasses';
@@ -73,15 +73,15 @@ function createDays(arr: string[][]) {
 
 
 // Gets hourly data from API and converts it into an array of DayHourly objects for calculating risks later
-function getToolRawData(lng: number, lat: number ): Promise<DayHourly[] | null> {
+function getToolRawData(lng: number, lat: number, seasonStart: Date, seasonEnd: string ): Promise<DayHourly[] | null> {
   return fetch('https://hrly.nrcc.cornell.edu/locHrly', {
     method: 'POST',
     body: JSON.stringify({
       'lat': lat,
       'lon': lng,
       'tzo': -5,
-      'sdate': format(subDays(new Date(new Date().getFullYear(), 2, 1), 7), 'yyyyMMdd08'),   // Explanation for '08' above
-      'edate': 'now'
+      'sdate': format(subDays(seasonStart, 9), 'yyyyMMdd08'),   // Explanation for '08' above
+      'edate': seasonEnd
     })
   })
     .then(response => {
@@ -136,25 +136,30 @@ function getGDDPast(sDate: string, eDate: string, loc: string, base: number ): P
 
 
 // Takes observed and forecast GDD arrays and converts to a single array with calculated values for forecasts
-const calcGDDs = async (hasToday: boolean, past: DateValue[], todayOn: DayHourly[]): Promise<StrDateValue[]> => {
+const calcGDDs = async (today: Date, hasToday: boolean, past: DateValue[], todayOn: DayHourly[], base: number): Promise<StrDateValue[]> => {
+  // Handles edge case of approaching the end of the season, 11/30
+  let shift = 0;
+  if (today.getMonth() === 10 && today.getDate() > 25) shift = today.getDate() - 25;
+
   // Handles if today's value should be observed or forecast
   if (hasToday) {
-    past = past.slice(0,4);
-    todayOn = todayOn.slice(1);
+    past = past.slice(5 - shift,9);
+    todayOn = todayOn.slice(1, todayOn.length - shift);
   } else {
-    past = past.slice(0,3);
+    past = past.slice(5 - shift,8);
+    todayOn = todayOn.slice(0, todayOn.length - shift);
   }
 
   // Uses the last observed GDD value to calculate the forecast totals
   let gdds = past[past.length - 1][1];
   const forecasts: DateValue[] = todayOn.map(d => {
-    const thisGDD = (d.maxTemp() + d.minTemp()) / 2;
-    gdds += thisGDD;
+    const thisGDD = ((d.maxTemp() + d.minTemp()) / 2) - base;
+    gdds += Math.max(0, thisGDD);
     return [d.date, gdds];
   });
 
   const results: DateValue[] = past.concat(forecasts);
-  return results.map(arr => [format(arr[0], 'MM-dd'), roundXDigits(arr[1], 0)]);
+  return results.map(arr => [format(arr[0], 'MM-dd-yyyy'), roundXDigits(arr[1], 0)]);
 };
 
 
@@ -190,7 +195,9 @@ const calcIndices = (days: DayHourly[]): Indices => {
   // Loop starts where it does to ensure that you can look back several days where necessary and find data
   for (let i = 6; i < days.length; i++) {
     const day = days[i];
-    const currDay = format(day.date, 'MM-dd');
+    if (isAfter(day.date, new Date(day.date.getFullYear(), 11, 1))) break;
+
+    const currDay = format(day.date, 'MM-dd-yyyy');
 
     // Calculate and add index for each risk to object
     dayValues['anthracnose'].push([currDay, calcAnthracnoseIndex(days.slice(i - 2, i + 1))]);       // 3 days, including today
@@ -204,7 +211,7 @@ const calcIndices = (days: DayHourly[]): Indices => {
   const indices = JSON.parse(JSON.stringify(emptyIndices));
   Object.keys(dayValues).forEach(risk => {
     if (risk === 'anthracnose') {
-      indices.season[risk] = dayValues[risk];
+      indices.season[risk] = dayValues[risk].slice(2);
       indices[risk] = {
         // Daily for anthracnose is the days' index, not an average. 
         Daily: dayValues[risk].slice(-10),
@@ -333,22 +340,35 @@ const calcHeatStressIndex = (day: DayHourly): number => {
 
 // Overarching function to coordinate gathering and calculating data used in the ToolPage component
 const getToolData = async (lngLat: number[]): Promise<ToolData> => {
-  const sDate = format(subDays(new Date(), 3), 'yyyy-MM-dd');
+  let today = new Date();
+  const month = today.getMonth();
+  
+  let seasonEnd, eDate;
+  if (month < 2 || month === 11) {
+    today = new Date(today.getFullYear() - (month < 2 ? 1 : 0), 10, 25);
+    seasonEnd = format(new Date(today.getFullYear(), 10, 30), 'yyyyMMdd08');
+    eDate = format(addDays(today, 6), 'yyyy-MM-dd');
+  } else {
+    seasonEnd = 'now';
+    eDate = format(addDays(today, 1), 'yyyy-MM-dd');
+  }
+  
+  const sDate = format(subDays(today, 8), 'yyyy-MM-dd');
+  const seasonStart = new Date(today.getFullYear(), 2, 1);
 
-  const data: DayHourly[] | null = await getToolRawData(lngLat[0], lngLat[1]);
+  const data: DayHourly[] | null = await getToolRawData(lngLat[0], lngLat[1], seasonStart, seasonEnd);
 
   if (data) {
     // digest GDD data into GDDs per day of interest
-    const eDate = format(addDays(new Date(), 1), 'yyyy-MM-dd');
-    const iOfToday = data.findIndex(obj => isSameDay(obj.date, new Date()));
+    const iOfToday = data.findIndex(obj => isSameDay(obj.date, today));
     
     const past32 = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
     const past50 = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
     
     const hasToday = past32[past32.length - 1][1] !== -999;
     
-    const gdd32 = await calcGDDs(hasToday, past32, data.slice(iOfToday));
-    const gdd50 = await calcGDDs(hasToday, past50, data.slice(iOfToday));
+    const gdd32 = await calcGDDs(today, hasToday, past32, data.slice(iOfToday), 32);
+    const gdd50 = await calcGDDs(today, hasToday, past50, data.slice(iOfToday), 50);
 
     const riskIndices = calcIndices(data);
 

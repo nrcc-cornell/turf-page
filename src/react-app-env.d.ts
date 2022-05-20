@@ -96,8 +96,7 @@ type MapPageProps = {
 type MapProps = {
   currentLocation: UserLocation,
   pastLocations: UserLocation[],
-  handleChangeLocations: (a: 'add' | 'remove' | 'change', b: UserLocation) => void,
-  handleClose: () => void
+  handleChangeLocations: (a: 'add' | 'remove' | 'change', b: UserLocation) => void
 };
 
 type MapThumbProps = {

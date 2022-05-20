@@ -1,57 +1,58 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import { format, addDays } from 'date-fns';
 
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
-import HC_more from 'highcharts/highcharts-more';
 import NoDataToDisplay from 'highcharts/modules/no-data-to-display';
+import Highcharts from 'highcharts/highstock';
+import HighchartsReact from 'highcharts-react-official';
 import accessibility from 'highcharts/modules/accessibility';
+import xrange from 'highcharts/modules/xrange';
 import roundXDigits from '../../Scripts/Rounding';
-HC_more(Highcharts);
 NoDataToDisplay(Highcharts);
 accessibility(Highcharts);
-Highcharts.Chart.prototype.showResetZoom = function () { return; };
+xrange(Highcharts);
+
+Highcharts.setOptions({
+  lang: {
+    rangeSelectorTo: 'To'
+  }
+});
 
 
 
 export default function SeasonChart(props: SeasonChartProps) {
-  const chartComponent = useRef<HighchartsReact.RefObject | null>(null);
-  const [isZoomed, setIsZoomed] = useState(false);
-
-  
-  const resetZoom = () => {
-    if (chartComponent && chartComponent.current) {
-      chartComponent.current.chart.zoomOut();
-    }
-  };
-
-
   let noRiskCount = 0;
   let moderateCount = 0;
   let highCount = 0;
-
+  
   const data = props.data.map((arr, i) => {
     const riskColor = props.colorizer(arr[1], props.thresholds);
 
-    let riskName;
-    if (riskColor === 'rgb(255,215,0)') {
+    let riskName, riskNumber;
+    if (riskColor === 'gold') {
+      riskNumber = 1.5;
       riskName = 'Moderate';
       moderateCount++;
     } else if (riskColor === 'rgb(255,0,0)') {
+      riskNumber = 2;
       riskName = 'High';
       highCount++;
     } else {
+      riskNumber = 1;
       riskName = 'No Risk';
       noRiskCount++;
     }
 
+    const parts = arr[0].split('-');
+    const month = parseInt(parts[0]) - 1;
+    const day = parseInt(parts[1]);
+    const year = parseInt(parts[2]);
+
     return {
-      x: new Date(arr[0]).getTime() - 1,
-      y: 0,
-      z: Math.max(0, arr[1]),
+      x: Date.UTC(year, month, day, 0, 0, 0),
       name: riskName,
+      y: riskNumber,
       color: riskColor,
       std: {
         low: i === 0 ? '0.0' : roundXDigits(noRiskCount/(i + 1) * 100, 0),
@@ -62,65 +63,143 @@ export default function SeasonChart(props: SeasonChartProps) {
   });
 
   const options = {
-    credits: { enabled: false },
     chart: {
-      height: 70,
-      zoomType: 'x',
-      spacingTop: 18,
-      spacingBottom: 2,
-      spacingRight: 0,
-      spacingLeft: 0,
-      resetZoomButton: {
-        position: {
-          y: -20
-        },
-        theme: {
-          style: {
-            width: '20px'
-          }
-        }
-      },
-      events: {
-        selection: function (e: any) {
-          if (e.resetSelection) {
-            setIsZoomed(false);
-          } else {
-            setIsZoomed(true);
-          }
-        }
-      }
-    },
-    title: {
-      text: 'Season to Date Estimates',
-      floating: true,
-      y: -3
+      height: 220
     },
     series: [
       {
-        type: 'bubble',
+        type: 'column',
         data,
-        marker: {
-          fillOpacity: 0.75,
-          lineWidth: 0
-        },
-        maxSize: '75%'
+        showInNavigator: true,
+        groupPadding: 0.06,
+        pointPadding: 0
       }
     ],
-    legend: {
-      enabled: false
-    },
     xAxis: {
-      type: 'datetime',
-      lineWidth: 1
+      ordinal: false
     },
     yAxis: {
+      opposite: false,
+      min: 0,
+      max: 2,
+      tickPositions: [0,0.7,1.2,1.7],
+      gridLineWidth: 0,
+      showLastLabel: true,
       labels: {
-        enabled: false
+        allowOverlap: true,
+        step: 1,
+        x: -2,
+        y: 3,
+        formatter: function(x:any) {
+          if (x.value === 0.7) {
+            return 'No Risk';
+          }
+
+          if (x.value === 1.2) {
+            return 'Moderate';
+          }
+
+          if (x.value === 1.7) {
+            return 'High';
+          }
+
+          return '';
+        }
+      }
+    },
+    rangeSelector: {
+      buttons: [{
+        type: 'day',
+        count: 9,
+        text: '10 days',
+        title: 'View 10 days',
+      }, {
+        type: 'day',
+        count: 30,
+        text: '30 days',
+        title: 'View 30 days',
+      }, {
+        type: 'all',
+        text: 'Season',
+        title: 'View Entire Season'
+      }],
+      buttonSpacing: 3,
+      buttonTheme: {
+        fill: 'none',
+        stroke: 'none',
+        'stroke-width': 0,
+        r: 8,
+        width: 46,
+        style: {
+          color: '#039',
+          fontWeight: 'bold',
+        },
+        states: {
+          hover: {
+          },
+          select: {
+            fill: '#039',
+            style: {
+              color: 'white'
+            }
+          }
+        }
       },
-      title: {
-        enabled: false
+      inputBoxBorderColor: 'gray',
+      inputBoxWidth: 120,
+      inputBoxHeight: 18,
+      inputStyle: {
+        color: '#039',
+        fontWeight: 'bold'
       },
-      gridLineWidth: 0
+      labelStyle: {
+        color: 'silver',
+        fontWeight: 'bold'
+      },
+      selected: 0
+    },
+    navigator: {
+      series: {
+        type: 'column'
+      },
+      yAxis: {
+        min: 0,
+        max: 3
+      },
+      xAxis: {
+        labels: {
+          y: -28
+        }
+      }
+    },
+    responsive: {
+      rules: [{
+        chartOptions: {
+          rangeSelector: {
+            inputBoxBorderColor: 'gray',
+            inputBoxWidth: 80,
+            inputBoxHeight: 18,
+            inputStyle: {
+              color: '#039',
+              fontWeight: 'bold'
+            }
+          }
+        },
+        condition: {
+          maxWidth: 465
+        }
+      },{
+        chartOptions: {
+          rangeSelector: {
+            buttonPosition: {
+              x: -40
+            }
+          }
+        },
+        condition: {
+          maxWidth: 350
+        }
+      }]
     },
     tooltip: {
       outside: true,
@@ -141,7 +220,6 @@ export default function SeasonChart(props: SeasonChartProps) {
           return renderToStaticMarkup(<Box style={{
             padding: '6px'
           }}>
-            <Box style={{ fontSize: '14px', textAlign: 'center', marginBottom: '3px' }}>{roundXDigits(this.point.options.z ? this.point.options.z : 0, 2)}</Box>
             <Box style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center' }}>{risk}</Box>
             
             <Box style={{
@@ -183,43 +261,19 @@ export default function SeasonChart(props: SeasonChartProps) {
     }
   };
 
-  console.log(isZoomed);
-
   return (
     <Box sx={{
-      position: 'relative',
       width: 'calc(100% - 8px)',
-      marginTop: '20px',
-      height: 70,
+      height: 220,
       '@media (max-width: 360px)': {
         width: '100%'
       }
     }}>
       <HighchartsReact
-        ref={chartComponent}
         highcharts={Highcharts}
+        constructorType={'stockChart'}
         options={options}
       />
-
-      {isZoomed && (
-        <Button
-          sx={{
-            position: 'absolute',
-            bottom: -30,
-            right: '50%',
-            transform: 'translateX(50%)',
-            textTransform: 'none',
-            color: 'rgb(80,80,160)',
-            padding: '2px 4px',
-            '&:hover': {
-              backgroundColor: 'rgb(240,240,240)'
-            }
-          }}
-          onClick={resetZoom}
-        >
-          Reset zoom
-        </Button>
-      )}
     </Box>
   );
 }

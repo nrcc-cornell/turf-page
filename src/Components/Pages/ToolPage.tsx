@@ -30,15 +30,12 @@ export default function ToolPage(props: PageProps) {
       }
     }}>
       <DailyChart {...props.chart} data={props.data} todayFromAcis={props.todayFromAcis} />
-      
-      <StyledDivider />
 
       {props.seasonData &&
-        <>
-          <SeasonChart data={props.seasonData} colorizer={props.chart.colorizer} thresholds={props.chart.rows[0].thresholds} />
-          <StyledDivider />
-        </>
+        <SeasonChart data={props.seasonData} colorizer={props.chart.colorizer} thresholds={props.chart.rows[0].thresholds} />
       }
+
+      <StyledDivider />
 
       <Box sx={{
         display: 'flex',

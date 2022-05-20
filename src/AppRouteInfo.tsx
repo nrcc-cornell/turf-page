@@ -2,7 +2,13 @@ import { addDays, format } from 'date-fns';
 
 
 const constructThumbs = (type: string, variety: string | null, name: string): Thumb[] => {
-  const today = new Date();
+  let today = new Date();
+  if (today.getMonth() < 2) {
+    today = new Date(today.getFullYear() - 1, 10, 30);
+  } else if (today.getMonth() === 11) {
+    today = new Date(today.getFullYear(), 10, 30);
+  }
+
   const thumbs: Thumb[] = [];
 
   variety = variety ? '/' + variety : '';
@@ -21,12 +27,12 @@ const constructThumbs = (type: string, variety: string | null, name: string): Th
   return thumbs;
 };
 
-const riskRanges = [['No Risk', 'rgb(0,170,0)'], ['Moderate', 'gold'], ['High', 'rgb(255,0,0)']];
+const riskRanges = [['No Risk', 'rgb(0,170,0)'], ['Moderate', 'rgb(255,215,0)'], ['High', 'rgb(255,0,0)']];
 const riskColorizer = function(val: number, thresholds: ThresholdObj) {
   if (val <= thresholds.low) {
     return 'rgb(0,170,0)';
   } else if (val <= thresholds.high) {
-    return 'gold';
+    return 'rgb(255,215,0)';
   } else {
     return 'rgb(255,0,0)';
   }
@@ -44,8 +50,8 @@ const routeInfo: RouteInfo[] = [
           'The Anthracnose risk index is based on the model of <i>Danneberger et al. (1984)</i> (see references below) with slight modifications for compatibility with available gridded weather observations. The model combines leaf wetness (Lw) and air temperature (T) into a single index (Ia) that is used to estimate the risk of an outbreak. The equation describing the index is:',
           `<div class='aFormula'>Ia = 4.0233 - 0.2283(Lw) - 0.5303(T) - 0.0013(Lw<sup>2</sup>) + 0.0197(T<sup>2</sup>) + 0.0155(T × Lw)</div>`,
           'Lw is the average number of hours per day that leaf wetness was present during the previous three days. Any hourly weather observation that reports either rainfall or a dew point that is less than three degrees (°C) lower than the air temperature indicates leaf wetness, indicates the occurrence leaf wetness during that hour and the next hour. T is the average air temperature (°C) for the previous three days.',
-          `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated when the index exceeds 1.5. <span style='color: gold; font-weight: bold'>Moderate risk</span> corresponds to index values between 0.4 and 1.5. <span style='color: green; font-weight: bold'>Low risk</span> is assumed for index values of 0.4 or less. In general higher index values occur with higher temperatures and more prolonged leaf wetness.`,
-          `The weekly index values reflect the longer-term persistence of Anthracnose risk. They are simply a 7-day average of the daily index values. High, Moderate and low risk are based on the same index thresholds, but using 7-day averages rather than daily values. In general, <span style='color: red; font-weight: bold'>high weekly risk</span> indicates consistent (4 or more days) of moderate to high daily risk, <span style='color: gold; font-weight: bold'>moderate weekly risk</span> indicates 2 or 3 days of moderate to high daily risk and <span style='color: green; font-weight: bold'>low weekly risk</span> indicates 2 or fewer days of moderate risk.`,
+          `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated when the index exceeds 1.5. <span style='color: rgb(255,215,0); font-weight: bold'>Moderate risk</span> corresponds to index values between 0.4 and 1.5. <span style='color: green; font-weight: bold'>Low risk</span> is assumed for index values of 0.4 or less. In general higher index values occur with higher temperatures and more prolonged leaf wetness.`,
+          `The weekly index values reflect the longer-term persistence of Anthracnose risk. They are simply a 7-day average of the daily index values. High, Moderate and low risk are based on the same index thresholds, but using 7-day averages rather than daily values. In general, <span style='color: red; font-weight: bold'>high weekly risk</span> indicates consistent (4 or more days) of moderate to high daily risk, <span style='color: rgb(255,215,0); font-weight: bold'>moderate weekly risk</span> indicates 2 or 3 days of moderate to high daily risk and <span style='color: green; font-weight: bold'>low weekly risk</span> indicates 2 or fewer days of moderate risk.`,
           `The weather data used to compute the Anthracnose index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted risk uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
         ],
         references: [
@@ -88,8 +94,8 @@ const routeInfo: RouteInfo[] = [
           `<span style='font-style: italic;margin-left: 20px;'>Ibp = RH<sub>80</sub> + RH<sub>95</sub> + Lw + Tmin</span>`,
           `RH<sub>80</sub> equals 1 when the daily average relative humidity is 80 or above, otherwise it is set to 0. RH<sub>95</sub> is assigned a value 1 if more than 4 hourly RH values in a day exceed 95 and a value of 2 if 8 or more hours exceed 95, otherwise it is set to zero. Lw is set to 1 when leaf wetness is present during 10 or more hours in a day, otherwise it is assigned a value of 0. Any hourly weather observation that reports either rainfall or a dew point that is less than three degrees (°C) lower than the air temperature indicates that leaf wetness occurred during that hour and the next hour.`,
           'From July 1 to September 30 Tmin is assigned a value of -2. Prior to July 1 and after September 30, the value of Tmin is -4. Regardless of date, on days when the minimum temperature is 16°C (60.8°F) or higher Tmin is assigned a value of 1.',
-          `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated when the average of the index over the previous 3 days exceeds 0.9. <span style='color: gold; font-weight: bold'>Moderate risk</span> corresponds to 3-day average index values between 0.4 and 0.9. <span style='color: green; font-weight: bold'>Low risk</span> is assumed for 3-day average index values of 0.4 or less. In general higher index values occur with higher temperatures, more prolonged leaf wetness and higher relative humidity.`,
-          `The weekly index values reflect the longer-term persistence of brown patch risk. They are simply a 7-day average of the daily index values. High, Moderate and low risk are based on the same index thresholds, but using the 7-day averages rather than daily values. In general, <span style='color: red; font-weight: bold;'>high weekly risk</span> indicates consistent (4 or more days) of moderate to high daily risk <span style='color: gold; font-weight: bold;'>moderate weekly risk</span> indicates 2 or 3 days of moderate to high daily risk and <span style='color: green; font-weight: bold;'>low weekly risk</span> indicates 2 or fewer days with moderate risk.`,
+          `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated when the average of the index over the previous 3 days exceeds 0.9. <span style='color: rgb(255,215,0); font-weight: bold'>Moderate risk</span> corresponds to 3-day average index values between 0.4 and 0.9. <span style='color: green; font-weight: bold'>Low risk</span> is assumed for 3-day average index values of 0.4 or less. In general higher index values occur with higher temperatures, more prolonged leaf wetness and higher relative humidity.`,
+          `The weekly index values reflect the longer-term persistence of brown patch risk. They are simply a 7-day average of the daily index values. High, Moderate and low risk are based on the same index thresholds, but using the 7-day averages rather than daily values. In general, <span style='color: red; font-weight: bold;'>high weekly risk</span> indicates consistent (4 or more days) of moderate to high daily risk <span style='color: rgb(255,215,0); font-weight: bold;'>moderate weekly risk</span> indicates 2 or 3 days of moderate to high daily risk and <span style='color: green; font-weight: bold;'>low weekly risk</span> indicates 2 or fewer days with moderate risk.`,
           `The weather data used to compute the Brown Patch index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted risk uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
         ],
         references: [
@@ -131,8 +137,8 @@ const routeInfo: RouteInfo[] = [
           `The Dollarspot risk index is based on the models of <i>Mills and Rothwell and Hall, R.</i> (see references below) with slight modifications for compatibility with available gridded weather observations. The model combines relative humidity (RH) leaf wetness (Lw), air temperature (T) and number of consecutive days with rainfall into a single index (Id) that is used to estimate the risk of an outbreak. The equation describing the index is:`,
           `<span style='font-style: italic;margin-left: 20px;'>Ia = Drh + Dlw + Drain</span>`,
           'Each variable in the equation is originally set to zero. Drh is set to 1 when 3 or more hours during the previous seven days had both an RH of greater than 90% and a temperature greater than 25°C (77°F). Dlw is set to 1 if the average daily temperature exceeds 15°C (59°F) and the average number of hours per day that leaf wetness was present during the previous 3 days exceeds 8. Any hourly weather observation that reports either rainfall or a dew point that is less than three degrees (°C) lower than the air temperature indicates the occurrence leaf wetness during that hour and the next hour. Drain is assigned a value of 1 under two conditions: a) when three or more consecutive days received rainfall and the average temperature on these days exceeded 15°C (59°F) b) when two or more consecutive days received rainfall and the average temperature on these days exceeded 20°C (68°F).',
-          `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated when the average of the index over previous 3 days exceeds 0.7. <span style='color: gold; font-weight: bold'>Moderate risk</span> corresponds to 3-day average index values between 0.4 and 0.7. <span style='color: green; font-weight: bold'>Low risk</span> is assumed for 3-day average index values of 0.4 or less. In general higher index values occur with warmer and wetter conditons.`,
-          `The weekly index values reflect the longer-term persistence of Dollarspot risk. They are simply a 7-day average of the daily index values. High, Moderate and low risk are based on the same index thresholds, but using the 7-day average rather than daily values. In general, <span style='color: red; font-weight: bold'>high weekly risk</span> indicates consistent (4 or more days) of moderate to high daily risk, <span style='color: gold; font-weight: bold'>moderate weekly risk</span> indicates 2 or 3 days of moderate to high daily risk and <span style='color: green; font-weight: bold'>low weekly risk</span> indicates 2 or fewer days with moderate risk.`,
+          `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated when the average of the index over previous 3 days exceeds 0.7. <span style='color: rgb(255,215,0); font-weight: bold'>Moderate risk</span> corresponds to 3-day average index values between 0.4 and 0.7. <span style='color: green; font-weight: bold'>Low risk</span> is assumed for 3-day average index values of 0.4 or less. In general higher index values occur with warmer and wetter conditons.`,
+          `The weekly index values reflect the longer-term persistence of Dollarspot risk. They are simply a 7-day average of the daily index values. High, Moderate and low risk are based on the same index thresholds, but using the 7-day average rather than daily values. In general, <span style='color: red; font-weight: bold'>high weekly risk</span> indicates consistent (4 or more days) of moderate to high daily risk, <span style='color: rgb(255,215,0); font-weight: bold'>moderate weekly risk</span> indicates 2 or 3 days of moderate to high daily risk and <span style='color: green; font-weight: bold'>low weekly risk</span> indicates 2 or fewer days with moderate risk.`,
           `The weather data used to compute the Dollarspot index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted risk uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
         ],
         references: [
@@ -177,7 +183,7 @@ const routeInfo: RouteInfo[] = [
           `<div class='pFormula'>Ipb = (T<sub>max</sub> - 86) + (T<sub>min</sub> - 68) + 0.5(RH<sub>89</sub> - 6)</div>`,
           'T<sub>max</sub> and T<sub>min</sub> are daily maximum and minimum temperature, respectively and RH<sub>89</sub> is the number of hours in the day that RH exceeds 89%.',
           `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated when the average of the index over previous 3 days exceeds 3.6. Moderate risk corresponds to 3-day average index values between 0.4 and 3.6. Low risk is assumed for 3-day average index values of 0.4 or less. In general, higher index values occur with higher temperatures and relative humidity.`,
-          `The weekly index values reflect the longer-term persistence of Pythium Blight risk. They are simply a 7-day average of the daily index values. High, Moderate and low risk are based on the same index thresholds, but using the 7-day average rather than daily values. In general, <span style='color: red; font-weight: bold'>high weekly risk</span> indicates consistent (4 or more days) of moderate to high daily risk, <span style='color: gold; font-weight: bold'>moderate weekly risk</span> indicates 2 or 3 days of moderate to high daily risk and <span style='color: green; font-weight: bold'>low weekly risk</span> indicates 2 or fewer days with moderate risk.`,
+          `The weekly index values reflect the longer-term persistence of Pythium Blight risk. They are simply a 7-day average of the daily index values. High, Moderate and low risk are based on the same index thresholds, but using the 7-day average rather than daily values. In general, <span style='color: red; font-weight: bold'>high weekly risk</span> indicates consistent (4 or more days) of moderate to high daily risk, <span style='color: rgb(255,215,0); font-weight: bold'>moderate weekly risk</span> indicates 2 or 3 days of moderate to high daily risk and <span style='color: green; font-weight: bold'>low weekly risk</span> indicates 2 or fewer days with moderate risk.`,
           `The weather data used to compute the Pythium Blight index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted risk uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
         ],
         references: [
@@ -217,7 +223,7 @@ const routeInfo: RouteInfo[] = [
         titlePart: 'the Heat Stress Index',
         description: [
           'The Heat Stress Index is simply the number of nighttime (8 pm to 7 am) hours in which the temperature exceeds 69°F and the sum of temperature and relative humidity exceeds 150.',
-          `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated for a heat stress index of 5 or more hours. <span style='color: gold; font-weight: bold'>Moderate risk</span> is associated with a heat stress index of 2-4 hours. <span style='color: green; font-weight: bold'>Low risk</span> is assumed otherwise.`,
+          `On a daily basis, <span style='color: red; font-weight: bold'>high risk</span> is indicated for a heat stress index of 5 or more hours. <span style='color: rgb(255,215,0); font-weight: bold'>Moderate risk</span> is associated with a heat stress index of 2-4 hours. <span style='color: green; font-weight: bold'>Low risk</span> is assumed otherwise.`,
           `The weather data used to compute the Heat Stress Index is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma"> Real-time Mesoscale Analysis (RTMA)</a>. Forecasted heat stress uses data from the <a href="https://www.weather.gov/mdl/ndfd_home"> National Digital Forecast Database (NDFD)</a>.`
         ]
       },
@@ -237,7 +243,7 @@ const routeInfo: RouteInfo[] = [
           if (val < thresholds.low) {
             return 'rgb(0,170,0)';
           } else if (val <= thresholds.high) {
-            return 'gold';
+            return 'rgb(255,215,0)';
           } else {
             return 'rgb(255,0,0)';
           }
@@ -255,8 +261,8 @@ const routeInfo: RouteInfo[] = [
         titlePart: 'Dandelion Control Recommendations',
         description: [
           'Dandelion Control Recommendations are based on accumulated Growing Degree Days (GDD).',
-          `For 2,4-D + 2,4-DP Amine, <span style='font-weight: bold; color: red'>Early</span> indicates that application on Kentucky bluegrass (Poa pratensis L.) controls less that 60% of the dandelions present. This occurs with fewer than 150 accumulated base-50°F GDD. <span style='font-weight: bold; color:green;'>Favorable</span> control (> 80%) is indicated when GDD accumulation exceeds 180. Otherwise <span style='font-weight: bold; color:gold;'>Marginal</span> control can be expected. These thresholds are based on (reference).`,
-          `For 2,4-D + 2,4-DP Ester, <span style='font-weight: bold; color: red'>Early</span> indicates that application on Kentucky bluegrass (Poa pratensis L.) controls less that 60% of the dandelions present. This occurs with fewer than 130 accumulated base-50°F GDD. <span style='font-weight: bold; color:green;'>Favorable</span> control (> 80%) is indicated when GDD accumulation exceeds 145. Otherwise <span style='font-weight: bold; color:gold;'>Marginal</span> control can be expected. These thresholds are based on (reference).`,
+          `For 2,4-D + 2,4-DP Amine, <span style='font-weight: bold; color: red'>Early</span> indicates that application on Kentucky bluegrass (Poa pratensis L.) controls less that 60% of the dandelions present. This occurs with fewer than 150 accumulated base-50°F GDD. <span style='font-weight: bold; color:green;'>Favorable</span> control (> 80%) is indicated when GDD accumulation exceeds 180. Otherwise <span style='font-weight: bold; color:rgb(255,215,0);'>Marginal</span> control can be expected. These thresholds are based on (reference).`,
+          `For 2,4-D + 2,4-DP Ester, <span style='font-weight: bold; color: red'>Early</span> indicates that application on Kentucky bluegrass (Poa pratensis L.) controls less that 60% of the dandelions present. This occurs with fewer than 130 accumulated base-50°F GDD. <span style='font-weight: bold; color:green;'>Favorable</span> control (> 80%) is indicated when GDD accumulation exceeds 145. Otherwise <span style='font-weight: bold; color:rgb(255,215,0);'>Marginal</span> control can be expected. These thresholds are based on (reference).`,
           `The weather data used to compute the Growing Degree Days (GDD) upon which these recomendations are based is from the National Weather Service's <a href="http://www.nco.ncep.noaa.gov/pmb/products/rtma">Real-time Mesoscale Analysis (RTMA)</a>. Forecasted recommendations use data from the <a href="https://www.weather.gov/mdl/ndfd_home">National Digital Forecast Database (NDFD)</a>.`
         ]
       },
@@ -282,11 +288,11 @@ const routeInfo: RouteInfo[] = [
           if (val < thresholds.low) {
             backgroundColor = 'rgb(255,0,0)';
           } else if (val < thresholds.medium) {
-            backgroundColor = 'gold';
+            backgroundColor = 'rgb(255,215,0)';
           }
           return backgroundColor;
         },
-        ranges: [['Early', 'rgb(255,0,0)'], ['Marginal', 'gold'], ['Favorable', 'rgb(0,170,0)']],
+        ranges: [['Early', 'rgb(255,0,0)'], ['Marginal', 'rgb(255,215,0)'], ['Favorable', 'rgb(0,170,0)']],
         title: 'Dandelion Control Recommendations'
       },
       maps: [{
@@ -324,7 +330,7 @@ const routeInfo: RouteInfo[] = [
           },
           name: 'Proxy'
         }],
-        ranges: [['Too Early', 'rgb(255,0,0)'], ['Ideal', 'rgb(0,170,0)'], ['Marginal', 'gold'], ['Too Late', 'rgb(170,170,170)']],
+        ranges: [['Too Early', 'rgb(255,0,0)'], ['Ideal', 'rgb(0,170,0)'], ['Marginal', 'rgb(255,215,0)'], ['Too Late', 'rgb(170,170,170)']],
         title: 'Seedhead Control Recommendations',
         colorizer: function(val: number, thresholds: ThresholdObj) {
           let backgroundColor = 'rgb(170,170,170)';
@@ -333,7 +339,7 @@ const routeInfo: RouteInfo[] = [
           } else if (val < thresholds.medium) {
             backgroundColor = 'rgb(0,170,0)';
           } else if (val < thresholds.high) {
-            backgroundColor = 'gold';
+            backgroundColor = 'rgb(255,215,0)';
           }
           return backgroundColor;
         }

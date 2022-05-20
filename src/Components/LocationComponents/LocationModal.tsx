@@ -12,6 +12,8 @@ import { Close } from '@mui/icons-material';
 import Map from './Map';
 import StyledTooltip from './StyledTooltip';
 
+import { radarStations } from '../../Scripts/Data';
+
 
 const style = {
   position: 'absolute',
@@ -34,16 +36,106 @@ const style = {
   }
 };
 
+const getSX = {
+  color: 'rgb(82,82,82)',
+  fontSize: '11px',
+  fontStyle: 'italic',
+  textDecoration: 'underline',
+  textAlign: 'center',
+  marginRight: '6px',
+  '&:hover': {
+    cursor: 'pointer',
+    color: 'rgb(50,50,255)',
+  },
+  '@media (max-width: 640px)': {
+    color: 'rgb(220,220,220)'
+  }
+};
+
 
 
 export default function LocationModal(props: ModalProps) {
   const [open, setOpen] = useState(false);
+  const [showRadar, setShowRadar] = useState<JSX.Element | null>(null);
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleOpen = (isRadar: boolean) => {
+    if (isRadar) {
+      const nearest = getNearestStation(props.currentLocation.lngLat, radarStations);
+      setShowRadar(
+        <Box sx={{
+          backgroundColor: 'rgb(79,88,93)',
+          position: 'absolute',
+          top: -1,
+          bottom: -1,
+          left: -1,
+          right: -1,
+          zIndex: 5,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <Box
+            component='img'
+            src={`https://radar.weather.gov/ridge/lite/${nearest}_loop.gif`}
+            alt='Local radar map GIF.'
+            sx={{
+              maxWidth: '100%',
+              maxHeight: 'calc(100% - 40px)'
+            }}
+          />
+        </Box>
+      );
+    }
+
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+    setShowRadar(null);
+  };
 
   const handleForecast = () => {
     window.open(`https://forecast.weather.gov/MapClick.php?lat=${props.currentLocation.lngLat[1]}&lon=${props.currentLocation.lngLat[0]}`, '_blank')?.focus();
+  };
+
+  function distanceBetween(pnt1: number[], pnt2: number[]): number {
+    // Convert coordinates to from degrees to radians
+    const radians = Math.PI / 180;
+    const phi1 = (90 - pnt1[1]) * radians;
+    const phi2 = (90 - pnt2[1]) * radians;
+    
+    const theta1 = pnt1[0] * radians;
+    const theta2 = pnt2[0] * radians;
+    
+    // Compute distance between points
+    const cos = Math.sin(phi1) * Math.sin(phi2) * Math.cos(theta1 - theta2) +
+    Math.cos(phi1) * Math.cos(phi2);
+  
+    let arc;
+    if (cos >= -1.0 && cos <= 1.0) {
+      arc = Math.acos( cos );
+    } else {
+      arc = -999;
+    }
+    
+    return arc * 3959;
+  }
+
+  const getNearestStation = (coords: number[], stns: {sid:string, lngLat: number[]}[]): string => {
+    const closest = stns.reduce((acc, stn) => {
+      const distance = distanceBetween(coords, stn.lngLat);
+
+      if (distance < acc.distanceFrom) {
+        acc = {
+          sid: stn.sid,
+          distanceFrom: distance
+        };
+      }
+
+      return acc;
+    }, { sid: '', distanceFrom: 9999 });
+
+    return closest.sid;
   };
 
   
@@ -58,22 +150,25 @@ export default function LocationModal(props: ModalProps) {
           placement='top'
         >
           <Typography
-            sx={{
-              color: 'rgb(82,82,82)',
-              fontSize: '11px',
-              fontStyle: 'italic',
-              textDecoration: 'underline',
-              textAlign: 'center',
-              '&:hover': {
-                cursor: 'pointer',
-                color: 'rgb(50,50,255)',
-              }
-            }}
+            sx={getSX}
             onClick={handleForecast}
           >
             Get Forecast
           </Typography>
         </StyledTooltip>
+
+        <StyledTooltip
+          title='Get Local Radar'
+          placement='top'
+        >
+          <Typography
+            sx={getSX}
+            onClick={() => handleOpen(true)}
+          >
+            Get Radar
+          </Typography>
+        </StyledTooltip>
+
         <Typography
           sx={{
             color: 'rgb(82,82,82)',
@@ -81,13 +176,15 @@ export default function LocationModal(props: ModalProps) {
             fontStyle: 'italic',
             textDecoration: 'underline',
             textAlign: 'center',
-            marginLeft: '6px',
             '&:hover': {
               cursor: 'pointer',
               color: 'rgb(50,50,255)',
+            },
+            '@media (max-width: 640px)': {
+              color: 'rgb(220,220,220)'
             }
           }}
-          onClick={handleOpen}
+          onClick={() => handleOpen(false)}
         >
           Change Location
         </Typography>
@@ -107,7 +204,9 @@ export default function LocationModal(props: ModalProps) {
       >
         <Fade in={open}>
           <Box sx={style}>
-            <Map { ...props } handleClose={handleClose} />
+            <Map { ...props } />
+
+            {showRadar}
 
             <IconButton onClick={handleClose} sx={{
               position: 'absolute',

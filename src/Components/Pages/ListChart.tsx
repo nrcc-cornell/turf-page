@@ -19,9 +19,6 @@ const dateSX = (i: number) => ({
   textAlign: 'center',
   padding: '0px 2px',
   borderLeft: i === 0 ? 'none' : '1px solid rgb(240,240,240)',
-  // '@media (max-width: 593px)': {
-  //   borderLeft: i === 0 ? 'none' : '1px solid rgba(239,64,53,0.4)'
-  // },
   '@media (max-width: 380px)': {
     fontSize: '12px'
   }
@@ -67,7 +64,7 @@ const constructDates = (data: StrDateValue[]) => {
       '@media (max-width: 510px)': {
         width: '20px'
       }
-    }}>{arr[0]}</Box>
+    }}>{arr[0].slice(0,-5)}</Box>
   </Box>);
 };
 
@@ -76,7 +73,26 @@ const renderChart = (data: StrDateValue[], todayFromAcis: boolean) => {
   const dates = constructDates(data);
   const cells = constructCells(data);
 
-  const lineSX = { width: '40px', height: '2px', backgroundColor: 'rgb(200,200,200)', position: 'relative' };
+  // Handles edge case of approaching the end of the season, 11/30
+  let shift = 0;
+  if (new Date().getMonth() === 10 && new Date().getDate() > 25) shift = new Date().getDate() - 25;
+
+  const lineSX = {
+    width: '40px',
+    height: '2px',
+    backgroundColor: 'rgb(200,200,200)',
+    margin: '0px 6px',
+    position: 'relative',
+    '@media (max-width: 942px)': {
+      width: shift >= 4 ? '12px' : '40px'
+    },
+    '@media (max-width: 636px)': {
+      width: shift >= 3 ? '12px' : '40px'
+    },
+    '@media (max-width: 570px)': {
+      width: shift >= 2 ? '12px' : '40px'
+    }
+  };
   
   const arrowSX = {
     content: '""',
@@ -105,8 +121,8 @@ const renderChart = (data: StrDateValue[], todayFromAcis: boolean) => {
     }
   };
 
-  const numShift = todayFromAcis ? 4 : 3;
-  const mLeft = `calc((100% - 89px) * ${numShift} / 9 - 33px)`;
+  const numShift = (todayFromAcis ? 4 : 3) + shift;
+  const mLeft = `calc((100% - 80px) * ${numShift} / 9 - 34px)`;
   const smallMLeft = `calc((100% - 66px) * ${numShift} / 9 - 49px)`;
 
 
@@ -115,7 +131,7 @@ const renderChart = (data: StrDateValue[], todayFromAcis: boolean) => {
       <Box sx={{
         display: 'flex',
         position: 'relative',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
         marginLeft: mLeft,
         marginTop: '8px',
@@ -126,7 +142,7 @@ const renderChart = (data: StrDateValue[], todayFromAcis: boolean) => {
         }
       }}>
         <Box sx={{ ...lineSX, ...beforeSX }}></Box>
-        <Typography variant='underChart'>Observed</Typography>
+        <Typography variant='underChart' sx={{ marginRight: '8px' }}>Observed</Typography>
         <Box sx={{
           backgroundColor: 'rgb(225,225,225)',
           width: '3px',
@@ -136,8 +152,28 @@ const renderChart = (data: StrDateValue[], todayFromAcis: boolean) => {
           left: '114px',
           zIndex: 1
         }}></Box>
-        <Typography variant='underChart'>Forecast</Typography>
-        <Box sx={{ ...lineSX, ...afterSX }}></Box>
+        <Typography variant='underChart' sx={{ 
+          color: shift === 5 ? 'white' : 'rgb(180,180,180)',
+          '@media (max-width: 588px)': {
+            color: shift >= 4 ? 'white' : 'rgb(180,180,180)'
+          }
+        }}>Forecast</Typography>
+        <Box sx={{
+          ...lineSX,
+          ...afterSX,
+          '@media (max-width: 814px)': {
+            backgroundColor: shift >= 4 ? 'white' : 'rgb(200,200,200)',
+            '&::after': {
+              borderColor: shift >= 4 ? 'white' : 'rgb(200,200,200)'
+            }
+          },
+          '@media (max-width: 484px)': {
+            backgroundColor: shift >= 3 ? 'white' : 'rgb(200,200,200)',
+            '&::after': {
+              borderColor: shift >= 3 ? 'white' : 'rgb(200,200,200)'
+            }
+          }
+        }}></Box>
       </Box>
 
       <Box sx={{
@@ -185,8 +221,6 @@ const renderNotChart = (a: 'loading' | 'empty') => {
 
 
 export default function ListChart(props: ListChartProps) {
-  console.log(props);
-  
   return (
     <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
       <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>

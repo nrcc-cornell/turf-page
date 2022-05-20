@@ -16,9 +16,10 @@ import {
 import { styled } from '@mui/material/styles';
 
 const LinkLine = styled(Box)({
-  height: '1px',
+  height: '3px',
   width: '90%',
-  backgroundColor: 'rgb(239,64,53)',
+  backgroundColor: 'rgb(189,187,187)',
+  // backgroundColor: 'rgb(239,64,53)',
   position: 'absolute',
   bottom: 5,
   left: '5%'
@@ -29,7 +30,7 @@ const btnSX = {
   height: '100%',
   position: 'relative',
   '&:hover': {
-    backgroundColor: 'rgb(105,106,110)'
+    backgroundColor: 'rgb(149,0,0)'
   }
 };
 
@@ -105,7 +106,7 @@ export default function NavBar({ group }: NavBarProp) {
               borderTopLeftRadius: 0,
               borderTopRightRadius: 0,
               border: '1px solid rgb(242,242,242)',
-              borderTop: '2px solid rgb(179,27,27)'
+              borderTop: '2px solid rgb(189,187,187)'
             }}>
               <MenuList>
                 {group.items.map(item => {

@@ -1,4 +1,4 @@
-import React, { Fragment, ReactNode, useState, useEffect } from 'react';
+import React, { Fragment, ReactNode } from 'react';
 
 import { Box }from '@mui/material';
 
@@ -6,25 +6,19 @@ import NavBar from './NavBar';
 import NavDrawer from './NavDrawer';
 import menuGroups from './linkInfo';
 
-const getWidth = (): number => window.innerWidth 
-  || document.documentElement.clientWidth 
-  || document.body.clientWidth || 0;
-
 
 
 export default function Nav() {
-  const [width, setWidth] = useState(getWidth());
-  
-  useEffect(() => {
-    window.addEventListener('resize', () => setWidth(getWidth()));
-  }, []);
-
-
   const renderBar = (): ReactNode => {
     return (
       <Box component='nav' sx={{
-        backgroundColor: 'rgb(85,86,90)',
-        display: 'flex'
+        // backgroundColor: 'rgb(85,86,90)',
+        backgroundColor: 'rgb(179,27,27)',
+        display: 'flex',
+        height: 40,
+        '@media (max-width: 640px)': {
+          display: 'none'
+        }
       }}>
         {
           menuGroups.map((group, i) => {
@@ -35,12 +29,9 @@ export default function Nav() {
                 {i !== menuGroups.length - 1 &&
               <Box sx={{
                 marginTop: '4px',
-                height: '25px',
+                height: '32px',
                 width: '1px',
-                backgroundColor: 'black',
-                '@media (max-width: 847px)': {
-                  height: '46px'
-                }
+                backgroundColor: 'rgb(130,0,0)'
               }}></Box>
                 }
               </Fragment>
@@ -58,11 +49,17 @@ export default function Nav() {
         position: 'absolute',
         top: 83,
         left: 10,
+        '@media (min-width: 641px)': {
+          display: 'none'
+        }
       }}>
         <NavDrawer />
       </Box>
     );
   };
 
-  return <Box>{width < 640 ? renderBurger() : renderBar()}</Box>;
+  return <Box>
+    {renderBurger()}
+    {renderBar()}
+  </Box>;
 }

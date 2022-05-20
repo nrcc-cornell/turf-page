@@ -86,7 +86,7 @@ const constructDates = (data: StrDateValue[] | DateValue[]) => {
       '@media (max-width: 510px)': {
         width: '20px'
       }
-    }}>{arr[0]}</Box>
+    }}>{typeof arr[0] === 'string' ? arr[0].slice(0,-5) : ''}</Box>
   </Box>);
 };
 
@@ -96,7 +96,26 @@ const renderChart = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorize
   const dates = constructDates(sample);
   const cells = constructCells(data, rows, colorizer);
 
-  const lineSX = { width: '40px', height: '2px', backgroundColor: 'rgb(200,200,200)', position: 'relative' };
+  // Handles edge case of approaching the end of the season, 11/30
+  let shift = 0;
+  if (new Date().getMonth() === 10 && new Date().getDate() > 25) shift = new Date().getDate() - 25;
+
+  const lineSX = {
+    width: '40px',
+    height: '2px',
+    backgroundColor: 'rgb(200,200,200)',
+    margin: '0px 6px',
+    position: 'relative',
+    '@media (max-width: 942px)': {
+      width: shift >= 4 ? '12px' : '40px'
+    },
+    '@media (max-width: 636px)': {
+      width: shift >= 3 ? '12px' : '40px'
+    },
+    '@media (max-width: 570px)': {
+      width: shift >= 2 ? '12px' : '40px'
+    }
+  };
   
   const arrowSX = {
     content: '""',
@@ -127,20 +146,22 @@ const renderChart = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorize
 
   let smallMLeft, mLeft;
   if (sample.length === 9) {
-    mLeft = `calc((100% - 89px) * ${todayFromAcis ? 4/9 : 3/9} - 33px)`;
-    smallMLeft = `calc((100% - 66px) * ${todayFromAcis ? 4/9 : 3/9} - 49px)`;
+    const numCells = (todayFromAcis ? 4 : 3) + shift;
+    mLeft = `calc((100% - 80px) * (${numCells}/9) - 34px)`;
+    smallMLeft = `calc((100% - 66px) * (${numCells}/9) - 49px)`;
   } else {
-    // Might always be 4/10
-    mLeft = `calc((100% - 89px) * ${todayFromAcis ? 5/10 : 4/10} - 31px)`;
-    smallMLeft = `calc((100% - 66px) * ${todayFromAcis ? 5/10 : 4/10} - 48px)`;
+    const numCells = (todayFromAcis ? 5 : 4) + shift;
+    mLeft = `calc((100% - 80px) * (${numCells}/10) - 34px)`;
+    smallMLeft = `calc((100% - 66px) * (${numCells}/10) - 47px)`;
   }
 
+  
   return (
     <>
       <Box sx={{
         display: 'flex',
         position: 'relative',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
         marginLeft: mLeft,
         marginTop: '8px',
@@ -151,7 +172,7 @@ const renderChart = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorize
         }
       }}>
         <Box sx={{ ...lineSX, ...beforeSX }}></Box>
-        <Typography variant='underChart'>Observed</Typography>
+        <Typography variant='underChart' sx={{ marginRight: '8px' }}>Observed</Typography>
         <Box sx={{
           backgroundColor: 'rgb(225,225,225)',
           width: '3px',
@@ -161,8 +182,37 @@ const renderChart = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorize
           left: '114px',
           zIndex: 1
         }}></Box>
-        <Typography variant='underChart'>Forecast</Typography>
-        <Box sx={{ ...lineSX, ...afterSX }}></Box>
+        <Typography variant='underChart' sx={{ 
+          color: shift === 5 ? 'white' : 'rgb(180,180,180)',
+          '@media (max-width: 588px)': {
+            color: shift >= 4 ? 'white' : 'rgb(180,180,180)'
+          },
+          '@media (max-width: 384px)': {
+            color: shift >= 3 ? 'white' : 'rgb(180,180,180)'
+          }
+        }}>Forecast</Typography>
+        <Box sx={{
+          ...lineSX,
+          ...afterSX,
+          '@media (max-width: 814px)': {
+            backgroundColor: shift >= 4 ? 'white' : 'rgb(200,200,200)',
+            '&::after': {
+              borderColor: shift >= 4 ? 'white' : 'rgb(200,200,200)'
+            }
+          },
+          '@media (max-width: 484px)': {
+            backgroundColor: shift >= 3 ? 'white' : 'rgb(200,200,200)',
+            '&::after': {
+              borderColor: shift >= 3 ? 'white' : 'rgb(200,200,200)'
+            }
+          },
+          '@media (max-width: 400px)': {
+            backgroundColor: shift >= 2 ? 'white' : 'rgb(200,200,200)',
+            '&::after': {
+              borderColor: shift >= 2 ? 'white' : 'rgb(200,200,200)'
+            }
+          }
+        }}></Box>
       </Box>
 
       <Box sx={{
@@ -222,8 +272,6 @@ export default function DailyChart(props: DailyChartProps) {
   return (
     <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
       <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>
-
-      
 
       {!props.data ? renderLoading(props.rows.length) :
         (props.data instanceof Array ?
