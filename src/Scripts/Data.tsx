@@ -7,30 +7,35 @@ import DayHourly from './DayClasses';
 const emptyIndices = {
   anthracnose: {
     Daily: [],
-    '7 Day Avg': []
+    '7 Day Avg': [],
+    season: []
   },
   brownPatch: {
     Daily: [],
-    '7 Day Avg': []
+    '7 Day Avg': [],
+    season: []
   },
   dollarspot: {
     Daily: [],
-    '7 Day Avg': []
+    '7 Day Avg': [],
+    season: []
   },
   pythiumBlight: {
     Daily: [],
-    '7 Day Avg': []
+    '7 Day Avg': [],
+    season: []
   },
   heatStress: {
-    Daily: []
-  },
-  season: {
-    anthracnose: [],
-    brownPatch: [],
-    dollarspot: [],
-    pythiumBlight: [],
-    heatStress: []
+    Daily: [],
+    season: []
   }
+};
+
+const emptyGDDObj = {
+  hasToday: false,
+  current: [],
+  last: [],
+  normal: []
 };
 
 
@@ -107,7 +112,7 @@ function getToolRawData(lng: number, lat: number, seasonStart: Date, seasonEnd: 
 
 
 // Gets past GDDs
-function getGDDPast(sDate: string, eDate: string, loc: string, base: number ): Promise<DateValue[]> {
+function getGDDPast(sDate: string, eDate: string, loc: string, base: number ): Promise<StrDateValue[]> {
   return fetch('https://grid2.rcc-acis.org/GridData', {
     method: 'POST',
     body: JSON.stringify({
@@ -120,7 +125,7 @@ function getGDDPast(sDate: string, eDate: string, loc: string, base: number ): P
         'base': base,
         'interval': [0,0,1],
         'duration': 'std',
-        'season_start': [2,1],
+        'season_start': [3,1],
         'reduce': 'sum'
       }]})
   })
@@ -131,7 +136,7 @@ function getGDDPast(sDate: string, eDate: string, loc: string, base: number ): P
 
       return response.json();
     })
-    .then(data => data.data.map((arr: [string, number]) => [parseISO(arr[0]), arr[1]]));
+    .then(data => data.data);
 }
 
 
@@ -153,7 +158,7 @@ const calcGDDs = async (today: Date, hasToday: boolean, past: DateValue[], today
   // Uses the last observed GDD value to calculate the forecast totals
   let gdds = past[past.length - 1][1];
   const forecasts: DateValue[] = todayOn.map(d => {
-    const thisGDD = ((d.maxTemp() + d.minTemp()) / 2) - base;
+    const thisGDD = ((d.maxTemp(true) + d.minTemp(true)) / 2) - base;
     gdds += Math.max(0, thisGDD);
     return [d.date, gdds];
   });
@@ -211,22 +216,24 @@ const calcIndices = (days: DayHourly[]): Indices => {
   const indices = JSON.parse(JSON.stringify(emptyIndices));
   Object.keys(dayValues).forEach(risk => {
     if (risk === 'anthracnose') {
-      indices.season[risk] = dayValues[risk].slice(2);
       indices[risk] = {
         // Daily for anthracnose is the days' index, not an average. 
         Daily: dayValues[risk].slice(-10),
-        '7 Day Avg': xDayAverage(7, dayValues[risk].slice(-16))
+        '7 Day Avg': xDayAverage(7, dayValues[risk].slice(-16)),
+        season: dayValues[risk].slice(2)
       };
     } else if (risk === 'heatStress') {
-      indices.season[risk] = xDayAverage(3, dayValues[risk]);
+      const season = xDayAverage(3, dayValues[risk]);
       indices[risk] = {
-        Daily: indices.season[risk].slice(-10)                                                      // Sliced to ensure the proper number of days are returned
+        Daily: season.slice(-10),
+        season
       };
     } else if (risk === 'brownPatch' || risk === 'dollarspot' || risk === 'pythiumBlight') {
-      indices.season[risk] = xDayAverage(3, dayValues[risk]);
+      const season = xDayAverage(3, dayValues[risk]);
       indices[risk] = {
-        Daily: indices.season[risk].slice(-10),                                                     // Sliced to ensure the proper number of days are returned
-        '7 Day Avg': xDayAverage(7, dayValues[risk].slice(-16))
+        Daily: season.slice(-10),
+        '7 Day Avg': xDayAverage(7, dayValues[risk].slice(-16)),
+        season
       };
     }
   });
@@ -338,8 +345,75 @@ const calcHeatStressIndex = (day: DayHourly): number => {
 };
 
 
+
+
+
+
+
+const getCurrentGDDs = async (sDate:string, eDate: string, lngLat: string, base: number, today: Date, forecastData: DayHourly[]) => {
+  const res = await getGDDPast(sDate, eDate, lngLat, base);
+  const past: DateValue[] = res.map((arr: [string, number]) => [parseISO(arr[0]), arr[1]]);
+  const hasToday = past[past.length - 1][1] !== -999;
+  const thisSeasonGDDs = await calcGDDs(today, hasToday, past, forecastData, base);
+
+  return {
+    current: thisSeasonGDDs,
+    hasToday
+  };
+};
+
+type DSC = {
+  date: string,
+  sum: number,
+  count: number
+}
+
+const getGDDs = async (sDate: string, eDate: string, lngLat: string, base: number, today: Date, data: DayHourly[]): Promise<GDDObj> => {
+  const { current , hasToday } = await getCurrentGDDs(sDate, eDate, lngLat, base, today, data);
+
+  sDate = `${today.getFullYear() - 15}-03-01`;
+  eDate = `${today.getFullYear() - 1}-11-30`;
+  
+  const last15Years = await getGDDPast(sDate, eDate, lngLat, base);
+
+  const beginLastSeason = `${today.getFullYear() - 1}-03-01`;
+  let iOfMarchFirst;
+  let counter = 0;
+  const sums = last15Years.reduce((acc, arr, i) => {
+    if (arr[0] === beginLastSeason) iOfMarchFirst = i;
+
+    const dateParts = arr[0].split('-');
+
+    if (dateParts[1] !== '12' && dateParts[1] !== '01' && dateParts[1] !== '02') {
+      acc[counter].sum += arr[1];
+      acc[counter].count++;
+      if (!acc[counter].date) acc[counter].date = arr[0].slice(-5);
+      counter++;
+    } else {
+      counter = 0;
+    }
+
+    return acc;
+  }, Array.from({length: 275}, (): DSC => { return {date: '', sum: 0, count: 0}; }));
+
+  const normal = sums.map((obj): StrDateValue => [ obj.date, roundXDigits(obj.sum / obj.count, 0)]);
+
+  return {
+    hasToday,
+    current,
+    last: last15Years.slice(iOfMarchFirst),
+    normal
+  };
+};
+
+
+
+
+
+
+
 // Overarching function to coordinate gathering and calculating data used in the ToolPage component
-const getToolData = async (lngLat: number[]): Promise<ToolData> => {
+const getData = async (lngLat: number[]): Promise<ToolData> => {
   let today = new Date();
   const month = today.getMonth();
   
@@ -359,34 +433,159 @@ const getToolData = async (lngLat: number[]): Promise<ToolData> => {
   const data: DayHourly[] | null = await getToolRawData(lngLat[0], lngLat[1], seasonStart, seasonEnd);
 
   if (data) {
+    const riskIndices = calcIndices(data);
+    
     // digest GDD data into GDDs per day of interest
     const iOfToday = data.findIndex(obj => isSameDay(obj.date, today));
-    
-    const past32 = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
-    const past50 = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
-    
-    const hasToday = past32[past32.length - 1][1] !== -999;
-    
-    const gdd32 = await calcGDDs(today, hasToday, past32, data.slice(iOfToday), 32);
-    const gdd50 = await calcGDDs(today, hasToday, past50, data.slice(iOfToday), 50);
+    const coords = lngLat.join(',');
+    const forecast = data.slice(iOfToday);
 
-    const riskIndices = calcIndices(data);
+    const gdd32 = await getGDDs(sDate, eDate, coords, 32, today, forecast);
+    const gdd50 = await getGDDs(sDate, eDate, coords, 50, today, forecast);
+
+    console.log(gdd32);
+    console.log(gdd50);
+    
+    // const { current: current32 , hasToday } = await getCurrentGDDs(sDate, eDate, lngLat.join(','), 32, today, data.slice(iOfToday));
+    // const { current: current50 } = await getCurrentGDDs(sDate, eDate, lngLat.join(','), 50, today, data.slice(iOfToday));
+
+    // console.log(current32);
+    // console.log(current50);
+
+    // sDate = `${today.getFullYear() - 15}-03-01`;
+    // eDate = format(addDays(subYears(parseISO(eDate), 1), 4), 'yyyy-MM-dd');
+    
+    // const last15Years32 = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
+    // const last15Years50 = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
+    
+    // console.log(last15Years32);
+    // console.log(last15Years50);
+
+    // const last32 = last15Years32.slice(-9);
+    // const last50 = last15Years50.slice(-9);
+
+    // console.log(last32);
+    // console.log(last50);
+    
+    
+
+
 
     return {
       gdd32,
       gdd50,
       ...riskIndices,
-      todayFromAcis: hasToday
+      todayFromAcis: gdd32.hasToday
     };
   } else {
     return {
-      gdd32: [],
-      gdd50: [],
+      gdd32: emptyGDDObj,
+      gdd50: emptyGDDObj,
       ...emptyIndices,
       todayFromAcis: false
     };
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // Overarching function to coordinate gathering and calculating data used in the ToolPage component
+// const getData = async (lngLat: number[]): Promise<ToolData> => {
+//   let today = new Date();
+//   const month = today.getMonth();
+  
+//   let seasonEnd, eDate;
+//   if (month < 2 || month === 11) {
+//     today = new Date(today.getFullYear() - (month < 2 ? 1 : 0), 10, 25);
+//     seasonEnd = format(new Date(today.getFullYear(), 10, 30), 'yyyyMMdd08');
+//     eDate = format(addDays(today, 6), 'yyyy-MM-dd');
+//   } else {
+//     seasonEnd = 'now';
+//     eDate = format(addDays(today, 1), 'yyyy-MM-dd');
+//   }
+  
+//   const sDate = format(subDays(today, 8), 'yyyy-MM-dd');
+//   const seasonStart = new Date(today.getFullYear(), 2, 1);
+
+//   const data: DayHourly[] | null = await getToolRawData(lngLat[0], lngLat[1], seasonStart, seasonEnd);
+
+//   if (data) {
+//     // digest GDD data into GDDs per day of interest
+//     const iOfToday = data.findIndex(obj => isSameDay(obj.date, today));
+    
+//     const past32 = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
+//     const past50 = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
+    
+//     const hasToday = past32[past32.length - 1][1] !== -999;
+    
+//     const gdd32 = await calcGDDs(today, hasToday, past32, data.slice(iOfToday), 32);
+//     const gdd50 = await calcGDDs(today, hasToday, past50, data.slice(iOfToday), 50);
+
+//     const riskIndices = calcIndices(data);
+
+//     return {
+//       gdd32,
+//       gdd50,
+//       ...riskIndices,
+//       todayFromAcis: hasToday
+//     };
+//   } else {
+//     return {
+//       gdd32: [],
+//       gdd50: [],
+//       ...emptyIndices,
+//       todayFromAcis: false
+//     };
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -409,18 +608,6 @@ const states = {
   'Virginia': 'VA',
   'Kentucky': 'KY'
 };
-
-type UserLocation = {
-  address: string,
-  lngLat: [number,number]
-};
-
-type ContextType = {
-  id: string,
-  wikidata?: string,
-  text: string,
-  short_code?: string
-}
 
 // Gets the address name for a set of coordinates
 function getLocation( lng: number, lat: number, token: string ): Promise<false | UserLocation> {
@@ -507,4 +694,4 @@ const radarStations = [{
 
 
 
-export { getToolData, getLocation, states, radarStations };
+export { getData, getLocation, states, radarStations };

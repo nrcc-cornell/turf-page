@@ -10,7 +10,6 @@ import {
 
 import TextContent from './TextContent';
 import StyledDivider from './StyledDivider';
-import { Description } from '@mui/icons-material';
 
 
 
@@ -20,53 +19,9 @@ export default function MapPage(props: MapPageProps) {
 
   const loaded = () => setLoading(false);
 
-  let mainSX;
-  if (props?.title && props.description.length === 0) {
-    mainSX = {
-      padding: '10px',
-      boxSizing: 'border-box',
-      width: '100%',
-      maxWidth: 720,
-      margin: '0 auto',
-      border: 'none',
-      borderRadius: 0
-    };
-  } else if (props?.title) {
-    mainSX = {
-      padding: '10px',
-      boxSizing: 'border-box',
-      width: '100%',
-      border: 'none',
-      maxWidth: 720,
-      margin: '0 auto',
-      '@media (max-width: 430px)': {
-        width: '100%',
-        padding: '10px 0px',
-        border: 'none'
-      },
-      '@media (min-width: 750px)': {
-        width: '50%',
-        margin: 0
-      }
-    };
-  } else {
-    mainSX = {
-      padding: '10px',
-      boxSizing: 'border-box',
-      width: '90%',
-      maxWidth: 720,
-      margin: '0 auto',
-      '@media (max-width: 430px)': {
-        width: '100%',
-        padding: '10px 0px',
-        border: 'none'
-      }
-    };
-  }
-
 
   return (
-    <Card variant='outlined' sx={mainSX}>
+    <Card variant='outlined' sx={props.mainSX}>
       <CardMedia
         onError={() => setError(true)} 
         sx={{

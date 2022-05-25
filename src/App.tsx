@@ -7,17 +7,19 @@ import {
   Header,
   Footer,
   Nav,
-  MapPage,
-  ToolPage,
-  GDDPage,
   ShortCuttAd,
   LocationDisplay,
-  Home
+  Home,
+  DailyChart,
+  ListChart,
+  SeasonChart,
+  StyledDivider,
+  RiskMaps
 } from './Components';
 
 import { AppRouteInfo } from './AppRouteInfo';
 
-import { getToolData } from './Scripts/Data';
+import { getData } from './Scripts/Data';
 import MultiMapPage from './Components/Pages/MultiMapPage';
 import StyledCard from './Components/Pages/StyledCard';
 
@@ -61,36 +63,58 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      const data = await getToolData(currentLocation.lngLat);
+      const data = await getData(currentLocation.lngLat);
+      console.log(data);
       setToolData(data);
     })();
   }, [currentLocation]);
 
-  const renderPage = (info: PropsType) => {    
-    if (info instanceof Array) {
-      return <StyledCard variant='outlined'><MultiMapPage maps={info} /></StyledCard>;
-    }
-    
-    if ('url' in info) {
-      return <MapPage {...info} />;
-    }
-    
-    if ('chart' in info) {
-      return <ToolPage
-        {...info}
-        data={toolData === null ? toolData : toolData[info.chart.data]}
-        seasonData={(
-          toolData === null || info.chart.data === 'gdd32' || info.chart.data === 'gdd50'
-        ) ? null : toolData.season[info.chart.data]}
-        todayFromAcis={toolData === null ? false : toolData.todayFromAcis}
-      />;
-    }
+  const renderPage = (info: DataType) => {
+    if (toolData) {
+      let sx = {};
+      if (info.maps.length === 1) {
+        sx = {
+          maxWidth: 850
+        };
+      }
+      
+      return (
+        <StyledCard variant='outlined' sx={sx}>
+          {info.pageType === 'risk' &&
+            <>
+              <DailyChart {...info.chart} data={toolData[info.chart.data]} todayFromAcis={toolData.todayFromAcis} />
+  
+              {info.chart.data !== 'gdd32' && info.chart.data !== 'gdd50' &&
+                <SeasonChart data={toolData[info.chart.data].season} colorizer={info.chart.colorizer} thresholds={info.chart.rows[0].thresholds} />
+              }
+            </>
+          }
 
-    if ('maps' in info) {
-      return <GDDPage {...info} data={toolData === null ? toolData : toolData[info.data]} base={info.data.slice(3)} todayFromAcis={toolData === null ? false : toolData.todayFromAcis}/>;
-    }
+          {info.pageType === 'graph' &&
+            <ListChart data={toolData[info.chart.data].current} todayFromAcis={toolData.todayFromAcis} title={info.chart.title} />
+          }
 
-    return <Box>{JSON.stringify(info)}</Box>;
+          {info.pageType !== 'mapsOnly' && <StyledDivider />}
+  
+          
+          {info.pageType === 'risk' ?
+            <RiskMaps maps={info.maps} text={info.text} />
+            :
+            <MultiMapPage maps={info.maps} />
+          }
+        </StyledCard>
+      );
+    } else {
+
+
+
+      // Return loading!!!
+      return <Box>Loading...</Box>;
+
+
+
+
+    }
   };
 
   const handleChangeLocations = (action: 'add' | 'remove' | 'change', location: UserLocation): void => {
@@ -117,11 +141,65 @@ function App() {
   };
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const hclick = () => {
+    (async () => {
+      const data = await getData(currentLocation.lngLat);
+      console.log(data);
+    })();
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <Box sx={{
       minWidth: 320,
       position: 'relative'
     }}>
+      <Box sx={{display: 'flex', justifyContent: 'center'}}><button style={{ height: 100, width: 400}} onClick={() => hclick()}>Click me</button></Box>
+
       <Header />
 
       <Nav />
@@ -177,18 +255,3 @@ function App() {
 }
 
 export default App;
-
-
-// // Refactor to use retrieved location from storage or default to get GDDs
-// Create component to show current location
-// Verify that current location matches the GDDs shown
-// Create popup from clicking 'Change Location' that has past locations and locations search
-// Write necessary logic to make that all functional
-// Add map with pins, etc.
-// Write logic to make that all functional
-
-// When all of that is finished deploy, talk to Art, and tell the guys where we're at.
-// Find out what weather might be useful
-// Create weather widget OR create link for local forecasts
-
-// Work on other models

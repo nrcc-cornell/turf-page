@@ -165,7 +165,20 @@ export default function Home() {
             }}
             onClick={() => navigate(frontPageMaps[n].path)}
           >
-            <MapPage {...frontPageMaps[n]} title={frontPageMaps[n].alt} description={[]} />
+            <MapPage
+              {...frontPageMaps[n]}
+              title={frontPageMaps[n].alt}
+              description={[]}
+              mainSX={{
+                padding: '10px',
+                boxSizing: 'border-box',
+                width: '100%',
+                maxWidth: 720,
+                margin: '0 auto',
+                border: 'none',
+                borderRadius: 0
+              }}
+            />
           </Box>)
         }
       </Box>

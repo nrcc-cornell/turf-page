@@ -43,39 +43,44 @@ const HeaderSX = {
 
 
 const constructCells = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string): JSX.Element[][] => {
-  return rows.map(rowInfo => {
-    const row = [<Box key={rowInfo.name} sx={HeaderSX}>{rowInfo.name}</Box>];
-    
-    // @ts-expect-error  'rows' should be composed of 'Daily' | '7 Day Avg' and should be in line with HSTool | Tool for whichever risk is being processed
-    const d = data instanceof Array ? data : data[rowInfo.name as 'Daily' | '7 Day Avg'];
-
-    d.forEach((arr: number[], i: number) => {
-      const backgroundColor = colorizer(arr[1], rowInfo.thresholds);
-      row.push(
-        <Box key={rowInfo.name + i} sx={{
-          height: '100%',
-          width: '100%',
-          backgroundColor: 'white',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          <Box sx={{
-            backgroundColor,
-            height: 15,
-            width: 15,
-            borderRadius: '50%',
-            '@media (max-width: 380px)': {
-              height: 11,
-              width: 11
-            }            
-          }} />
-        </Box>
-      );
-    });
-
-    return row;
+  const res: JSX.Element[][] = [];
+  rows.forEach(rowInfo => {
+    if (rowInfo.name !== 'season') {
+      const row = [<Box key={rowInfo.name} sx={HeaderSX}>{rowInfo.name}</Box>];
+      
+      // @ts-expect-error  'rows' should be composed of 'Daily' | '7 Day Avg' and should be in line with HSTool | Tool for whichever risk is being processed
+      const d = data instanceof Array ? data : data[rowInfo.name as 'Daily' | '7 Day Avg'];
+  
+      d.forEach((arr: number[], i: number) => {
+        const backgroundColor = colorizer(arr[1], rowInfo.thresholds);
+        row.push(
+          <Box key={rowInfo.name + i} sx={{
+            height: '100%',
+            width: '100%',
+            backgroundColor: 'white',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <Box sx={{
+              backgroundColor,
+              height: 15,
+              width: 15,
+              borderRadius: '50%',
+              '@media (max-width: 380px)': {
+                height: 11,
+                width: 11
+              }            
+            }} />
+          </Box>
+        );
+      });
+  
+      res.push(row);
+    }
   });
+
+  return res;
 };
 
 
@@ -274,10 +279,11 @@ export default function DailyChart(props: DailyChartProps) {
       <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>
 
       {!props.data ? renderLoading(props.rows.length) :
-        (props.data instanceof Array ?
-          props.data.length === 0 ? renderNoData(props.rows.length) : renderChart(props.data, props.rows, props.colorizer, props.todayFromAcis)
+        'Daily' in props.data ?
+          props.data['Daily'].length === 0 ? renderNoData(props.rows.length) : renderChart(props.data, props.rows, props.colorizer, props.todayFromAcis)
           :
-          props.data['Daily'].length === 0 ? renderNoData(props.rows.length) : renderChart(props.data, props.rows, props.colorizer, props.todayFromAcis))}
+          props.data.current.length === 0 ? renderNoData(props.rows.length) : renderChart(props.data.current, props.rows, props.colorizer, props.todayFromAcis)
+      }
 
       <Box sx={{
         display: 'flex',

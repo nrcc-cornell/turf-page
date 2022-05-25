@@ -7,19 +7,49 @@ type ChartProps = {
   colorizer: (val: number, thresholds: ThresholdObj) => string
 }
 
+type ContextType = {
+  id: string,
+  wikidata?: string,
+  text: string,
+  short_code?: string
+}
+
+type DataType = DataMapsOnly | DataRisk | DataGraph;
+
+type DataMapsOnly = {
+  maps: MapPageProps[],
+  pageType: 'mapsOnly'
+};
+
+type DataGraph = {
+  maps: MapPageProps[],
+  pageType: 'graph',
+  chart: {
+    data: 'gdd32' | 'gdd50',
+    title: string
+  }
+};
+
+type DataRisk = {
+  maps: MapThumbs[],
+  pageType: 'risk',
+  chart: RiskChartProps,
+  text: TextProps
+};
+
 type DataAndFromAcis = {
-  data: [string, number][] | Tool | HSTool | null,
+  data: GDDObj | Tool | HSTool | null,
   todayFromAcis: boolean
 };
 
 type DateValue = [ Date, number ];
 
 type DayValues = {
-  anthracnose: [string, number][],
-  brownPatch: [string, number][],
-  dollarspot: [string, number][],
-  pythiumBlight: [string, number][],
-  heatStress: [string, number][]
+  anthracnose: StrDateValue[],
+  brownPatch: StrDateValue[],
+  dollarspot: StrDateValue[],
+  pythiumBlight: StrDateValue[],
+  heatStress: StrDateValue[]
 };
 
 type DailyChartProps = ChartProps & DataAndFromAcis;
@@ -30,16 +60,11 @@ type DisplayProps = {
     handleChangeLocations: (a: 'add' | 'remove' | 'change', b: UserLocation) => void
 };
 
-type GDDPageProps = {
-  data: 'gdd32' | 'gdd50',
-  maps: MapPageProps[]
-};
-
-type GDDProps = {
-  maps: MapPageProps[],
-  data: StrDateValue[] | null,
-  todayFromAcis: boolean,
-  base: string
+type GDDObj = {
+  hasToday: boolean,
+  current: StrDateValue[],
+  last: StrDateValue[],
+  normal: StrDateValue[]
 };
 
 type HomeMap = {
@@ -49,7 +74,8 @@ type HomeMap = {
 };
 
 type HSTool = {
-  Daily: DateValue[]
+  Daily: DateValue[],
+  season: StrDateValue[]
 };
 
 type ImgOptions = {
@@ -65,8 +91,7 @@ type Indices = {
   brownPatch: Tool,
   dollarspot: Tool,
   pythiumBlight: Tool,
-  heatStress: HSTool,
-  season: DayValues
+  heatStress: HSTool
 };
 
 type ListChartProps = {
@@ -90,7 +115,10 @@ type MapPageProps = {
   url: string,
   alt: string,
   description: string[],
-  title?: string
+  title?: string,
+  mainSX?: {
+    [key: string]: string | number
+  }
 };
 
 type MapProps = {
@@ -156,26 +184,22 @@ type NavItem = {
   label: string;
 };
 
-type PageChartProps = ChartProps & {
+type RiskChartProps = ChartProps & {
   data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress'
-};
-
-type PageProps = DataAndFromAcis & {
-  text: TextProps,
-  chart: PageChartProps,
-  maps: MapThumbs[],
-  seasonData: [string, number][] | null
 };
 
 type PopupContent = UserLocation & {
   isSelected: boolean
 };
 
-type PropsType = GDDPageProps | MultiMapPageProps[] | MapPageProps | ToolPageProps;
+type RiskMapsProps = {
+  maps: MapThumbs[],
+  text: TextProps
+};
 
 type RouteInfo = {
   path: string
-  props: PropsType
+  props: DataType
 };
 
 type Row = {
@@ -184,7 +208,7 @@ type Row = {
 }
 
 type SeasonChartProps = {
-  data: [string, number][],
+  data: StrDateValue[],
   colorizer: (val: number, thresholds: ThresholdObj) => string,
   thresholds: ThresholdObj
 };
@@ -219,15 +243,9 @@ type Tool = HSTool & {
 };
 
 type ToolData = Indices & {
-  gdd32: StrDateValue[],
-  gdd50: StrDateValue[],
+  gdd32: GDDObj,
+  gdd50: GDDObj,
   todayFromAcis: boolean
-};
-
-type ToolPageProps = {
-  text: TextProps | ReferencedTextProps,
-  chart: PageChartProps,
-  maps: MapThumbs[]
 };
 
 type UserLocation = {
@@ -239,9 +257,3 @@ type WeekMapsProps = {
   title: string,
   thumbs: Thumb[]
 };
-
-
-
-interface ReferencedTextProps extends TextProps {
-  references: string[]
-}

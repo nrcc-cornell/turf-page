@@ -183,7 +183,6 @@ export default function SeasonChart(props: SeasonChartProps) {
     }
   };
 
-  console.log(isZoomed);
 
   return (
     <Box sx={{

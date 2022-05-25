@@ -1,10 +1,12 @@
 import Header from './Header/Header';
 import Footer from './Footer/Footer';
 import Nav from './Nav/Nav';
-import MapPage from './Pages/MapPage';
-import ToolPage from './Pages/ToolPage';
-import GDDPage from './Pages/GDDPage';
 import Home from './Pages/Home';
+import ListChart from './Pages/ListChart';
+import StyledDivider from './Pages/StyledDivider';
+import SeasonChart from './Pages/SeasonChart';
+import DailyChart from './Pages/DailyChart';
+import RiskMaps from './Pages/RiskMaps';
 
 import ShortCuttAd from './ShortCuttAd';
 
@@ -15,10 +17,12 @@ export {
   Header,
   Footer,
   Nav,
-  MapPage,
-  ToolPage,
-  GDDPage,
   ShortCuttAd,
   LocationDisplay,
-  Home
+  Home,
+  DailyChart,
+  ListChart,
+  SeasonChart,
+  StyledDivider,
+  RiskMaps
 };
