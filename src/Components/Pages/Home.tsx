@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   Box,
-  Button,
   Divider,
   MenuItem,
   Modal,
   TextField
 } from '@mui/material';
 
+import StyledButton from './StyledBtn';
 import StyledCard from './StyledCard';
 import MapPage from './MapPage';
 
@@ -36,14 +36,6 @@ const style = {
   },
   '@media (max-width: 500px)': {
     width: 350
-  }
-};
-
-const btnSX = {
-  backgroundColor: 'rgb(85,86,90)',
-  color: 'white',
-  '&:hover': {
-    backgroundColor: 'rgb(105,106,110)'
   }
 };
 
@@ -86,12 +78,9 @@ export default function Home() {
   return (
     <StyledCard variant='outlined'>
       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <Button
-          onClick={handleOpen}
-          sx={btnSX}
-        >
+        <StyledButton onClick={handleOpen}>
           Change Maps
-        </Button>
+        </StyledButton>
       </Box>
 
       <Modal
@@ -138,16 +127,15 @@ export default function Home() {
           })}
 
           {favMaps.length < 8 &&
-            <Button
+            <StyledButton
               onClick={() => handleChange('add', 0)}
               sx={{
-                ...btnSX,
                 width: 150,
                 position: 'absolute',
                 bottom: 32,
                 left: 'calc(50% - 75px)'
               }}
-            >Add Map</Button>}
+            >Add Map</StyledButton>}
         </Box>
       </Modal>
       

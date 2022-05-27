@@ -7,6 +7,8 @@ import SeasonChart from './Pages/SeasonChart';
 import DailyChart from './Pages/DailyChart';
 import RiskMaps from './Pages/RiskMaps';
 import Loading from './Loading';
+import StyledButton from './Pages/StyledBtn';
+import Graph from './Pages/Graph';
 
 import ShortCuttAd from './ShortCuttAd';
 
@@ -24,5 +26,7 @@ export {
   SeasonChart,
   StyledDivider,
   RiskMaps,
-  Loading
+  Loading,
+  StyledButton,
+  Graph
 };

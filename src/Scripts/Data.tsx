@@ -226,8 +226,6 @@ const calcIndices = (days: DayHourly[]): Indices => {
     }
   });
 
-  console.log(indices);
-
   return indices;
 };
 

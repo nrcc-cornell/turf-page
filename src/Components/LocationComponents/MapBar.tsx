@@ -3,12 +3,11 @@ import React, { useState } from 'react';
 
 import {
   TextField,
-  Box,
-  Button
+  Box
 } from '@mui/material';
 
 import { states } from '../../Scripts/Data';
-
+import StyledButton from '../Pages/StyledBtn';
 
 
 export default function MapBar(props: MapBarProps ) {
@@ -90,18 +89,13 @@ export default function MapBar(props: MapBarProps ) {
         }}
       />
 
-      <Button
+      <StyledButton
         onClick={handleSearch}
         sx={{
           height: '30px',
-          backgroundColor: 'rgb(230,230,230)',
-          fontSize: '12px',
-          color: 'black',
-          '&:hover': {
-            backgroundColor: 'rgb(210,210,210)'
-          }
+          fontSize: '12px'
         }}
-      >Search</Button>
+      >Search</StyledButton>
     </Box>
   );
 }

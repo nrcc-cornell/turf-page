@@ -14,7 +14,9 @@ import {
   SeasonChart,
   StyledDivider,
   RiskMaps,
-  Loading
+  Loading,
+  StyledButton,
+  Graph
 } from './Components';
 
 import { AppRouteInfo } from './AppRouteInfo';
@@ -26,6 +28,7 @@ import StyledCard from './Components/Pages/StyledCard';
 
 
 function App() {
+  const [showGraphs, setShowGraphs] = useState(false);
   const [toolData, setToolData] = useState<ToolData | null>(null);
   const [pastLocations, setPastLocations] = useState<UserLocation[]>(() => {
     const pastLocations = localStorage.getItem('pastLocations');
@@ -64,6 +67,7 @@ function App() {
   useEffect(() => {
     (async () => {
       const data = await getData(currentLocation.lngLat);
+      console.log(data);
       setToolData(data);
     })();
   }, [currentLocation]);
@@ -94,12 +98,25 @@ function App() {
           }
 
           {info.pageType !== 'mapsOnly' && <StyledDivider />}
-  
+
+          {info.pageType === 'graph' &&
+            <Box sx={{width: '100%', textAlign: 'center'}}>
+              {showGraphs ?
+                <StyledButton onClick={() => setShowGraphs(false)}>Show Current Maps</StyledButton>
+                :
+                <StyledButton onClick={() => setShowGraphs(true)}>Show Season Graphs</StyledButton>
+              }
+            </Box>
+          }
           
           {info.pageType === 'risk' ?
             <RiskMaps maps={info.maps} text={info.text} />
             :
-            <MultiMapPage maps={info.maps} />
+            ((info.pageType === 'graph' && showGraphs) ?
+              <Graph {...toolData[info.chart.data]} units={info.chart.data === 'precip' ? 'inches' : 'GDDs'} />
+              :
+              <MultiMapPage maps={info.maps} />
+            )
           }
         </StyledCard>
       );

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import { format, addDays } from 'date-fns';
 
 import Highcharts from 'highcharts';
@@ -8,11 +8,13 @@ import HighchartsReact from 'highcharts-react-official';
 import HC_more from 'highcharts/highcharts-more';
 import NoDataToDisplay from 'highcharts/modules/no-data-to-display';
 import accessibility from 'highcharts/modules/accessibility';
-import roundXDigits from '../../Scripts/Rounding';
 HC_more(Highcharts);
 NoDataToDisplay(Highcharts);
 accessibility(Highcharts);
 Highcharts.Chart.prototype.showResetZoom = function () { return; };
+
+import roundXDigits from '../../Scripts/Rounding';
+import StyledButton from './StyledBtn';
 
 
 
@@ -201,23 +203,17 @@ export default function SeasonChart(props: SeasonChartProps) {
       />
 
       {isZoomed && (
-        <Button
+        <StyledButton
           sx={{
             position: 'absolute',
-            bottom: -30,
+            bottom: -38,
             right: '50%',
-            transform: 'translateX(50%)',
-            textTransform: 'none',
-            color: 'rgb(80,80,160)',
-            padding: '2px 4px',
-            '&:hover': {
-              backgroundColor: 'rgb(240,240,240)'
-            }
+            transform: 'translateX(50%)'
           }}
           onClick={resetZoom}
         >
           Reset zoom
-        </Button>
+        </StyledButton>
       )}
     </Box>
   );
