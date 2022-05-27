@@ -2,6 +2,7 @@ import { format, subDays, addDays, isWithinInterval, parseISO, isSameDay, isAfte
 
 import roundXDigits from './Rounding';
 import DayHourly from './DayClasses';
+import ArrSummer from './ArrSummerClass';
 
 
 const emptyIndices = {
@@ -31,8 +32,8 @@ const emptyIndices = {
   }
 };
 
-const emptyGDDObj = {
-  hasToday: false,
+const emptyOtherToolData = {
+  table: [],
   current: [],
   last: [],
   normal: []
@@ -111,23 +112,36 @@ function getToolRawData(lng: number, lat: number, seasonStart: Date, seasonEnd: 
 }
 
 
-// Gets past GDDs
-function getGDDPast(sDate: string, eDate: string, loc: string, base: number ): Promise<StrDateValue[]> {
+function getPast(sDate: string, eDate: string, loc: string, normals?: boolean): Promise<GridDatum[]> {
+  const gddElem = {
+    'name': 'gdd',
+    'interval': [0,0,1],
+    'duration': 'std',
+    'season_start': [3,1],
+    'reduce': 'sum'
+  };
+
+  const elems = normals ? [
+    { ...gddElem, base: 32, 'season_start': [2,1] },
+    { ...gddElem, base: 50 },
+    { name: 'pcpn', interval: [0,0,1], duration: 'std', season_start: [3,1], reduce: 'sum', maxmissing: 5 },
+    { name: 'avgt', interval: [0,0,1], duration: 7, reduce: 'mean' }
+  ]:[
+    { ...gddElem, base: 32, 'season_start': [2,1] },
+    { ...gddElem, base: 50 },
+    { name: 'pcpn', interval: [0,0,1] },
+    { name: 'avgt', interval: [0,0,1] }
+  ];
+  
   return fetch('https://grid2.rcc-acis.org/GridData', {
     method: 'POST',
     body: JSON.stringify({
       'loc': loc,
-      'sdate': sDate,
-      'edate': eDate,
       'grid': 'nrcc-model',
-      'elems': [{
-        'name': 'gdd',
-        'base': base,
-        'interval': [0,0,1],
-        'duration': 'std',
-        'season_start': [3,1],
-        'reduce': 'sum'
-      }]})
+      sDate,
+      eDate,
+      elems
+    })
   })
     .then(response => {
       if (!response.ok) {
@@ -136,36 +150,10 @@ function getGDDPast(sDate: string, eDate: string, loc: string, base: number ): P
 
       return response.json();
     })
-    .then(data => data.data);
+    .then(data => {
+      return data.data;
+    });
 }
-
-
-// Takes observed and forecast GDD arrays and converts to a single array with calculated values for forecasts
-const calcGDDs = async (today: Date, hasToday: boolean, past: DateValue[], todayOn: DayHourly[], base: number): Promise<StrDateValue[]> => {
-  // Handles edge case of approaching the end of the season, 11/30
-  let shift = 0;
-  if (today.getMonth() === 10 && today.getDate() > 25) shift = today.getDate() - 25;
-
-  // Handles if today's value should be observed or forecast
-  if (hasToday) {
-    past = past.slice(5 - shift,9);
-    todayOn = todayOn.slice(1, todayOn.length - shift);
-  } else {
-    past = past.slice(5 - shift,8);
-    todayOn = todayOn.slice(0, todayOn.length - shift);
-  }
-
-  // Uses the last observed GDD value to calculate the forecast totals
-  let gdds = past[past.length - 1][1];
-  const forecasts: DateValue[] = todayOn.map(d => {
-    const thisGDD = ((d.maxTemp(true) + d.minTemp(true)) / 2) - base;
-    gdds += Math.max(0, thisGDD);
-    return [d.date, gdds];
-  });
-
-  const results: DateValue[] = past.concat(forecasts);
-  return results.map(arr => [format(arr[0], 'MM-dd-yyyy'), roundXDigits(arr[1], 0)]);
-};
 
 
 // Averages X number of days of index values
@@ -237,6 +225,8 @@ const calcIndices = (days: DayHourly[]): Indices => {
       };
     }
   });
+
+  console.log(indices);
 
   return indices;
 };
@@ -350,66 +340,314 @@ const calcHeatStressIndex = (day: DayHourly): number => {
 
 
 
-const getCurrentGDDs = async (sDate:string, eDate: string, lngLat: string, base: number, today: Date, forecastData: DayHourly[]) => {
-  const res = await getGDDPast(sDate, eDate, lngLat, base);
-  const past: DateValue[] = res.map((arr: [string, number]) => [parseISO(arr[0]), arr[1]]);
-  const hasToday = past[past.length - 1][1] !== -999;
-  const thisSeasonGDDs = await calcGDDs(today, hasToday, past, forecastData, base);
+const getTableData = async (sDate:string, eDate: string, lngLat: string, today: Date, forecastData: DayHourly[]) => {
+  const res = await getPast(sDate, eDate, lngLat);
+
+  // Amount to shift by when approaching the end of the season, 11/30
+  const shift = (today.getMonth() === 10 && today.getDate() > 25) ? today.getDate() - 25 : 0;
+
+  // Handles if today's value should be observed or forecast
+  const hasToday = res[res.length - 1][1] !== -999;
+
+  // Convert observed values and add to return arrays
+  const gdd32: StrDateValue[] = [],
+    gdd50: StrDateValue[] = [],
+    precip:  StrDateValue[] = [],
+    temp: StrDateValue[] = [];
+  
+  let sevenDay = 0;
+  const precipArr = new ArrSummer(), tempArr = new ArrSummer();
+  const end = hasToday ? 16 : 15;
+  for (let i = 5 - shift; i < end; i++) {
+    const dayArr = res[i];
+    const dateObj = parseISO(dayArr[0]);
+    const date = format((dateObj), 'MM-dd-yyyy');
+
+    const precipTotal = precipArr.unshiftPop(dayArr[3]);
+    if (isSameDay(dateObj, today) && typeof precipTotal === 'number') sevenDay = roundXDigits(precipTotal, 2);
+    
+    const tempTotal = tempArr.unshiftPop(dayArr[4]);
+    if (typeof tempTotal === 'number') {
+      temp.push([date, roundXDigits(tempTotal / 7, 0)]);
+    }
+    
+    if (i > 11 - shift) {
+      gdd32.push([date, roundXDigits(dayArr[1], 0)]);
+      gdd50.push([date, roundXDigits(dayArr[2], 0)]);
+      precip.push([date, dayArr[3] === -999 ? 0 : roundXDigits(dayArr[3], 2)]);
+    }
+  }
+
+  // Convert forecast values and add to return arrays
+  let sum32 = gdd32[gdd32.length - 1][1];
+  let sum50 = gdd50[gdd50.length - 1][1];
+  for (let i = (hasToday ? 2 : 1); i < (forecastData.length - shift); i++) {
+    const dayInst = forecastData[i];
+    const date = format(dayInst.date, 'MM-dd-yyyy');
+    const avgT = (dayInst.maxTemp(true) + dayInst.minTemp(true)) / 2;
+    
+    sum32 += Math.max(0, avgT - 32);
+    gdd32.push([date, roundXDigits(sum32, 0)]);
+
+    sum50 += Math.max(0, avgT - 50);
+    gdd50.push([date, roundXDigits(sum50, 0)]);
+
+    precip.push([date, roundXDigits(dayInst.precip(), 2)]);
+    
+    const tempTotal = tempArr.unshiftPop(avgT);
+    if (typeof tempTotal === 'number') {
+      temp.push([date, roundXDigits(tempTotal / 7, 0)]);
+    }
+  }
+
+  precip.push(['7 Day Sum', sevenDay]);
 
   return {
-    current: thisSeasonGDDs,
+    table32: gdd32,
+    table50: gdd50,
+    tablePrecip: precip,
+    tableTemp: temp,
     hasToday
   };
 };
 
-type DSC = {
-  date: string,
-  sum: number,
-  count: number
-}
-
-const getGDDs = async (sDate: string, eDate: string, lngLat: string, base: number, today: Date, data: DayHourly[]): Promise<GDDObj> => {
-  const { current , hasToday } = await getCurrentGDDs(sDate, eDate, lngLat, base, today, data);
-
-  sDate = `${today.getFullYear() - 15}-03-01`;
-  eDate = `${today.getFullYear() - 1}-11-30`;
-  
-  const last15Years = await getGDDPast(sDate, eDate, lngLat, base);
-
-  const beginLastSeason = `${today.getFullYear() - 1}-03-01`;
-  let iOfMarchFirst;
+const calcNormals = (normalYears: GridDatum[], beginLastSeason: string) => {
+  let iOfSeasonStart;
   let counter = 0;
-  const sums = last15Years.reduce((acc, arr, i) => {
-    if (arr[0] === beginLastSeason) iOfMarchFirst = i;
+  const sums = normalYears.reduce((acc, arr, i) => {
+    if (arr[0] === beginLastSeason) iOfSeasonStart = i;
 
     const dateParts = arr[0].split('-');
 
     if (dateParts[1] !== '12' && dateParts[1] !== '01' && dateParts[1] !== '02') {
-      acc[counter].sum += arr[1];
-      acc[counter].count++;
       if (!acc[counter].date) acc[counter].date = arr[0].slice(-5);
+      
+      acc[counter].gdd32.sum += arr[1];
+      acc[counter].gdd32.count++;
+
+      acc[counter].gdd50.sum += arr[2];
+      acc[counter].gdd50.count++;
+
+      if (arr[3] !== -999) {
+        acc[counter].precip.sum += arr[3];
+        acc[counter].precip.count++;
+      }
+      
+      acc[counter].temp.sum += arr[4];
+      acc[counter].temp.count++;
+      
       counter++;
     } else {
       counter = 0;
     }
 
     return acc;
-  }, Array.from({length: 275}, (): DSC => { return {date: '', sum: 0, count: 0}; }));
+  }, Array.from({length: 275}, (): DSC => { return {
+    date: '',
+    gdd32: {
+      sum: 0,
+      count: 0
+    },
+    gdd50: {
+      sum: 0,
+      count: 0
+    },
+    precip: {
+      sum: 0,
+      count: 0
+    },
+    temp: {
+      sum: 0,
+      count: 0
+    }
+  }; }));
 
-  const normal = sums.map((obj): StrDateValue => [ obj.date, roundXDigits(obj.sum / obj.count, 0)]);
+  const normal32: StrDateValue[] = [], normal50: StrDateValue[] = [], normalPrecip: StrDateValue[] = [], normalTemp: StrDateValue[] = [];
+  sums.forEach(day => {
+    normal32.push([day.date, roundXDigits(day.gdd32.sum / day.gdd32.count, 0)]);
+    normal50.push([day.date, roundXDigits(day.gdd50.sum / day.gdd50.count, 0)]);
+    normalPrecip.push([day.date, roundXDigits(day.precip.sum / day.precip.count, 2)]);
+    normalTemp.push([day.date, roundXDigits(day.temp.sum / day.temp.count, 0)]);
+  });
 
   return {
-    hasToday,
-    current,
-    last: last15Years.slice(iOfMarchFirst),
-    normal
+    normal32,
+    normal50,
+    normalPrecip,
+    normalTemp,
+    iOfSeasonStart
+  };
+};
+
+const getCurrentSeason = async (today: Date, lngLat: string) => {
+  const sDate = `${today.getFullYear()}-03-01`;
+  const eDate = format(today, 'yyyy-MM-dd');
+  
+  const res = await getPast(sDate, eDate, lngLat, true);
+  
+  const current32: StrDateValue[] = [], current50: StrDateValue[] = [], currentPrecip: StrDateValue[] = [];
+  res.forEach(day => {
+    const date = format(parseISO(day[0]), 'MM-dd-yyyy');
+    current32.push([date, roundXDigits(day[1], 0)]);
+    current50.push([date, roundXDigits(day[2], 0)]);
+    currentPrecip.push([date, roundXDigits(day[3], 2)]);
+  });
+  
+  return {
+    current32,
+    current50,
+    currentPrecip
+  };
+};
+
+const sliceLastSeason = (lastSeasonData: GridDatum[]) => {
+  const last32: StrDateValue[] = [], last50: StrDateValue[] = [], lastPrecip: StrDateValue[] = [];
+  lastSeasonData.forEach(day => {
+    const date = format(parseISO(day[0]), 'MM-dd-yyyy');
+    last32.push([date, roundXDigits(day[1], 0)]);
+    last50.push([date, roundXDigits(day[2], 0)]);
+    lastPrecip.push([date, roundXDigits(day[3], 2)]);
+  });
+
+  return {
+    last32,
+    last50,
+    lastPrecip
+  };
+};
+
+const calcDeparture = (current: StrDateValue[], normal: StrDateValue[]): StrDateValue[] => {
+  const dayMonth = current[0][0].slice(0,5);
+  const start = normal.findIndex(arr => arr[0] === dayMonth);
+  const relevantDays = normal.slice(start, start + 9);
+
+  return current.map((day, i) => {
+    return [day[0], day[1] - relevantDays[i][1]];
+  });
+};
+
+const calcGddDiffs = (current: StrDateValue[], past: StrDateValue[]) => {
+  const dayMonth = current[0][0].slice(0,5);
+  const start = past.findIndex(arr => arr[0].slice(0,5) === dayMonth);
+  const relevantDays = past.slice(start, start + 9);
+  
+  const tableDiffGdds: StrDateValue[] = [], tableDiffDays: StrDateValue[] = [];
+  current.forEach((day, i) => {
+    let nDay = relevantDays[i][1];
+    const cDay = day[1];
+
+    tableDiffGdds.push([day[0], cDay - nDay]);
+    
+    let looping = true;
+    let counter = 0;
+    while (looping) {
+      if (nDay > cDay && counter <= 0) {
+        counter--;
+        nDay = past[start + i + counter][1];
+      } else if (nDay < cDay && counter >= 0) {
+        counter++;
+        nDay = past[start + i + counter][1];
+      } else {
+        looping = false;
+      }
+    }
+
+    tableDiffDays.push([day[0], counter]);
+  });
+
+  return {
+    tableDiffGdds,
+    tableDiffDays
   };
 };
 
 
 
+const getGraphPagesData = async (sDate: string, eDate: string, lngLat: string, today: Date, data: DayHourly[]): Promise<GraphDataResults> => {
+  const numNormalYrs = 15;
+  const pastStart = `${today.getFullYear() - numNormalYrs}-03-01`;
+  const pastEnd = `${today.getFullYear() - 1}-11-30`;
+  const beginLastSeason = `${today.getFullYear() - 1}-03-01`;
 
+  const [{
+    table32,
+    table50,
+    tablePrecip,
+    tableTemp,
+    hasToday
+  },{
+    current32,
+    current50,
+    currentPrecip
+  },
+  pastSeasonsData] = await Promise.all([
+    getTableData(sDate, eDate, lngLat, today, data),
+    getCurrentSeason(today, lngLat),
+    getPast(pastStart, pastEnd, lngLat, true)
+  ]);
 
+  const {
+    normal32,
+    normal50,
+    normalPrecip,
+    normalTemp,
+    iOfSeasonStart
+  } = calcNormals(pastSeasonsData, beginLastSeason);
+
+  const {
+    last32,
+    last50,
+    lastPrecip
+  } = sliceLastSeason(pastSeasonsData.slice(iOfSeasonStart));
+
+  const departureTemp = calcDeparture(tableTemp, normalTemp);
+
+  const {
+    tableDiffGdds: normalDiffsGdds,
+    tableDiffDays: normalDiffsDays
+  } = calcGddDiffs(table50, normal50);
+
+  const {
+    tableDiffGdds: lastDiffsGdds,
+    tableDiffDays: lastDiffsDays
+  } = calcGddDiffs(table50, last50);
+
+  return {
+    gdd32: {
+      table: [table32],
+      current: current32,
+      last: last32,
+      normal: normal32
+    },
+    gdd50: {
+      table: [table50],
+      current: current50,
+      last: last50,
+      normal: normal50
+    },
+    gdd50DiffGdds: { table: [
+      lastDiffsGdds,
+      normalDiffsGdds
+    ]},
+    gdd50DiffDays: { table: [
+      lastDiffsDays,
+      normalDiffsDays
+    ]},
+    precip: {
+      table: [tablePrecip],
+      current: currentPrecip,
+      last: lastPrecip,
+      normal: normalPrecip
+    },
+    temp: {
+      table: [
+        tableTemp,
+        departureTemp
+      ]
+    },
+    todayFromAcis: hasToday
+  };
+};
 
 
 // Overarching function to coordinate gathering and calculating data used in the ToolPage component
@@ -427,7 +665,7 @@ const getData = async (lngLat: number[]): Promise<ToolData> => {
     eDate = format(addDays(today, 1), 'yyyy-MM-dd');
   }
   
-  const sDate = format(subDays(today, 8), 'yyyy-MM-dd');
+  const sDate = format(subDays(today, 15), 'yyyy-MM-dd');
   const seasonStart = new Date(today.getFullYear(), 2, 1);
 
   const data: DayHourly[] | null = await getToolRawData(lngLat[0], lngLat[1], seasonStart, seasonEnd);
@@ -435,159 +673,29 @@ const getData = async (lngLat: number[]): Promise<ToolData> => {
   if (data) {
     const riskIndices = calcIndices(data);
     
-    // digest GDD data into GDDs per day of interest
     const iOfToday = data.findIndex(obj => isSameDay(obj.date, today));
     const coords = lngLat.join(',');
-    const forecast = data.slice(iOfToday);
+    const forecast = data.slice(iOfToday - 1);
 
-    const gdd32 = await getGDDs(sDate, eDate, coords, 32, today, forecast);
-    const gdd50 = await getGDDs(sDate, eDate, coords, 50, today, forecast);
-
-    console.log(gdd32);
-    console.log(gdd50);
-    
-    // const { current: current32 , hasToday } = await getCurrentGDDs(sDate, eDate, lngLat.join(','), 32, today, data.slice(iOfToday));
-    // const { current: current50 } = await getCurrentGDDs(sDate, eDate, lngLat.join(','), 50, today, data.slice(iOfToday));
-
-    // console.log(current32);
-    // console.log(current50);
-
-    // sDate = `${today.getFullYear() - 15}-03-01`;
-    // eDate = format(addDays(subYears(parseISO(eDate), 1), 4), 'yyyy-MM-dd');
-    
-    // const last15Years32 = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
-    // const last15Years50 = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
-    
-    // console.log(last15Years32);
-    // console.log(last15Years50);
-
-    // const last32 = last15Years32.slice(-9);
-    // const last50 = last15Years50.slice(-9);
-
-    // console.log(last32);
-    // console.log(last50);
-    
-    
-
-
+    const graphData = await getGraphPagesData(sDate, eDate, coords, today, forecast);
 
     return {
-      gdd32,
-      gdd50,
-      ...riskIndices,
-      todayFromAcis: gdd32.hasToday
+      ...graphData,
+      ...riskIndices
     };
   } else {
     return {
-      gdd32: emptyGDDObj,
-      gdd50: emptyGDDObj,
+      gdd32: emptyOtherToolData,
+      gdd50: emptyOtherToolData,
+      gdd50DiffGdds: { table: [] },
+      gdd50DiffDays: { table: [] },
+      precip: emptyOtherToolData,
+      temp: emptyOtherToolData,
       ...emptyIndices,
       todayFromAcis: false
     };
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // Overarching function to coordinate gathering and calculating data used in the ToolPage component
-// const getData = async (lngLat: number[]): Promise<ToolData> => {
-//   let today = new Date();
-//   const month = today.getMonth();
-  
-//   let seasonEnd, eDate;
-//   if (month < 2 || month === 11) {
-//     today = new Date(today.getFullYear() - (month < 2 ? 1 : 0), 10, 25);
-//     seasonEnd = format(new Date(today.getFullYear(), 10, 30), 'yyyyMMdd08');
-//     eDate = format(addDays(today, 6), 'yyyy-MM-dd');
-//   } else {
-//     seasonEnd = 'now';
-//     eDate = format(addDays(today, 1), 'yyyy-MM-dd');
-//   }
-  
-//   const sDate = format(subDays(today, 8), 'yyyy-MM-dd');
-//   const seasonStart = new Date(today.getFullYear(), 2, 1);
-
-//   const data: DayHourly[] | null = await getToolRawData(lngLat[0], lngLat[1], seasonStart, seasonEnd);
-
-//   if (data) {
-//     // digest GDD data into GDDs per day of interest
-//     const iOfToday = data.findIndex(obj => isSameDay(obj.date, today));
-    
-//     const past32 = await getGDDPast(sDate, eDate, lngLat.join(','), 32);
-//     const past50 = await getGDDPast(sDate, eDate, lngLat.join(','), 50);
-    
-//     const hasToday = past32[past32.length - 1][1] !== -999;
-    
-//     const gdd32 = await calcGDDs(today, hasToday, past32, data.slice(iOfToday), 32);
-//     const gdd50 = await calcGDDs(today, hasToday, past50, data.slice(iOfToday), 50);
-
-//     const riskIndices = calcIndices(data);
-
-//     return {
-//       gdd32,
-//       gdd50,
-//       ...riskIndices,
-//       todayFromAcis: hasToday
-//     };
-//   } else {
-//     return {
-//       gdd32: [],
-//       gdd50: [],
-//       ...emptyIndices,
-//       todayFromAcis: false
-//     };
-//   }
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // Helpful object for converting states of interest to abbreviations

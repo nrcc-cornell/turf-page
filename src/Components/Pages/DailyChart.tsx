@@ -1,4 +1,5 @@
 import React from 'react';
+import {v4 as uuid} from 'uuid';
 
 import {
   Typography,
@@ -33,6 +34,9 @@ const HeaderSX = {
   width: '100%',
   padding: '5px 2px',
   textAlign: 'center',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
   boxSizing: 'border-box',
   fontSize: '14px',
   borderRight: '1px solid rgb(240,240,240)',
@@ -41,27 +45,37 @@ const HeaderSX = {
   }
 };
 
+const CellSX = {
+  height: '100%',
+  width: '100%',
+  backgroundColor: 'white',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontWeight: 'bold',
+  boxSizing: 'border-box',
+  '@media (max-width: 545px)': {
+    fontSize: '12px'
+  },
+  '@media (max-width: 465px)': {
+    fontSize: '10px'
+  }
+};
 
-const constructCells = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string): JSX.Element[][] => {
+
+const constructDotCells = (data: StrDateValue[] | RiskTool | HSTool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string): JSX.Element[][] => {
   const res: JSX.Element[][] = [];
   rows.forEach(rowInfo => {
     if (rowInfo.name !== 'season') {
-      const row = [<Box key={rowInfo.name} sx={HeaderSX}>{rowInfo.name}</Box>];
+      const row = [<Box key={uuid()} sx={HeaderSX}><Box>{rowInfo.name}</Box></Box>];
       
       // @ts-expect-error  'rows' should be composed of 'Daily' | '7 Day Avg' and should be in line with HSTool | Tool for whichever risk is being processed
       const d = data instanceof Array ? data : data[rowInfo.name as 'Daily' | '7 Day Avg'];
   
-      d.forEach((arr: number[], i: number) => {
+      d.forEach((arr: number[]) => {
         const backgroundColor = colorizer(arr[1], rowInfo.thresholds);
         row.push(
-          <Box key={rowInfo.name + i} sx={{
-            height: '100%',
-            width: '100%',
-            backgroundColor: 'white',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
+          <Box key={uuid()} sx={CellSX}>
             <Box sx={{
               backgroundColor,
               height: 15,
@@ -83,23 +97,73 @@ const constructCells = (data: StrDateValue[] | Tool | HSTool, rows: Row[], color
   return res;
 };
 
+const constructValueCells = (data: StrDateValue[][], rowNames: string[]) => {
+  const res: JSX.Element[][] = [];
 
-const constructDates = (data: StrDateValue[] | DateValue[]) => {
-  return data.map((arr, i) => <Box key={arr[1] + 'i' + i} sx={dateSX(i)}>
-    <Box sx={{
-      width: 'fit-content',
-      '@media (max-width: 510px)': {
-        width: '20px'
-      }
-    }}>{typeof arr[0] === 'string' ? arr[0].slice(0,-5) : ''}</Box>
-  </Box>);
+  data.forEach((rowInfo, num) => {
+    const row = [<Box key={uuid()} sx={HeaderSX}><Box sx={{height: 'fit-content', width: 'fit-content'}}>{rowNames[num]}</Box></Box>];
+    
+    rowInfo.forEach((day,i) => {
+      row.push(
+        <Box
+          key={uuid()}
+          sx={{
+            ...CellSX,
+            borderLeft: i === 0 ? 'none' : '1px solid rgb(240,240,240)'
+          }}
+        >
+          {day[1]}
+        </Box>
+      );
+    });
+
+    res.push(row);
+  });
+
+  return res;
 };
 
 
-const renderChart = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorizer: (val: number, thresholds: ThresholdObj) => string, todayFromAcis: boolean) => {
-  const sample = data instanceof Array ? data : data['Daily'];
+const constructDates = (data: StrDateValue[] | DateValue[]) => {
+  return data.map((arr, i) => {
+    let date = '';
+    if (typeof arr[0] === 'string') {
+      if (arr[0] === '7 Day Sum') {
+        date = arr[0];
+      } else {
+        date = arr[0].slice(0,-5);
+      }
+    }
+  
+    return (
+      <Box key={uuid()} sx={dateSX(i)}>
+        <Box sx={{
+          width: 'fit-content',
+          '@media (max-width: 650px)': {
+            fontSize: '12px'
+          },
+          '@media (max-width: 510px)': {
+            width: '20px'
+          }
+        }}>{date}</Box>
+      </Box>
+    );
+  });
+};
+
+
+function renderChart(data: StrDateValue[][], rows: string[], todayFromAcis: boolean): JSX.Element;
+function renderChart(data: StrDateValue[] | RiskTool | HSTool, rows: Row[], todayFromAcis: boolean, colorizer: (val: number, thresholds: ThresholdObj) => string): JSX.Element;
+function renderChart(data: StrDateValue[][] | StrDateValue[] | RiskTool | HSTool, rows: Row[] | string[], todayFromAcis: boolean, colorizer?: (val: number, thresholds: ThresholdObj) => string): JSX.Element {
+  let cells: JSX.Element[][] = [], sample: StrDateValue[] | DateValue[] = [];
+  if (rows instanceof Array && data instanceof Array && data[0][0] instanceof Array) {
+    sample = data[0] as StrDateValue[];
+    cells = constructValueCells(data as StrDateValue[][], rows as string[]);
+  } else if (colorizer) {
+    sample = data instanceof Array ? data as StrDateValue[] : data['Daily'];
+    cells = constructDotCells(data as StrDateValue[] | RiskTool | HSTool, rows as Row[], colorizer); 
+  }
   const dates = constructDates(sample);
-  const cells = constructCells(data, rows, colorizer);
 
   // Handles edge case of approaching the end of the season, 11/30
   let shift = 0;
@@ -149,16 +213,18 @@ const renderChart = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorize
     }
   };
 
-  let smallMLeft, mLeft;
+  let smallMLeft, mLeft, precipShift = 0;
+  if (sample.length === 10 && sample[9][0] === '7 Day Sum') precipShift++;
   if (sample.length === 9) {
     const numCells = (todayFromAcis ? 4 : 3) + shift;
-    mLeft = `calc((100% - 80px) * (${numCells}/9) - 34px)`;
-    smallMLeft = `calc((100% - 66px) * (${numCells}/9) - 49px)`;
+    mLeft = `calc((100% - 80px) * (${numCells - precipShift}/9) - 34px)`;
+    smallMLeft = `calc((100% - 66px) * (${numCells - precipShift}/9) - 49px)`;
   } else {
     const numCells = (todayFromAcis ? 5 : 4) + shift;
-    mLeft = `calc((100% - 80px) * (${numCells}/10) - 34px)`;
-    smallMLeft = `calc((100% - 66px) * (${numCells}/10) - 47px)`;
+    mLeft = `calc((100% - 80px) * (${numCells - precipShift}/10) - 34px)`;
+    smallMLeft = `calc((100% - 66px) * (${numCells - precipShift}/10) - 47px)`;
   }
+
 
   
   return (
@@ -222,7 +288,7 @@ const renderChart = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorize
 
       <Box sx={{
         display: 'grid',
-        gridTemplateColumns: `80px repeat(${sample.length}, auto)`,
+        gridTemplateColumns: `81px repeat(${sample.length}, calc((100% - 80px) / ${sample.length}))`,
         gridTemplateRows: `38px repeat(${cells.length}, 25px)`,
         rowGap: '1px',
         backgroundColor: 'rgb(240,240,240)',
@@ -232,7 +298,7 @@ const renderChart = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorize
         position: 'relative',
         margin: '0px auto 8px auto',
         '@media (max-width: 380px)': {
-          gridTemplateColumns: `66px repeat(${sample.length}, auto)`,
+          gridTemplateColumns: `67px repeat(${sample.length}, calc((100% - 66px) / ${sample.length}))`,
         }
       }}>
         <Box sx={{ ...HeaderSX, padding: '5px 12px'}}>As of 8am on</Box>
@@ -242,22 +308,9 @@ const renderChart = (data: StrDateValue[] | Tool | HSTool, rows: Row[], colorize
       </Box>
     </>
   );
-};
+}
 
-const renderLoading = (numRows: number) => {
-  return (
-    <Box sx={{
-      margin: '8px auto',
-      height: 2 + numRows + ((numRows + 1) * 20),
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'flex-end',
-      color: 'rgb(187,187,187)'
-    }}><CircularProgress color='inherit' /></Box>
-  );
-};
-
-const renderNoData = (numRows: number) => {
+const renderNotChart = (numRows: number, a: 'loading' | 'empty') => {
   return (
     <Box sx={{
       margin: '8px auto',
@@ -267,69 +320,80 @@ const renderNoData = (numRows: number) => {
       alignItems: 'flex-end',
       color: 'rgb(187,187,187)',
       fontStyle: 'italic'
-    }}>No Data to Display</Box>
+    }}>{a === 'loading' ? <CircularProgress color='inherit' /> : 'No Data to Display'}</Box>
   );
 };
 
 
 
-export default function DailyChart(props: DailyChartProps) {
-  return (
-    <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
-      <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>
-
-      {!props.data ? renderLoading(props.rows.length) :
-        'Daily' in props.data ?
-          props.data['Daily'].length === 0 ? renderNoData(props.rows.length) : renderChart(props.data, props.rows, props.colorizer, props.todayFromAcis)
-          :
-          props.data.current.length === 0 ? renderNoData(props.rows.length) : renderChart(props.data.current, props.rows, props.colorizer, props.todayFromAcis)
-      }
-
-      <Box sx={{
-        display: 'flex',
-        width: '100%',
-        justifyContent: 'center',
-        marginTop: '22px',
-        '@media (max-width: 380px)': {
-          marginTop: '12px',
+export default function DailyChart(props: DailyChartProps | ListChartProps) {
+  if ('colorizer' in props) {
+    return (
+      <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
+        <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>
+  
+        {!props.data ? renderNotChart(props.rows.length, 'loading') :
+          'Daily' in props.data ?
+            props.data['Daily'].length === 0 ? renderNotChart(props.rows.length, 'empty') : renderChart(props.data, props.rows, props.todayFromAcis, props.colorizer)
+            :
+            props.data.current.length === 0 ? renderNotChart(props.rows.length, 'empty') : renderChart(props.data.table[0], props.rows, props.todayFromAcis, props.colorizer)
         }
-      }}>
+  
         <Box sx={{
-          width: 'fit-content',
           display: 'flex',
-          border: '1px solid rgb(240,240,240)',
-          borderRadius: '5px',
-          padding: '6px 12px'
+          width: '100%',
+          justifyContent: 'center',
+          marginTop: '22px',
+          '@media (max-width: 380px)': {
+            marginTop: '12px',
+          }
         }}>
-          {props.ranges.map(arr => {
-            return (
-              <Box key={arr[0]} sx={{
-                display: 'flex',
-                alignItems: 'center',
-                margin: '0 6px'
-              }}>
-                <Box sx={{
-                  backgroundColor: arr[1],
-                  height: 15,
-                  width: 15,
-                  borderRadius: 8,
-                  marginRight: '3px',
-                  '@media (max-width: 380px)': {
-                    height: 11,
-                    width: 11,
-                  }
-                }}></Box>
-                <Box sx={{
-                  fontSize: '16px',
-                  '@media (max-width: 380px)': {
-                    fontSize: '12px',
-                  }
-                }}>{arr[0]}</Box>
-              </Box>
-            );
-          })}
+          <Box sx={{
+            width: 'fit-content',
+            display: 'flex',
+            border: '1px solid rgb(240,240,240)',
+            borderRadius: '5px',
+            padding: '6px 12px'
+          }}>
+            {props.ranges.map(arr => {
+              return (
+                <Box key={uuid()} sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  margin: '0 6px'
+                }}>
+                  <Box sx={{
+                    backgroundColor: arr[1],
+                    height: 15,
+                    width: 15,
+                    borderRadius: 8,
+                    marginRight: '3px',
+                    '@media (max-width: 380px)': {
+                      height: 11,
+                      width: 11,
+                    }
+                  }}></Box>
+                  <Box sx={{
+                    fontSize: '16px',
+                    '@media (max-width: 380px)': {
+                      fontSize: '12px',
+                    }
+                  }}>{arr[0]}</Box>
+                </Box>
+              );
+            })}
+          </Box>
         </Box>
       </Box>
-    </Box>
-  );
+    );
+  } else {
+    return (
+      <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
+        <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>
+  
+        {!props.data ? renderNotChart(props.rowNames.length, 'loading') :
+          (props.data.length === 0 ? renderNotChart(props.rowNames.length, 'empty') : renderChart(props.data, props.rowNames, props.todayFromAcis))}
+      </Box>
+    );
+  }
 }

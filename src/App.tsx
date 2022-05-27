@@ -11,10 +11,10 @@ import {
   LocationDisplay,
   Home,
   DailyChart,
-  ListChart,
   SeasonChart,
   StyledDivider,
-  RiskMaps
+  RiskMaps,
+  Loading
 } from './Components';
 
 import { AppRouteInfo } from './AppRouteInfo';
@@ -64,7 +64,6 @@ function App() {
   useEffect(() => {
     (async () => {
       const data = await getData(currentLocation.lngLat);
-      console.log(data);
       setToolData(data);
     })();
   }, [currentLocation]);
@@ -77,9 +76,13 @@ function App() {
           maxWidth: 850
         };
       }
-      
+
       return (
         <StyledCard variant='outlined' sx={sx}>
+          {(info.pageType === 'graph' || info.pageType === 'table') &&
+            <DailyChart data={toolData[info.chart.data].table} rowNames={info.chart.rowNames} todayFromAcis={toolData.todayFromAcis} title={info.chart.title} />
+          }
+          
           {info.pageType === 'risk' &&
             <>
               <DailyChart {...info.chart} data={toolData[info.chart.data]} todayFromAcis={toolData.todayFromAcis} />
@@ -88,10 +91,6 @@ function App() {
                 <SeasonChart data={toolData[info.chart.data].season} colorizer={info.chart.colorizer} thresholds={info.chart.rows[0].thresholds} />
               }
             </>
-          }
-
-          {info.pageType === 'graph' &&
-            <ListChart data={toolData[info.chart.data].current} todayFromAcis={toolData.todayFromAcis} title={info.chart.title} />
           }
 
           {info.pageType !== 'mapsOnly' && <StyledDivider />}
@@ -105,15 +104,7 @@ function App() {
         </StyledCard>
       );
     } else {
-
-
-
-      // Return loading!!!
-      return <Box>Loading...</Box>;
-
-
-
-
+      return <Loading />;
     }
   };
 
@@ -141,65 +132,11 @@ function App() {
   };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const hclick = () => {
-    (async () => {
-      const data = await getData(currentLocation.lngLat);
-      console.log(data);
-    })();
-  };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   return (
     <Box sx={{
       minWidth: 320,
       position: 'relative'
     }}>
-      <Box sx={{display: 'flex', justifyContent: 'center'}}><button style={{ height: 100, width: 400}} onClick={() => hclick()}>Click me</button></Box>
-
       <Header />
 
       <Nav />
@@ -214,14 +151,11 @@ function App() {
         boxSizing: 'border-box',
         padding: '20px',
         width: '100%',
-        minHeight: 'calc(100vh - 326px)',
+        minHeight: 'calc(100vh - 333px)',
         '@media (max-width: 862px)': {
           padding: '20px 12px'
         },
-        '@media (max-width: 847px)': {
-          minHeight: 'calc(100vh - 347px)'
-        },
-        '@media (max-width: 639px)': {
+        '@media (max-width: 640px)': {
           minHeight: 'calc(100vh - 293px)',
           padding: '20px 6px'
         }

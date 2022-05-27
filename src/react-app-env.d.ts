@@ -14,7 +14,7 @@ type ContextType = {
   short_code?: string
 }
 
-type DataType = DataMapsOnly | DataRisk | DataGraph;
+type DataType = DataMapsOnly | DataRisk | DataGraph | DataTable;
 
 type DataMapsOnly = {
   maps: MapPageProps[],
@@ -25,8 +25,19 @@ type DataGraph = {
   maps: MapPageProps[],
   pageType: 'graph',
   chart: {
-    data: 'gdd32' | 'gdd50',
-    title: string
+    data: 'gdd32' | 'gdd50' | 'precip',
+    title: string,
+    rowNames: string[]
+  }
+};
+
+type DataTable = {
+  maps: MapPageProps[],
+  pageType: 'table',
+  chart: {
+    data: 'gdd50DiffGdds' | 'gdd50DiffDays' | 'temp',
+    title: string,
+    rowNames: string[]
   }
 };
 
@@ -38,7 +49,7 @@ type DataRisk = {
 };
 
 type DataAndFromAcis = {
-  data: GDDObj | Tool | HSTool | null,
+  data: GraphDataObj | RiskTool | HSTool | null,
   todayFromAcis: boolean
 };
 
@@ -60,12 +71,29 @@ type DisplayProps = {
     handleChangeLocations: (a: 'add' | 'remove' | 'change', b: UserLocation) => void
 };
 
-type GDDObj = {
-  hasToday: boolean,
+type OtherTool = {
   current: StrDateValue[],
   last: StrDateValue[],
   normal: StrDateValue[]
 };
+
+type TableData = {
+  table: StrDateValue[][]
+};
+
+type GraphDataObj = TableData & OtherTool;
+
+type GraphDataResults = {
+  gdd32: GraphDataObj,
+  gdd50: GraphDataObj,
+  gdd50DiffGdds: TableData,
+  gdd50DiffDays: TableData,
+  precip: GraphDataObj,
+  temp: TableData,
+  todayFromAcis: boolean,
+};
+
+type GridDatum = [string, number, number, number, number];
 
 type HomeMap = {
   path: string,
@@ -87,17 +115,18 @@ type ImgOptions = {
 }
 
 type Indices = {
-  anthracnose: Tool,
-  brownPatch: Tool,
-  dollarspot: Tool,
-  pythiumBlight: Tool,
+  anthracnose: RiskTool,
+  brownPatch: RiskTool,
+  dollarspot: RiskTool,
+  pythiumBlight: RiskTool,
   heatStress: HSTool
 };
 
 type ListChartProps = {
-  data: StrDateValue[] | null,
+  data: StrDateValue[][] | null,
   todayFromAcis: boolean,
-  title: string
+  title: string,
+  rowNames: string[]
 };
 
 type MapBarProps = {
@@ -238,15 +267,11 @@ type Toggle = {
   type: string;
 };
 
-type Tool = HSTool & {
+type RiskTool = HSTool & {
   '7 Day Avg': DateValue[]
 };
 
-type ToolData = Indices & {
-  gdd32: GDDObj,
-  gdd50: GDDObj,
-  todayFromAcis: boolean
-};
+type ToolData = Indices & GraphDataResults;
 
 type UserLocation = {
   address: string,
@@ -256,4 +281,14 @@ type UserLocation = {
 type WeekMapsProps = {
   title: string,
   thumbs: Thumb[]
+};
+
+type SumObj = { sum: number, count: number };
+
+type DSC = {
+  date: string,
+  gdd32: SumObj,
+  gdd50: SumObj,
+  precip: SumObj,
+  temp: SumObj
 };

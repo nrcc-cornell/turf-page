@@ -55,6 +55,10 @@ export default class DayHourly {
     });
   }
 
+  precip(): number {
+    return this.data.reduce((acc, d) => acc += d.precip, 0);
+  }
+  
   didRain(): boolean {
     return !!this.data.find(d => d.rained);
   }
@@ -73,10 +77,12 @@ export default class DayHourly {
     return inF ? CToF(temp) : temp;
   }
 
-  avgTemp(): number {
-    return this.data.reduce((sum,d) => {
+  avgTemp(inF?: boolean): number {
+    const avgTemp = this.data.reduce((sum,d) => {
       return sum += d.temp;
     }, 0) / this.data.length;
+
+    return inF ? CToF(avgTemp) : avgTemp;
   }
 
   numGTRHum(threshold: number): number {

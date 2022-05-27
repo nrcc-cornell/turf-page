@@ -15,14 +15,24 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+const bkColor = 'rgb(120,207,21)';
 const LinkLine = styled(Box)({
-  height: '3px',
+  height: '1px',
   width: '90%',
-  backgroundColor: 'rgb(189,187,187)',
-  // backgroundColor: 'rgb(239,64,53)',
+  backgroundColor: bkColor,
   position: 'absolute',
-  bottom: 5,
-  left: '5%'
+  bottom: '2px',
+  left: '5%',
+  '&::before': {
+    content: '""',
+    display: 'block',
+    height: '1px',
+    width: '80%',
+    backgroundColor: bkColor,
+    position: 'absolute',
+    bottom: '2px',
+    left: '10%',
+  }
 });
 
 const btnSX = {

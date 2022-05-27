@@ -2,11 +2,11 @@ import Header from './Header/Header';
 import Footer from './Footer/Footer';
 import Nav from './Nav/Nav';
 import Home from './Pages/Home';
-import ListChart from './Pages/ListChart';
 import StyledDivider from './Pages/StyledDivider';
 import SeasonChart from './Pages/SeasonChart';
 import DailyChart from './Pages/DailyChart';
 import RiskMaps from './Pages/RiskMaps';
+import Loading from './Loading';
 
 import ShortCuttAd from './ShortCuttAd';
 
@@ -21,8 +21,8 @@ export {
   LocationDisplay,
   Home,
   DailyChart,
-  ListChart,
   SeasonChart,
   StyledDivider,
-  RiskMaps
+  RiskMaps,
+  Loading
 };

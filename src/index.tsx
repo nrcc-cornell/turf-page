@@ -146,7 +146,8 @@ const theme = createTheme({
     links: {
       color: 'white',
       fontSize: '12px',
-      fontFamily: '"Roboto", "Arial", "sans-serif"'
+      fontFamily: '"Roboto", "Arial", "sans-serif"',
+      lineHeight: '16px'
     },
     dayMapDate: {
       fontSize: '12px'

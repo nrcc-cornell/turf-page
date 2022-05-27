@@ -365,11 +365,13 @@ const routeInfo: RouteInfo[] = [
       pageType: 'graph',
       chart: {
         data: 'gdd32',
-        title: '32°F GDD Accumulation'
+        title: '32°F GDD Accumulation',
+        rowNames: ['GDDs']
       },
       maps: [{
         url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdd32.png',
         alt: '7 Day average base 32°F GDD accumulation',
+        title: '7 Day average base 32°F GDD accumulation',
         description: [
           'This map shows base 32°F GDD accumulation since February 1.',
           'Growing degree days (GDD) are a means by which turf and weed development can be monitored. Base 32°F GDD accumulation is an experimental measure for predicting ideal annual bluegrass seedhead development and potential assessment with plant growth regulators. Preliminary data suggests that the ideal application time might be from 400 to 600 GDD for Proxy and 500 to 650 GDD for Embark.'
@@ -377,6 +379,7 @@ const routeInfo: RouteInfo[] = [
       },{
         url: 'https://www.nrcc.cornell.edu/dyn_images/grass/wgdd32fcst.png',
         alt: 'Forecast base 32°F GDD accumulation',
+        title: 'Forecast base 32°F GDD accumulation',
         description: [
           'This map shows the forecast for base 32°F GDD accumulation over the next week. The forecast is based on guidance from the National Weather Service 7-day temperature forecast.',
           'Growing degree days (GDD) are a means by which turf and weed development can be monitored. Base 32°F GDD accumulation is an experimental measure for predicting ideal annual bluegrass seedhead development and potential assessment with plant growth regulators. Preliminary data suggests that the ideal application time might be from 400 to 600 GDD for Proxy and 500 to 650 GDD for Embark.'
@@ -389,11 +392,13 @@ const routeInfo: RouteInfo[] = [
       pageType: 'graph',
       chart: {
         data: 'gdd50',
-        title: '50°F GDD accumulation'
+        title: '50°F GDD accumulation',
+        rowNames: ['GDDs']
       },
       maps: [{
         url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wgdd.png',
         alt: '7 Day average base 50°F GDD accumulation',
+        title: '7 Day average base 50°F GDD accumulation',
         description: [
           'Degree days are a means by which turf and weed development can be monitored.',
           'This map shows the number of base 50°F growing degree days (GDD) that have accumulated over the last 7 days.'
@@ -401,17 +406,12 @@ const routeInfo: RouteInfo[] = [
       },{
         url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wgddfcst.png',
         alt: 'Base 50°F GDD accumulation forecast',
+        title: 'Base 50°F GDD accumulation forecast',
         description: [
           'Degree days are a means by which turf and weed development can be monitored.',
           'This map shows the forecast for base 50°F GDD accumulation over the next week. The forecast is based on guidance from the National Weather Service 7-day temperature forecast.'
         ]
-      }]
-    }
-  },{
-    path: '/season/gdd/differences/gdd',
-    props: {
-      pageType: 'mapsOnly',
-      maps: [{
+      },{
         url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdd.png',
         alt: 'Base 50°F GDD accumulation since March 15',
         title: 'Accumulation since March 15',
@@ -419,7 +419,18 @@ const routeInfo: RouteInfo[] = [
           'Degree days are a means by which turf and weed development can be monitored.',
           'This map shows the total accumulation of base 50°F GDD from March 15 until the current day.'
         ]
-      },{
+      }]
+    }
+  },{
+    path: '/season/gdd/differences/gdd',
+    props: {
+      pageType: 'table',
+      chart: {
+        data: 'gdd50DiffGdds',
+        title: '50°F GDD Differences (GDDs)',
+        rowNames: ['Last Year', 'Normal']
+      },
+      maps: [{
         url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifg.png',
         alt: 'Difference in base 50°F GGD accumulation over last year',
         title: 'Difference from Last Year',
@@ -441,7 +452,12 @@ const routeInfo: RouteInfo[] = [
   },{
     path: '/season/gdd/differences/days',
     props: {
-      pageType: 'mapsOnly',
+      pageType: 'table',
+      chart: {
+        data: 'gdd50DiffDays',
+        title: '50°F GDD Differences (Days)',
+        rowNames: ['Last Year', 'Normal']
+      },
       maps: [{
         url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifd.png',
         alt: 'Difference in base 50°F GDD accumulation over last year',
@@ -464,7 +480,12 @@ const routeInfo: RouteInfo[] = [
   },{
     path: '/season/temperature-departure',
     props: {
-      pageType: 'mapsOnly',
+      pageType: 'table',
+      chart: {
+        data: 'temp',
+        title: 'Temperature Depature',
+        rowNames: ['Average', 'Departure']
+      },
       maps: [{
         url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wtdpt.png',
         alt: 'Temperature departure (°F)',
@@ -491,7 +512,12 @@ const routeInfo: RouteInfo[] = [
   },{
     path: '/irrigation/rainfall',
     props: {
-      pageType: 'mapsOnly',
+      pageType: 'graph',
+      chart: {
+        data: 'precip',
+        title: `Last Week's Rainfall Accumulation`,
+        rowNames: ['Inches']
+      },
       maps: [{
         url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wptot.png',
         alt: 'Total rainfall over the last 7 days',
@@ -564,7 +590,7 @@ const routeInfo: RouteInfo[] = [
 ];
 
 const frontPageMaps: HomeMap[] = routeInfo.map(page => {
-  return page.props.maps.map(m => {
+  return page.props.maps.map((m: MapThumbs | MapPageProps) => {
     if ('thumbs' in m) {
       return {
         path: page.path,
@@ -578,7 +604,7 @@ const frontPageMaps: HomeMap[] = routeInfo.map(page => {
         alt: m.alt
       };
     }
-  }).filter(x => x);
+  }).filter((x: HomeMap) => x);
 }).flat();
 
 export { routeInfo as AppRouteInfo, frontPageMaps };
