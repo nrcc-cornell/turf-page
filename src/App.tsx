@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 import { Box } from '@mui/material';
@@ -11,7 +11,8 @@ import {
   LocationDisplay,
   Home,
   DailyChart,
-  SeasonChart,
+  // SeasonChart,
+  RiskGraph,
   StyledDivider,
   RiskMaps,
   Loading,
@@ -87,14 +88,17 @@ function App() {
             <DailyChart data={toolData[info.chart.data].table} rowNames={info.chart.rowNames} todayFromAcis={toolData.todayFromAcis} title={info.chart.title} />
           }
           
-          {info.pageType === 'risk' &&
-            <>
+          {info.pageType === 'seedWeed' &&
               <DailyChart {...info.chart} data={toolData[info.chart.data]} todayFromAcis={toolData.todayFromAcis} />
-  
-              {info.chart.data !== 'gdd32' && info.chart.data !== 'gdd50' &&
-                <SeasonChart data={toolData[info.chart.data].season} colorizer={info.chart.colorizer} thresholds={info.chart.rows[0].thresholds} />
-              }
-            </>
+          }
+
+          {info.pageType === 'risk' &&
+            <RiskGraph
+              data={toolData[info.chart.data]}
+              todayFromAcis={toolData.todayFromAcis}
+              thresholds={info.chart.rows[0].thresholds}
+              title={info.chart.title}
+            />
           }
 
           {info.pageType !== 'mapsOnly' && <StyledDivider />}
@@ -109,13 +113,13 @@ function App() {
             </Box>
           }
           
-          {info.pageType === 'risk' ?
+          {(info.pageType === 'risk' || info.pageType === 'seedWeed') ?
             <RiskMaps maps={info.maps} text={info.text} />
             :
             ((info.pageType === 'graph' && showGraphs) ?
               <Graph {...toolData[info.chart.data]} units={info.chart.data === 'precip' ? 'inches' : 'GDDs'} />
               :
-              <MultiMapPage maps={info.maps} />
+              <MultiMapPage maps={info.maps as MapPageProps[]} />
             )
           }
         </StyledCard>
@@ -147,6 +151,15 @@ function App() {
       localStorage.setItem('currentLocation', JSON.stringify(location));
     }
   };
+
+  const memoizedRoutes = useMemo(() => {
+    return AppRouteInfo.map(routeInfo => 
+      <Route
+        key={routeInfo.path}
+        path={routeInfo.path}
+        element={renderPage(routeInfo.props)}
+      />);
+  }, [toolData, showGraphs, AppRouteInfo]);
 
 
   return (
@@ -183,13 +196,7 @@ function App() {
             element={<Home />}
           />
           
-          {AppRouteInfo.map(routeInfo => 
-            <Route
-              key={routeInfo.path}
-              path={routeInfo.path}
-              element={renderPage(routeInfo.props)}
-            />)
-          }
+          {memoizedRoutes}
 
           <Route
             path='*'

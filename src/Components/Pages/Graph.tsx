@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import React, { useState, useRef, Fragment } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Box } from '@mui/material';
+import { format, addDays, subDays } from 'date-fns';
 
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
@@ -16,16 +18,33 @@ import StyledButton from './StyledBtn';
 
 export default function Graph(props: GraphDataObj & { units: string }) {
   const chartComponent = useRef<HighchartsReact.RefObject | null>(null);
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(true);
 
   const resetZoom = () => {
     if (chartComponent && chartComponent.current) {
       chartComponent.current.chart.zoomOut();
     }
   };
-  
 
-  console.log(props);
+  // Gathers and formats the data for the forecast line segment
+  const getForecastData = () => {
+    const today = new Date();
+    const todayStr = format(today, 'MM-dd-yyyy');
+    const todayIdx = props.table[0].findIndex((arr: [string, number]) => arr[0] === todayStr);
+    
+    let forecastData = props.table[0].slice(todayIdx + 1).map((arr): [string, number] => [arr[0].slice(0,5), arr[1]]);
+    
+    if (props.units === 'inches') {
+      forecastData.pop();
+      let sum = props.current[props.current.length - 1][1];
+      forecastData = forecastData.map((arr: [string, number]) => {
+        sum += arr[1];
+        return [arr[0], sum];
+      });
+    }
+
+    return forecastData;
+  };
 
   const options = {
     credits: { enabled: false },
@@ -38,6 +57,18 @@ export default function Graph(props: GraphDataObj & { units: string }) {
           } else {
             setIsZoomed(true);
           }
+        },
+        load: function () {
+          const today = new Date();
+          const now = format(addDays(today, 7), 'MM-dd');
+          const lastMonth = format(subDays(today, 30), 'MM-dd');
+          
+          // @ts-ignore
+          const axis = this.xAxis[0];
+          const begin = axis.names.findIndex((date: string) => date === lastMonth);
+          const end = axis.names.findIndex((date: string) => date === now);
+
+          axis.setExtremes(begin, end);
         }
       }
     },
@@ -51,24 +82,52 @@ export default function Graph(props: GraphDataObj & { units: string }) {
       threshold: Infinity,
       fillColor: props.units === 'inches' ? 'rgba(52,137,235,0.2)' : 'rgba(231,49,49, 0.15)',
       lineWidth: 0,
-      enableMouseTracking: false
+      enableMouseTracking: false,
+      marker: {
+        enabled: false
+      }
     },{
       type: 'line',
-      data: props.current.map(arr => [arr[0].slice(0,5), arr[1]]),
+      data: props.current.map(arr => [arr[0].slice(0,5), arr[1]]).concat(),
       name: props.current.length > 0 ? props.current[0][0].slice(6) : 'Current',
-      color: 'rgb(163,41,41)'
+      color: 'rgb(163,41,41)',
+      zIndex: 3,
+      marker: {
+        symbol: 'circle',
+        radius: 2
+      }
+    },{
+      type: 'line',
+      data: getForecastData(),
+      name: 'Forecast',
+      color: 'rgb(240,164,74)',
+      zIndex: 3,
+      marker: {
+        symbol: 'circle',
+        radius: 2
+      }
     },{
       type: 'line',
       data: props.last.map(arr => [arr[0].slice(0,5), arr[1]]),
       name: props.last.length > 0 ? props.last[0][0].slice(6) : 'Last',
-      color: 'rgb(27,155,32)'
+      color: 'rgb(27,155,32)',
+      zIndex: 2,
+      marker: {
+        symbol: 'circle',
+        radius: 2
+      }
     },{
       type: 'area',
       data: props.normal,
       name: 'Normal',
       color: 'black',
       fillColor: props.units === 'inches' ? 'rgba(231,49,49, 0.15)' : 'rgba(52,137,235,0.2)',
-      id: 'normal'
+      id: 'normal',
+      zIndex: 1,
+      marker: {
+        symbol: 'circle',
+        radius: 2
+      }
     }],
     xAxis: {
       type: 'category'
@@ -126,21 +185,15 @@ export default function Graph(props: GraphDataObj & { units: string }) {
   return (
     <Box sx={{
       position: 'relative',
-      marginTop: '20px',
-      height: 420,
+      paddingTop: '60px',
+      height: 380,
       width: '100%'
     }}>
-      <HighchartsReact
-        ref={chartComponent}
-        highcharts={Highcharts}
-        options={options}
-      />
-
       {isZoomed && (
         <StyledButton
           sx={{
             position: 'absolute',
-            bottom: 0,
+            top: 12,
             left: '50%',
             transform: 'translateX(-50%)'
           }}
@@ -149,6 +202,12 @@ export default function Graph(props: GraphDataObj & { units: string }) {
           Reset zoom
         </StyledButton>
       )}
+
+      <HighchartsReact
+        ref={chartComponent}
+        highcharts={Highcharts}
+        options={options}
+      />
     </Box>
   );
 }

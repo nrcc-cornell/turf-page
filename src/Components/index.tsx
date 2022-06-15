@@ -9,6 +9,7 @@ import RiskMaps from './Pages/RiskMaps';
 import Loading from './Loading';
 import StyledButton from './Pages/StyledBtn';
 import Graph from './Pages/Graph';
+import RiskGraph from './Pages/RiskGraph';
 
 import ShortCuttAd from './ShortCuttAd';
 
@@ -28,5 +29,6 @@ export {
   RiskMaps,
   Loading,
   StyledButton,
-  Graph
+  Graph,
+  RiskGraph
 };

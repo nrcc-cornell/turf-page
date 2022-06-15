@@ -3,9 +3,10 @@
 type ChartProps = {
   rows: Row[],
   ranges: string[][],
-  title: string,
-  colorizer: (val: number, thresholds: ThresholdObj) => string
+  title: string
 }
+
+type Colorizer = (val: number, thresholds: ThresholdObj) => string;
 
 type ContextType = {
   id: string,
@@ -14,7 +15,7 @@ type ContextType = {
   short_code?: string
 }
 
-type DataType = DataMapsOnly | DataRisk | DataGraph | DataTable;
+type DataType = DataMapsOnly | DataRisk | DataSeedWeed | DataGraph | DataTable;
 
 type DataMapsOnly = {
   maps: MapPageProps[],
@@ -48,6 +49,13 @@ type DataRisk = {
   text: TextProps
 };
 
+type DataSeedWeed = {
+  maps: MapThumbs[],
+  pageType: 'seedWeed',
+  chart: SeedWeedChartProps,
+  text: TextProps
+};
+
 type DataAndFromAcis = {
   data: GraphDataObj | RiskTool | HSTool | null,
   todayFromAcis: boolean
@@ -63,7 +71,7 @@ type DayValues = {
   heatStress: StrDateValue[]
 };
 
-type DailyChartProps = ChartProps & DataAndFromAcis;
+type DailyChartProps = ChartProps & DataAndFromAcis & { colorizer: Colorizer };
 
 type DisplayProps = {
     currentLocation: UserLocation,
@@ -102,7 +110,7 @@ type HomeMap = {
 };
 
 type HSTool = {
-  Daily: DateValue[],
+  // Daily: DateValue[],
   season: StrDateValue[]
 };
 
@@ -214,11 +222,33 @@ type NavItem = {
 };
 
 type RiskChartProps = ChartProps & {
-  data: 'gdd32' | 'gdd50' | 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress'
+  data: 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress'
+};
+
+type SeedWeedChartProps = ChartProps & {
+  data: 'gdd32' | 'gdd50',
+  colorizer: Colorizer
+};
+
+type SeriesObj = {
+  data: (string|number)[][],
+  name: string,
+  color: string,
+  zIndex: number,
+  id?: string,
+  linkedTo?: string,
+  dashStyle?: 'Dash'
 };
 
 type PopupContent = UserLocation & {
   isSelected: boolean
+};
+
+type RiskGraph = {
+  data: HSTool | HSTool & { '7 Day Avg': StrDateValue[] },
+  todayFromAcis: boolean,
+  thresholds: ThresholdObj,
+  title: string
 };
 
 type RiskMapsProps = {
@@ -238,7 +268,7 @@ type Row = {
 
 type SeasonChartProps = {
   data: StrDateValue[],
-  colorizer: (val: number, thresholds: ThresholdObj) => string,
+  colorizer: Colorizer,
   thresholds: ThresholdObj
 };
 

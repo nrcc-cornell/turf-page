@@ -160,7 +160,8 @@ function renderChart(data: StrDateValue[][] | StrDateValue[] | RiskTool | HSTool
     sample = data[0] as StrDateValue[];
     cells = constructValueCells(data as StrDateValue[][], rows as string[]);
   } else if (colorizer) {
-    sample = data instanceof Array ? data as StrDateValue[] : data['Daily'];
+    sample = data instanceof Array ? data as StrDateValue[] : data['season'];
+    // sample = data instanceof Array ? data as StrDateValue[] : data['Daily'];
     cells = constructDotCells(data as StrDateValue[] | RiskTool | HSTool, rows as Row[], colorizer); 
   }
   const dates = constructDates(sample);
@@ -333,8 +334,10 @@ export default function DailyChart(props: DailyChartProps | ListChartProps) {
         <Typography variant='h5' sx={{ marginLeft: '16px' }}>{props.title}</Typography>
   
         {!props.data ? renderNotChart(props.rows.length, 'loading') :
-          'Daily' in props.data ?
-            props.data['Daily'].length === 0 ? renderNotChart(props.rows.length, 'empty') : renderChart(props.data, props.rows, props.todayFromAcis, props.colorizer)
+          // 'Daily' in props.data ?
+          //   props.data['Daily'].length === 0 ? renderNotChart(props.rows.length, 'empty') : renderChart(props.data, props.rows, props.todayFromAcis, props.colorizer)
+          'season' in props.data ?
+            props.data['season'].length === 0 ? renderNotChart(props.rows.length, 'empty') : renderChart(props.data, props.rows, props.todayFromAcis, props.colorizer)
             :
             props.data.current.length === 0 ? renderNotChart(props.rows.length, 'empty') : renderChart(props.data.table[0], props.rows, props.todayFromAcis, props.colorizer)
         }

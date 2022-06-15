@@ -1,34 +1,13 @@
-import { addDays, format } from 'date-fns';
-
-
-const constructThumbs = (type: string, variety: string | null, name: string): Thumb[] => {
-  let today = new Date();
-  if (today.getMonth() < 2) {
-    today = new Date(today.getFullYear() - 1, 10, 30);
-  } else if (today.getMonth() === 11) {
-    today = new Date(today.getFullYear(), 10, 30);
-  }
-
-  const thumbs: Thumb[] = [];
-
-  variety = variety ? '/' + variety : '';
-
-  for (let i = 0; i < 6; i++) {
-    const date = addDays(today, i);
-
-    thumbs.push({
-      date: format(date, 'MM/dd/yy'),
-      thumbUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/thumbs/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Thumbnail.png`,
-      fullSizeUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/maps/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Map.png`,
-      alt: `link to ${name.split('-').join(' ')} map for ${format(date, 'MMMM do yyyy')}`
-    });
-  }
-
-  return thumbs;
-};
-
 const riskRanges = [['No Risk', 'rgb(0,170,0)'], ['Moderate', 'rgb(255,215,0)'], ['High', 'rgb(255,0,0)']];
-
+const riskColorizer = function(val: number, thresholds: ThresholdObj) {
+  if (val <= thresholds.low) {
+    return 'rgb(0,170,0)';
+  } else if (val <= thresholds.high) {
+    return 'rgb(255,215,0)';
+  } else {
+    return 'rgb(255,0,0)';
+  }
+};
 
 
 
@@ -69,7 +48,8 @@ const routeInfo: RouteInfo[] = [
           name: '7 Day Avg'
         }],
         ranges: riskRanges,
-        title: 'Anthracnose Risk Estimates'
+        title: 'Anthracnose Risk Estimates',
+        colorizer: riskColorizer,
       },
       maps: [{
         title: 'Anthracnose Risk Maps',
@@ -113,7 +93,8 @@ const routeInfo: RouteInfo[] = [
           name: '7 Day Avg'
         }],
         ranges: riskRanges,
-        title: 'Brown Patch Risk Estimates'
+        title: 'Brown Patch Risk Estimates',
+        colorizer: riskColorizer
       },
       maps: [{
         title: 'Brown Patch Risk Maps',
@@ -158,7 +139,8 @@ const routeInfo: RouteInfo[] = [
           name: '7 Day Avg'
         }],
         ranges: riskRanges,
-        title: 'Dollarspot Risk Estimates'
+        title: 'Dollarspot Risk Estimates',
+        colorizer: riskColorizer
       },
       maps: [{
         title: 'Dollarspot Risk Maps',
@@ -201,7 +183,8 @@ const routeInfo: RouteInfo[] = [
           name: '7 Day Avg'
         }],
         ranges: riskRanges,
-        title: 'Pythium Blight Risk Estimates'
+        title: 'Pythium Blight Risk Estimates',
+        colorizer: riskColorizer
       },
       maps: [{
         title: 'Pythium Blight Risk Maps',
@@ -231,7 +214,16 @@ const routeInfo: RouteInfo[] = [
           name: 'Daily'
         }],
         ranges: riskRanges,
-        title: 'Heat Stress Index Estimates'
+        title: 'Heat Stress Index Estimates',
+        colorizer: function(val: number, thresholds: ThresholdObj) {
+          if (val < thresholds.low) {
+            return 'rgb(0,170,0)';
+          } else if (val <= thresholds.high) {
+            return 'rgb(255,215,0)';
+          } else {
+            return 'rgb(255,0,0)';
+          }
+        }
       },
       maps: [{
         title: 'Heat Stress Index Maps',
@@ -241,7 +233,7 @@ const routeInfo: RouteInfo[] = [
   },{
     path: '/seedhead-weed/dandelion',
     props: {
-      pageType: 'seedWeed',
+      pageType: 'risk',
       text: {
         titlePart: 'Dandelion Control Recommendations',
         description: [
@@ -291,7 +283,7 @@ const routeInfo: RouteInfo[] = [
   },{
     path: '/seedhead-weed/seedhead',
     props: {
-      pageType: 'seedWeed',
+      pageType: 'risk',
       text: {
         titlePart: 'Seedhead Control Recommendations',
         description: [
@@ -338,252 +330,4 @@ const routeInfo: RouteInfo[] = [
         thumbs: constructThumbs('Seedhead', 'Proxy', 'Proxy-Seedhead-Control')
       }]
     }
-  },{
-    path: '/season/gdd/32',
-    props: {
-      pageType: 'graph',
-      chart: {
-        data: 'gdd32',
-        title: '32°F GDD Accumulation',
-        rowNames: ['GDDs']
-      },
-      maps: [{
-        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdd32.png',
-        alt: '7 Day average base 32°F GDD accumulation',
-        title: '7 Day average base 32°F GDD accumulation',
-        description: [
-          'This map shows base 32°F GDD accumulation since February 1.',
-          'Growing degree days (GDD) are a means by which turf and weed development can be monitored. Base 32°F GDD accumulation is an experimental measure for predicting ideal annual bluegrass seedhead development and potential assessment with plant growth regulators. Preliminary data suggests that the ideal application time might be from 400 to 600 GDD for Proxy and 500 to 650 GDD for Embark.'
-        ]
-      },{
-        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/wgdd32fcst.png',
-        alt: 'Forecast base 32°F GDD accumulation',
-        title: 'Forecast base 32°F GDD accumulation',
-        description: [
-          'This map shows the forecast for base 32°F GDD accumulation over the next week. The forecast is based on guidance from the National Weather Service 7-day temperature forecast.',
-          'Growing degree days (GDD) are a means by which turf and weed development can be monitored. Base 32°F GDD accumulation is an experimental measure for predicting ideal annual bluegrass seedhead development and potential assessment with plant growth regulators. Preliminary data suggests that the ideal application time might be from 400 to 600 GDD for Proxy and 500 to 650 GDD for Embark.'
-        ]
-      }]
-    }
-  },{
-    path: '/season/gdd/50',
-    props: {
-      pageType: 'graph',
-      chart: {
-        data: 'gdd50',
-        title: '50°F GDD accumulation',
-        rowNames: ['GDDs']
-      },
-      maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wgdd.png',
-        alt: '7 Day average base 50°F GDD accumulation',
-        title: '7 Day average base 50°F GDD accumulation',
-        description: [
-          'Degree days are a means by which turf and weed development can be monitored.',
-          'This map shows the number of base 50°F growing degree days (GDD) that have accumulated over the last 7 days.'
-        ]
-      },{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wgddfcst.png',
-        alt: 'Base 50°F GDD accumulation forecast',
-        title: 'Base 50°F GDD accumulation forecast',
-        description: [
-          'Degree days are a means by which turf and weed development can be monitored.',
-          'This map shows the forecast for base 50°F GDD accumulation over the next week. The forecast is based on guidance from the National Weather Service 7-day temperature forecast.'
-        ]
-      },{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdd.png',
-        alt: 'Base 50°F GDD accumulation since March 15',
-        title: 'Accumulation since March 15',
-        description: [
-          'Degree days are a means by which turf and weed development can be monitored.',
-          'This map shows the total accumulation of base 50°F GDD from March 15 until the current day.'
-        ]
-      }]
-    }
-  },{
-    path: '/season/gdd/differences/gdd',
-    props: {
-      pageType: 'table',
-      chart: {
-        data: 'gdd50DiffGdds',
-        title: '50°F GDD Differences (GDDs)',
-        rowNames: ['Last Year', 'Normal']
-      },
-      maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifg.png',
-        alt: 'Difference in base 50°F GGD accumulation over last year',
-        title: 'Difference from Last Year',
-        description: [
-          'Degree days are a means by which turf and weed development can be monitored.',
-          'In terms of GDD, the comparisons are able to answer the question, "How different is the GDD accumulation in the current growing season from the same day in the previous season ?" A mapped value of -25 indicates that the GDD accummulation in the current year is 25 GGD less than was accumulated in the previous year. For example, if 48 GDD have accumulated by April 7 this year, a value of -25 would indicate that 73 GDD had already been accumulated by April 7 of the previous year.'
-        ]
-      },{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdptg.png',
-        alt: 'Base 50°F GGD accumulation difference from "normal"',
-        title: 'Difference from "Normal"',
-        description: [
-          'Degree days are a means by which turf and weed development can be monitored.',
-          'In terms of GDD, the comparisons are able to answer the question, "When during an average growing season did the current 50°F GDD accumulation occur ?" A mapped value of 22 indicates that GDD accumulation in the current season is greater the historical average accumulation.',
-          'For example, if 78 GDD have been accumulated by April 7 of the current year, a value of 22 would indicate that, historically, an average of only 53 GDD have accumulated by April 7.'
-        ]
-      }]
-    }
-  },{
-    path: '/season/gdd/differences/days',
-    props: {
-      pageType: 'table',
-      chart: {
-        data: 'gdd50DiffDays',
-        title: '50°F GDD Differences (Days)',
-        rowNames: ['Last Year', 'Normal']
-      },
-      maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifd.png',
-        alt: 'Difference in base 50°F GDD accumulation over last year',
-        title: 'Difference from Last Year',
-        description: [
-          'Degree days are a means by which turf and weed development can be monitored.',
-          `In terms of days, the GDD comparisons are able to answer the question, "When during the previous growing season did the current 50°F GDD accumulation occur ?" A mapped value of -7 indicates that the current season is 7 days behind the previous year's accumulation. If 58 GDD were accumulated on April 7, 2017, a value of -7 would indicate that 58 GDD had already been accumulated on April 1, 2016.`
-        ]
-      },{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdptd.png',
-        alt: 'Base 50°F GDD accumulation difference from "normal"',
-        title: 'Difference from "Normal"',
-        description: [
-          'Degree days are a means by which turf and weed development can be monitored.',
-          'In terms of days, the GDD comparisons are able to answer the question, "When during an average growing season did the current 50°F GDD accumulation occur ?" A mapped value of -7 indicates that the current season is 7 days behind the average season accumulation.',
-          'For example, if 58 GDD have accumulated by April 7 of this year, then a value of -7 would indicate that historically, an average of 58 GDD have already accumulated by April 1.'
-        ]
-      }]
-    }
-  },{
-    path: '/season/temperature-departure',
-    props: {
-      pageType: 'table',
-      chart: {
-        data: 'temp',
-        title: 'Temperature Depature',
-        rowNames: ['Average', 'Departure']
-      },
-      maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wtdpt.png',
-        alt: 'Temperature departure (°F)',
-        title: 'Temperature departure (°F)',
-        description: [
-          'The average of the temperatures over past 30 years on any particular day is commonly called the "normal". As depicted here, "departure" is the difference between the average temperature (°F) over the last 7 days and average of the normal temperatures for the same 7 days.',
-          'Negative values indicate areas where temperatures are cooler than normal. Positive values indicate areas where temperatures are warmer than normal.'
-        ]
-      }]
-    }
-  },{
-    path: '/season/soil-temperature',
-    props: {
-      pageType: 'mapsOnly',
-      maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/soilTemp.png',
-        alt: 'Temperature (°F) of the soil 2" below the surface',
-        title: 'Temperature (°F) of the soil 2" below the surface',
-        description: [
-          'Temperature (°F) of the soil 2" below the surface.'
-        ]
-      }]
-    }
-  },{
-    path: '/irrigation/rainfall',
-    props: {
-      pageType: 'graph',
-      chart: {
-        data: 'precip',
-        title: `Last Week's Rainfall Accumulation`,
-        rowNames: ['Inches']
-      },
-      maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wptot.png',
-        alt: 'Total rainfall over the last 7 days',
-        title: 'Total rainfall over the last 7 days',
-        description: [
-          'Approximately 700 rain gauge sites are used to map the total rainfall (inches) observed over the last 7 days.'
-        ]
-      }]
-    }
-  },{
-    path: '/irrigation/evapotranspiration',
-    props: {
-      pageType: 'mapsOnly',
-      maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wpet.png',
-        alt: 'Total potential evapotranspiration (inches) over last 7 days',
-        title: 'Total potential evapotranspiration (inches) over last 7 days',
-        description: [
-          'The Penman Monteith equation is used to calculate the total potential evapotranspiration (inches) over the last 7 days at approximately 200 sites used to generate this map.'
-        ]
-      }]
-    }
-  },{
-    path: '/irrigation/moisture-deficit',
-    props: {
-      pageType: 'mapsOnly',
-      maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wdfct.png',
-        alt: 'Moisture deficit over last 7 days',
-        title: 'Observed Moisture Deficit',
-        description: [
-          'Moisture deficit is the difference between rainfall and evapotranspiration.',
-          'This map depicts total moisture deficit for the past week. Negative values indicate that evapotranspiration exceeded precipitation. Positive values indicate the precipitation exceeded evapotranspiration.',
-          'Data on this map is useful for assessing irrigation requirements.'
-        ]
-      },{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/dfct_fcst.png',
-        alt: 'Forecast moisture deficit over next 3 days',
-        title: 'Moisture Deficit Forecast',
-        description: [
-          'Moisture deficit is the difference between rainfall and evapotranspiration.',
-          'This map displays the forecast moisture deficit for the next 3-days. Negative values indicate that evapotranspiration will exceeded precipitation over the next 3 days. Positive values indicate the precipitation will exceed evapotranspiration.',
-          'Data on this map is useful for assessing irrigation requirements.'
-        ]
-      }]
-    }
-  },{
-    path: '/irrigation/topsoil-moisture/current',
-    props: {
-      pageType: 'mapsOnly',
-      maps: [{
-        url: 'http://www.cpc.ncep.noaa.gov/products/monitoring_and_data/soilmmap.gif',
-        alt: 'USDA Topsil Moisture (% State Area)',
-        title: 'USDA Topsil Moisture (% State Area)',
-        description: []
-      }]
-    }
-  },{
-    path: '/irrigation/topsoil-moisture/current-vs-10-year-mean',
-    props: {
-      pageType: 'mapsOnly',
-      maps: [{
-        url: 'http://www.cpc.ncep.noaa.gov/products/monitoring_and_data/10yrcomp.gif',
-        alt: 'USDA Topsil Moisture - Current vs. 10-year Mean',
-        title: 'USDA Topsil Moisture - Current vs. 10-year Mean',
-        description: []
-      }]
-    }
   }
-];
-
-const frontPageMaps: HomeMap[] = routeInfo.map(page => {
-  return page.props.maps.map((m: MapThumbs | MapPageProps) => {
-    if ('thumbs' in m) {
-      return {
-        path: page.path,
-        url: m.thumbs[0].fullSizeUrl,
-        alt: `Today's ` + m.title.slice(0 ,-1)
-      };
-    } else {
-      return {
-        path: page.path,
-        url: m.url,
-        alt: m.alt
-      };
-    }
-  }).filter((x: HomeMap) => x);
-}).flat();
-
-export { routeInfo as AppRouteInfo, frontPageMaps };

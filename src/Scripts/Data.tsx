@@ -206,21 +206,23 @@ const calcIndices = (days: DayHourly[]): Indices => {
     if (risk === 'anthracnose') {
       indices[risk] = {
         // Daily for anthracnose is the days' index, not an average. 
-        Daily: dayValues[risk].slice(-10),
-        '7 Day Avg': xDayAverage(7, dayValues[risk].slice(-16)),
-        season: dayValues[risk].slice(2)
+        // Daily: dayValues[risk].slice(-10),
+        // '7 Day Avg': xDayAverage(7, dayValues[risk].slice(-16)),
+        '7 Day Avg': xDayAverage(7, dayValues[risk]),
+        season: dayValues[risk].slice(6)
       };
     } else if (risk === 'heatStress') {
-      const season = xDayAverage(3, dayValues[risk]);
+      const season = xDayAverage(3, dayValues[risk].slice(4));
       indices[risk] = {
-        Daily: season.slice(-10),
+        // Daily: season.slice(-10),
         season
       };
     } else if (risk === 'brownPatch' || risk === 'dollarspot' || risk === 'pythiumBlight') {
-      const season = xDayAverage(3, dayValues[risk]);
+      const season = xDayAverage(3, dayValues[risk].slice(4));
       indices[risk] = {
-        Daily: season.slice(-10),
-        '7 Day Avg': xDayAverage(7, dayValues[risk].slice(-16)),
+        // Daily: season.slice(-10),
+        // '7 Day Avg': xDayAverage(7, dayValues[risk].slice(-16)),
+        '7 Day Avg': xDayAverage(7, dayValues[risk]),
         season
       };
     }
@@ -664,7 +666,8 @@ const getData = async (lngLat: number[]): Promise<ToolData> => {
   }
   
   const sDate = format(subDays(today, 15), 'yyyy-MM-dd');
-  const seasonStart = new Date(today.getFullYear(), 2, 1);
+  // const seasonStart = new Date(today.getFullYear(), 2, 1);
+  const seasonStart = subDays(new Date(today.getFullYear(), 2, 1), 4);
 
   const data: DayHourly[] | null = await getToolRawData(lngLat[0], lngLat[1], seasonStart, seasonEnd);
 
