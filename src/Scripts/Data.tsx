@@ -1,4 +1,4 @@
-import { format, subDays, addDays, isWithinInterval, parseISO, isSameDay, isAfter } from 'date-fns';
+import { format, subDays, addDays, isWithinInterval, parseISO, isSameDay, isAfter, isYesterday } from 'date-fns';
 
 import roundXDigits from './Rounding';
 import DayHourly from './DayClasses';
@@ -354,7 +354,7 @@ const getTableData = async (sDate:string, eDate: string, lngLat: string, today: 
     gdd50: StrDateValue[] = [],
     precip:  StrDateValue[] = [],
     temp: StrDateValue[] = [];
-  
+
   let sevenDay = 0;
   const precipArr = new ArrSummer(), tempArr = new ArrSummer();
   const end = hasToday ? 16 : 15;
@@ -364,8 +364,8 @@ const getTableData = async (sDate:string, eDate: string, lngLat: string, today: 
     const date = format((dateObj), 'MM-dd-yyyy');
 
     const precipTotal = precipArr.unshiftPop(dayArr[3]);
-    if (isSameDay(dateObj, today) && typeof precipTotal === 'number') sevenDay = roundXDigits(precipTotal, 2);
-    
+    if (((!hasToday && isYesterday(dateObj)) || (hasToday && isSameDay(dateObj, today))) && typeof precipTotal === 'number') sevenDay = roundXDigits(precipTotal, 2);
+
     const tempTotal = tempArr.unshiftPop(dayArr[4]);
     if (typeof tempTotal === 'number') {
       temp.push([date, roundXDigits(tempTotal / 7, 0)]);
