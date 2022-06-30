@@ -431,12 +431,8 @@ const routeInfo: RouteInfo[] = [
   },{
     path: '/season/gdd/differences/days',
     props: {
-      pageType: 'table',
-      chart: {
-        data: 'gdd50DiffDays',
-        title: '50°F GDD Differences (Days)',
-        rowNames: ['Last Year', 'Normal']
-      },
+      pageType: 'text',
+      data: 'gdd50DiffDays',
       maps: [{
         url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifd.png',
         alt: 'Difference in base 50°F GDD accumulation over last year',
@@ -549,8 +545,8 @@ const routeInfo: RouteInfo[] = [
       pageType: 'mapsOnly',
       maps: [{
         url: 'http://www.cpc.ncep.noaa.gov/products/monitoring_and_data/soilmmap.gif',
-        alt: 'USDA Topsil Moisture (% State Area)',
-        title: 'USDA Topsil Moisture (% State Area)',
+        alt: 'USDA Topsoil Moisture (% State Area)',
+        title: 'USDA Topsoil Moisture (% State Area)',
         description: []
       }]
     }
@@ -560,8 +556,8 @@ const routeInfo: RouteInfo[] = [
       pageType: 'mapsOnly',
       maps: [{
         url: 'http://www.cpc.ncep.noaa.gov/products/monitoring_and_data/10yrcomp.gif',
-        alt: 'USDA Topsil Moisture - Current vs. 10-year Mean',
-        title: 'USDA Topsil Moisture - Current vs. 10-year Mean',
+        alt: 'USDA Topsoil Moisture - Current vs. 10-year Mean',
+        title: 'USDA Topsoil Moisture - Current vs. 10-year Mean',
         description: []
       }]
     }

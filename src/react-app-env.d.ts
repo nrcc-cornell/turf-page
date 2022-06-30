@@ -8,6 +8,11 @@ type ChartProps = {
 
 type Colorizer = (val: number, thresholds: ThresholdObj) => string;
 
+type ConditionTextProps = {
+  fromLast: number
+  fromNormal: number
+};
+
 type ContextType = {
   id: string,
   wikidata?: string,
@@ -15,7 +20,7 @@ type ContextType = {
   short_code?: string
 }
 
-type DataType = DataMapsOnly | DataRisk | DataSeedWeed | DataGraph | DataTable;
+type DataType = DataMapsOnly | DataRisk | DataSeedWeed | DataGraph | DataTable | DataText;
 
 type DataMapsOnly = {
   maps: MapPageProps[],
@@ -36,10 +41,16 @@ type DataTable = {
   maps: MapPageProps[],
   pageType: 'table',
   chart: {
-    data: 'gdd50DiffGdds' | 'gdd50DiffDays' | 'temp',
+    data: 'gdd50DiffGdds' | 'temp',
     title: string,
     rowNames: string[]
   }
+};
+
+type DataText = {
+  maps: MapPageProps[],
+  pageType: 'text',
+  data: 'gdd50DiffDays'
 };
 
 type DataRisk = {

@@ -532,6 +532,7 @@ const calcGddDiffs = (current: StrDateValue[], past: StrDateValue[]) => {
   const relevantDays = past.slice(start, start + 9);
   
   const tableDiffGdds: StrDateValue[] = [], tableDiffDays: StrDateValue[] = [];
+  
   current.forEach((day, i) => {
     let nDay = relevantDays[i][1];
     const cDay = day[1];

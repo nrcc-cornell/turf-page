@@ -11,7 +11,7 @@ import {
   LocationDisplay,
   Home,
   DailyChart,
-  // SeasonChart,
+  ConditionalText,
   RiskGraph,
   StyledDivider,
   RiskMaps,
@@ -86,9 +86,13 @@ function App() {
           {(info.pageType === 'graph' || info.pageType === 'table') &&
             <DailyChart data={toolData[info.chart.data].table} rowNames={info.chart.rowNames} todayFromAcis={toolData.todayFromAcis} title={info.chart.title} />
           }
+
+          {info.pageType === 'text' &&
+            <ConditionalText fromLast={toolData[info.data].table[0][toolData.todayFromAcis ? 3 : 4][1]} fromNormal={toolData[info.data].table[1][toolData.todayFromAcis ? 3 : 4][1]} />
+          }
           
           {info.pageType === 'seedWeed' &&
-              <DailyChart {...info.chart} data={toolData[info.chart.data]} todayFromAcis={toolData.todayFromAcis} />
+            <DailyChart {...info.chart} data={toolData[info.chart.data]} todayFromAcis={toolData.todayFromAcis} />
           }
 
           {info.pageType === 'risk' &&

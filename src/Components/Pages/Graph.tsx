@@ -52,6 +52,23 @@ export default function Graph(props: GraphDataObj & { units: string }) {
       zoomType: 'x',
       events: {
         selection: function (e: any) {
+          if (e.xAxis) {
+            const minIdx = Math.floor(e.xAxis[0].min);
+            const maxIdx = Math.ceil(e.xAxis[0].max);
+  
+            let min = Infinity, max = -Infinity;
+            ['current', 'last', 'normal'].forEach(arrName => {
+              const data = props[arrName as 'current' | 'last' | 'normal'].slice(minIdx, maxIdx);
+              data.forEach((dayArr: StrDateValue) => {
+                if (dayArr[1] > max) max = dayArr[1];
+                if (dayArr[1] < min) min = dayArr[1];
+              });
+            });
+  
+            // @ts-ignore
+            this.yAxis[0].setExtremes(Math.max(0, min - 5),max + 5);
+          }
+
           if (e.resetSelection) {
             setIsZoomed(false);
           } else {
@@ -135,7 +152,9 @@ export default function Graph(props: GraphDataObj & { units: string }) {
     yAxis: {
       title: {
         text: props.units[0].toUpperCase() + props.units.slice(1)
-      }
+      },
+      startOnTick: false,
+      endOnTick: false
     },
     tooltip: {
       shared: true,
