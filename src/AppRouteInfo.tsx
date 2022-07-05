@@ -18,8 +18,10 @@ const constructThumbs = (type: string, variety: string | null, name: string): Th
 
     thumbs.push({
       date: format(date, 'MM/dd/yy'),
-      thumbUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/thumbs/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Thumbnail.png`,
-      fullSizeUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/maps/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Map.png`,
+      thumbUrl: `https://www.nrcc.cornell.edu/dyn_images/grass/turf_fcst/turf-f${i + 1}-${name}-Thumbnail.png`,
+      fullSizeUrl: `https://www.nrcc.cornell.edu/dyn_images/grass/turf_fcst/turf-f${i + 1}-${name}-Map.png`,
+      // thumbUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/thumbs/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Thumbnail.png`,
+      // fullSizeUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/maps/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Map.png`,
       alt: `link to ${name.split('-').join(' ')} map for ${format(date, 'MMMM do yyyy')}`
     });
   }
@@ -375,7 +377,7 @@ const routeInfo: RouteInfo[] = [
         rowNames: ['GDDs']
       },
       maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wgdd.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/wgdd.png',
         alt: '7 Day average base 50°F GDD accumulation',
         title: '7 Day average base 50°F GDD accumulation',
         description: [
@@ -383,7 +385,7 @@ const routeInfo: RouteInfo[] = [
           'This map shows the number of base 50°F growing degree days (GDD) that have accumulated over the last 7 days.'
         ]
       },{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wgddfcst.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/wgddfcst.png',
         alt: 'Base 50°F GDD accumulation forecast',
         title: 'Base 50°F GDD accumulation forecast',
         description: [
@@ -391,7 +393,7 @@ const routeInfo: RouteInfo[] = [
           'This map shows the forecast for base 50°F GDD accumulation over the next week. The forecast is based on guidance from the National Weather Service 7-day temperature forecast.'
         ]
       },{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdd.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdd.png',
         alt: 'Base 50°F GDD accumulation since March 15',
         title: 'Accumulation since March 15',
         description: [
@@ -410,7 +412,7 @@ const routeInfo: RouteInfo[] = [
         rowNames: ['Last Year', 'Normal']
       },
       maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifg.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdifg.png',
         alt: 'Difference in base 50°F GGD accumulation over last year',
         title: 'Difference from Last Year',
         description: [
@@ -418,7 +420,7 @@ const routeInfo: RouteInfo[] = [
           'In terms of GDD, the comparisons are able to answer the question, "How different is the GDD accumulation in the current growing season from the same day in the previous season ?" A mapped value of -25 indicates that the GDD accummulation in the current year is 25 GGD less than was accumulated in the previous year. For example, if 48 GDD have accumulated by April 7 this year, a value of -25 would indicate that 73 GDD had already been accumulated by April 7 of the previous year.'
         ]
       },{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdptg.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdptg.png',
         alt: 'Base 50°F GGD accumulation difference from "normal"',
         title: 'Difference from "Normal"',
         description: [
@@ -434,7 +436,7 @@ const routeInfo: RouteInfo[] = [
       pageType: 'text',
       data: 'gdd50DiffDays',
       maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdifd.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdifd.png',
         alt: 'Difference in base 50°F GDD accumulation over last year',
         title: 'Difference from Last Year',
         description: [
@@ -442,7 +444,7 @@ const routeInfo: RouteInfo[] = [
           `In terms of days, the GDD comparisons are able to answer the question, "When during the previous growing season did the current 50°F GDD accumulation occur ?" A mapped value of -7 indicates that the current season is 7 days behind the previous year's accumulation. If 58 GDD were accumulated on April 7, 2017, a value of -7 would indicate that 58 GDD had already been accumulated on April 1, 2016.`
         ]
       },{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/sgdptd.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdptd.png',
         alt: 'Base 50°F GDD accumulation difference from "normal"',
         title: 'Difference from "Normal"',
         description: [
@@ -462,7 +464,7 @@ const routeInfo: RouteInfo[] = [
         rowNames: ['Average', 'Departure']
       },
       maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wtdpt.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/wtdpt.png',
         alt: 'Temperature departure (°F)',
         title: 'Temperature departure (°F)',
         description: [
@@ -476,7 +478,7 @@ const routeInfo: RouteInfo[] = [
     props: {
       pageType: 'mapsOnly',
       maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/soilTemp.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/soilTemp.png',
         alt: 'Temperature (°F) of the soil 2" below the surface',
         title: 'Temperature (°F) of the soil 2" below the surface',
         description: [
@@ -494,7 +496,7 @@ const routeInfo: RouteInfo[] = [
         rowNames: ['Inches']
       },
       maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wptot.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/wptot.png',
         alt: 'Total rainfall over the last 7 days',
         title: 'Total rainfall over the last 7 days',
         description: [
@@ -507,7 +509,7 @@ const routeInfo: RouteInfo[] = [
     props: {
       pageType: 'mapsOnly',
       maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wpet.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/wpet.png',
         alt: 'Total potential evapotranspiration (inches) over last 7 days',
         title: 'Total potential evapotranspiration (inches) over last 7 days',
         description: [
@@ -520,7 +522,7 @@ const routeInfo: RouteInfo[] = [
     props: {
       pageType: 'mapsOnly',
       maps: [{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/wdfct.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/wdfct.png',
         alt: 'Moisture deficit over last 7 days',
         title: 'Observed Moisture Deficit',
         description: [
@@ -529,7 +531,7 @@ const routeInfo: RouteInfo[] = [
           'Data on this map is useful for assessing irrigation requirements.'
         ]
       },{
-        url: 'http://www.nrcc.cornell.edu/dyn_images/grass/dfct_fcst.png',
+        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/dfct_fcst.png',
         alt: 'Forecast moisture deficit over next 3 days',
         title: 'Moisture Deficit Forecast',
         description: [
@@ -544,7 +546,7 @@ const routeInfo: RouteInfo[] = [
     props: {
       pageType: 'mapsOnly',
       maps: [{
-        url: 'http://www.cpc.ncep.noaa.gov/products/monitoring_and_data/soilmmap.gif',
+        url: 'https://www.cpc.ncep.noaa.gov/products/monitoring_and_data/soilmmap.gif',
         alt: 'USDA Topsoil Moisture (% State Area)',
         title: 'USDA Topsoil Moisture (% State Area)',
         description: []
@@ -555,7 +557,7 @@ const routeInfo: RouteInfo[] = [
     props: {
       pageType: 'mapsOnly',
       maps: [{
-        url: 'http://www.cpc.ncep.noaa.gov/products/monitoring_and_data/10yrcomp.gif',
+        url: 'https://www.cpc.ncep.noaa.gov/products/monitoring_and_data/10yrcomp.gif',
         alt: 'USDA Topsoil Moisture - Current vs. 10-year Mean',
         title: 'USDA Topsoil Moisture - Current vs. 10-year Mean',
         description: []
