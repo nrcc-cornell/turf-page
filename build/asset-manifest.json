@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/be99/turf-grass/static/css/main.399514c3.css",
+    "main.js": "/be99/turf-grass/static/js/main.461be297.js",
+    "index.html": "/be99/turf-grass/index.html",
+    "static/media/pin-blue.svg": "/be99/turf-grass/static/media/pin-blue.a84f9033aac1da64f933.svg",
+    "static/media/pin-red.svg": "/be99/turf-grass/static/media/pin-red.8ec759728dab1e5998f4.svg",
+    "main.399514c3.css.map": "/be99/turf-grass/static/css/main.399514c3.css.map",
+    "main.461be297.js.map": "/be99/turf-grass/static/js/main.461be297.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.399514c3.css",
+    "static/js/main.461be297.js"
+  ]
+}
