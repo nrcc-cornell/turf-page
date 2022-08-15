@@ -68,6 +68,7 @@ function App() {
   useEffect(() => {
     (async () => {
       const data = await getData(currentLocation.lngLat);
+      console.log(data);
       setToolData(data);
     })();
   }, [currentLocation]);

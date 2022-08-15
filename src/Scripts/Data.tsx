@@ -73,7 +73,7 @@ function createDays(arr: string[][]) {
 // // 5/2 index = weather from date 5/2
 // // 5/2 = observed weather from 8am 5/1 - 7am 5/2
 // // 
-// // Therefore, the risk value for 5/4 is based on observed weather from 8am 5/1 - 7am 5/4.
+// // Therefore, the risk value for 5/4 is based on observed weather from 8am 5/1 - 7:59am 5/4.
 
 
 
