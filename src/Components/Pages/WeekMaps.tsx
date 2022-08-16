@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  CircularProgress
+  CircularProgress,
+  CardMedia
 } from '@mui/material';
 import MapThumb from './MapThumb';
 
@@ -27,7 +28,8 @@ const BoxSX = {
 
 export default function WeekMaps(props: WeekMapsProps) {
   const [bigMap, setBigMap] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(true);
 
   const loaded = () => setLoading(false);
 
@@ -126,7 +128,7 @@ export default function WeekMaps(props: WeekMapsProps) {
           <CircularProgress color='inherit' />
         </Box>
 
-        <Box
+        {/* <Box
           component='img'
           onLoad={loaded}
           src={props.thumbs[bigMap].fullSizeUrl}
@@ -140,7 +142,36 @@ export default function WeekMaps(props: WeekMapsProps) {
               width: '100%'
             }
           }}
-        />
+        /> */}
+        <Box
+          sx={{
+            display: loading ? 'none' : 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: 'calc(100% - 65px)',
+            maxWidth: 557.34,
+            '@media (max-width: 720px)': {
+              width: '100%'
+            }
+          }}
+        >
+          <CardMedia
+            component={Box}
+            sx={{
+              backgroundColor: 'rgb(240,240,240)',
+              border: '1px solid rgb(200,200,200)',
+              fontSize: '10px',
+              fontStyle: 'italic',
+              height: '80%',
+              minHeight: '100px',
+              width: '80%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              textAlign: 'center'
+            }}
+          ><span>Temporarily Unavailable</span></CardMedia>
+        </Box>
       </Box>
     </Box>
   );

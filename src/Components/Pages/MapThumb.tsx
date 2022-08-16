@@ -26,7 +26,7 @@ export default function MapThumb(props: MapThumbProps) {
         }
       }}
     >
-      {error ? 
+      {/* {error ? 
         <CardMedia
           component={Box}
           sx={{
@@ -48,7 +48,21 @@ export default function MapThumb(props: MapThumbProps) {
           alt={props.alt}
           onError={() => setError(true)}
         />
-      }
+      } */}
+      <CardMedia
+        component={Box}
+        sx={{
+          backgroundColor: 'rgb(240,240,240)',
+          fontSize: '10px',
+          fontStyle: 'italic',
+          height: 'calc(100% - 26px)',
+          minHeight: 70,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          textAlign: 'center'
+        }}
+      ><span>Temporarily Unavailable</span></CardMedia>
     
       <CardContent sx={{
         padding: '6px !important',

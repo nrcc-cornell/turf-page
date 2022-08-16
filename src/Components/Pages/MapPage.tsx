@@ -4,7 +4,7 @@ import {
   Box,
   Card,
   CardMedia,
-  CircularProgress,
+  // CircularProgress,
   Typography
 } from '@mui/material';
 
@@ -22,7 +22,7 @@ export default function MapPage(props: MapPageProps) {
 
   return (
     <Card variant='outlined' sx={props.mainSX}>
-      <CardMedia
+      {/* <CardMedia
         onError={() => setError(true)} 
         sx={{
           height: 300,
@@ -33,9 +33,9 @@ export default function MapPage(props: MapPageProps) {
         }}
       >
         <CircularProgress color='inherit' />
-      </CardMedia>
+      </CardMedia> */}
 
-      {error ?
+      {/* {error ?
         <CardMedia
           component={Box}
           sx={{
@@ -63,7 +63,21 @@ export default function MapPage(props: MapPageProps) {
             }
           }}
         />
-      }
+      } */}
+      <CardMedia
+        component={Box}
+        sx={{
+          height: 300,
+          backgroundColor: 'rgb(240,240,240)',
+          fontSize: '10px',
+          fontStyle: 'italic',
+          minHeight: 70,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          textAlign: 'center'
+        }}
+      ><span>Temporarily Unavailable</span></CardMedia>
 
       {props.description.length === 0 && 
         <Box sx={{
