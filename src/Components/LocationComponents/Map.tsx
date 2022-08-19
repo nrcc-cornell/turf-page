@@ -23,14 +23,55 @@ function isTouchDevice() {
      (navigator.maxTouchPoints > 0));
 }
 
+// Uses all past locations to find the bounding coordinates for the initial map view
+function calcInitBounds(locations: UserLocation[]) {
+  let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+  Object.values(locations).forEach(loc => {
+    const lng = loc.lngLat[0];
+    const lat = loc.lngLat[1];
+    if (lat > maxLat) maxLat = lat;
+    if (lat < minLat) minLat = lat;
+    if (lng > maxLng) maxLng = lng;
+    if (lng < minLng) minLng = lng;
+  });
+
+
+  // If only one location is present, adjust the coordinates to reduce initial zoom
+  const adjustment = 0.1;
+  if (minLat === maxLat) {
+    minLat -= adjustment;
+    maxLat += adjustment;
+  }
+
+  if (minLng === maxLng) {
+    minLng -= adjustment;
+    maxLng += adjustment;
+  }
+
+  return [minLng, minLat, maxLng, maxLat];
+}
+
 
 
 export default function MapComp( props: MapProps) {
+  // const [popup, setPopup] = useState<PopupContent | null>(null);
+  // const [viewState, setViewState] = useState({
+  //   longitude: props.currentLocation.lngLat[0],
+  //   latitude: props.currentLocation.lngLat[1],
+  //   zoom: 12
+  // });
+
   const [popup, setPopup] = useState<PopupContent | null>(null);
   const [viewState, setViewState] = useState({
-    longitude: props.currentLocation.lngLat[0],
-    latitude: props.currentLocation.lngLat[1],
-    zoom: 12
+    bounds: calcInitBounds(props.pastLocations),
+    fitBoundsOptions: {
+      padding: {
+        top: 100,
+        bottom: 10,
+        left: 15,
+        right: 15
+      }
+    }
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,10 +79,14 @@ export default function MapComp( props: MapProps) {
 
   const handlePanning = (view: ViewState) => {
     if (view.latitude > 47.53 || view.latitude < bounds.south) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       view.latitude = viewState.latitude;
     }
 
     if (view.longitude > -66.89 || view.longitude < bounds.west) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       view.longitude = viewState.longitude;
     }
 

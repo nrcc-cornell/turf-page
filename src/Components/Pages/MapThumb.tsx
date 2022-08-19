@@ -12,7 +12,7 @@ import {
 
 export default function MapThumb(props: MapThumbProps) {
   const [error, setError] = useState(false);
-  
+
   return (
     <Card
       variant='outlined'
@@ -26,7 +26,7 @@ export default function MapThumb(props: MapThumbProps) {
         }
       }}
     >
-      {/* {error ? 
+      {(props.alt.includes('Seedhead') || props.alt.includes('Dandelion')) ?
         <CardMedia
           component={Box}
           sx={{
@@ -40,29 +40,32 @@ export default function MapThumb(props: MapThumbProps) {
             alignItems: 'center',
             textAlign: 'center'
           }}
-        ><span>Img Failed to Load</span></CardMedia>
+        ><span>Temporarily Unavailable</span></CardMedia>
         :
-        <CardMedia
-          component='img'
-          image={props.thumbUrl}
-          alt={props.alt}
-          onError={() => setError(true)}
-        />
-      } */}
-      <CardMedia
-        component={Box}
-        sx={{
-          backgroundColor: 'rgb(240,240,240)',
-          fontSize: '10px',
-          fontStyle: 'italic',
-          height: 'calc(100% - 26px)',
-          minHeight: 70,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          textAlign: 'center'
-        }}
-      ><span>Temporarily Unavailable</span></CardMedia>
+        (error ? 
+          <CardMedia
+            component={Box}
+            sx={{
+              backgroundColor: 'rgb(240,240,240)',
+              fontSize: '10px',
+              fontStyle: 'italic',
+              height: 'calc(100% - 26px)',
+              minHeight: 70,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              textAlign: 'center'
+            }}
+          ><span>Img Failed to Load</span></CardMedia>
+          :
+          <CardMedia
+            component='img'
+            image={props.thumbUrl}
+            alt={props.alt}
+            onError={() => setError(true)}
+          />)
+      }
+      
     
       <CardContent sx={{
         padding: '6px !important',

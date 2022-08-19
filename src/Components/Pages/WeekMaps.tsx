@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
   Box,
@@ -28,8 +28,12 @@ const BoxSX = {
 
 export default function WeekMaps(props: WeekMapsProps) {
   const [bigMap, setBigMap] = useState(0);
-  const [loading, setLoading] = useState(false);
-  // const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  const tempSkip = ['Amine Maps', 'Ester Maps', 'Proxy Maps', 'Embark Maps'];
+  useEffect(() => {
+    if (tempSkip.includes(props.title)) setLoading(false);
+  }, []);
 
   const loaded = () => setLoading(false);
 
@@ -128,50 +132,53 @@ export default function WeekMaps(props: WeekMapsProps) {
           <CircularProgress color='inherit' />
         </Box>
 
-        {/* <Box
-          component='img'
-          onLoad={loaded}
-          src={props.thumbs[bigMap].fullSizeUrl}
-          alt={props.thumbs[bigMap].alt}
-          sx={{
-            display: loading ? 'none' : 'block',
-            width: 'calc(100% - 65px)',
-            maxWidth: 557.34,
-            objectFit: 'contain',
-            '@media (max-width: 720px)': {
-              width: '100%'
-            }
-          }}
-        /> */}
-        <Box
-          sx={{
-            display: loading ? 'none' : 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: 'calc(100% - 65px)',
-            maxWidth: 557.34,
-            '@media (max-width: 720px)': {
-              width: '100%'
-            }
-          }}
-        >
-          <CardMedia
-            component={Box}
+        {tempSkip.includes(props.title) ?
+          <Box
             sx={{
-              backgroundColor: 'rgb(240,240,240)',
-              border: '1px solid rgb(200,200,200)',
-              fontSize: '10px',
-              fontStyle: 'italic',
-              height: '80%',
-              minHeight: '100px',
-              width: '80%',
-              display: 'flex',
+              display: loading ? 'none' : 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              textAlign: 'center'
+              width: 'calc(100% - 65px)',
+              maxWidth: 557.34,
+              '@media (max-width: 720px)': {
+                width: '100%'
+              }
             }}
-          ><span>Temporarily Unavailable</span></CardMedia>
-        </Box>
+          >
+            <CardMedia
+              component={Box}
+              sx={{
+                backgroundColor: 'rgb(240,240,240)',
+                border: '1px solid rgb(200,200,200)',
+                fontSize: '10px',
+                fontStyle: 'italic',
+                height: '80%',
+                minHeight: '100px',
+                width: '80%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                textAlign: 'center'
+              }}
+            ><span>Temporarily Unavailable</span></CardMedia>
+          </Box>
+          :
+          <Box
+            component='img'
+            onLoad={loaded}
+            src={props.thumbs[bigMap].fullSizeUrl}
+            alt={props.thumbs[bigMap].alt}
+            sx={{
+              display: loading ? 'none' : 'block',
+              width: 'calc(100% - 65px)',
+              maxWidth: 557.34,
+              objectFit: 'contain',
+              '@media (max-width: 720px)': {
+                width: '100%'
+              }
+            }}
+          />
+        }
       </Box>
     </Box>
   );

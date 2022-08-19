@@ -355,7 +355,7 @@ const getTableData = async (sDate:string, eDate: string, lngLat: string, today: 
     precip:  StrDateValue[] = [],
     temp: StrDateValue[] = [];
 
-  let sevenDay = 0;
+  let sevenDay = ['', 0];
   const precipArr = new ArrSummer(), tempArr = new ArrSummer();
   const end = hasToday ? 16 : 15;
   for (let i = 5 - shift; i < end; i++) {
@@ -364,7 +364,7 @@ const getTableData = async (sDate:string, eDate: string, lngLat: string, today: 
     const date = format((dateObj), 'MM-dd-yyyy');
 
     const precipTotal = precipArr.unshiftPop(dayArr[3]);
-    if (((!hasToday && isYesterday(dateObj)) || (hasToday && isSameDay(dateObj, today))) && typeof precipTotal === 'number') sevenDay = roundXDigits(precipTotal, 2);
+    if (((!hasToday && isYesterday(dateObj)) || (hasToday && isSameDay(dateObj, today))) && typeof precipTotal === 'number') sevenDay = [format(subDays(dateObj, 1), 'MM-dd-yyyy'), roundXDigits(precipTotal, 2)];
 
     const tempTotal = tempArr.unshiftPop(dayArr[4]);
     if (typeof tempTotal === 'number') {
@@ -392,7 +392,10 @@ const getTableData = async (sDate:string, eDate: string, lngLat: string, today: 
     sum50 += Math.max(0, avgT - 50);
     gdd50.push([date, roundXDigits(sum50, 0)]);
 
-    precip.push([date, roundXDigits(dayInst.precip(), 2)]);
+    // Do not add in final two days of precip data because there will never be valid precip data from locHrly
+    if (i < forecastData.length - shift - 2) {
+      precip.push([date, roundXDigits(dayInst.precip(), 2)]);
+    }
     
     const tempTotal = tempArr.unshiftPop(avgT);
     if (typeof tempTotal === 'number') {
@@ -400,7 +403,7 @@ const getTableData = async (sDate:string, eDate: string, lngLat: string, today: 
     }
   }
 
-  precip.push(['7 Day Sum', sevenDay]);
+  precip.push(sevenDay as StrDateValue);
 
   return {
     table32: gdd32,

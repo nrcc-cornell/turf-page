@@ -1,7 +1,7 @@
 import { addDays, format } from 'date-fns';
 
 
-const constructThumbs = (type: string, variety: string | null, name: string): Thumb[] => {
+const constructThumbs = (name: string, title: string): Thumb[] => {
   let today = new Date();
   if (today.getMonth() < 2) {
     today = new Date(today.getFullYear() - 1, 10, 30);
@@ -11,18 +11,14 @@ const constructThumbs = (type: string, variety: string | null, name: string): Th
 
   const thumbs: Thumb[] = [];
 
-  variety = variety ? '/' + variety : '';
-
   for (let i = 0; i < 6; i++) {
     const date = addDays(today, i);
 
     thumbs.push({
       date: format(date, 'MM/dd/yy'),
-      thumbUrl: `https://www.nrcc.cornell.edu/dyn_images/grass/turf_fcst/turf-f${i + 1}-${name}-Thumbnail.png`,
-      fullSizeUrl: `https://www.nrcc.cornell.edu/dyn_images/grass/turf_fcst/turf-f${i + 1}-${name}-Map.png`,
-      // thumbUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/thumbs/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Thumbnail.png`,
-      // fullSizeUrl: `http://turf.eas.cornell.edu/app_data/NE/${date.getFullYear()}/maps/${type}${variety}/${format(date, 'yyyyMMdd')}-${name}-Map.png`,
-      alt: `link to ${name.split('-').join(' ')} map for ${format(date, 'MMMM do yyyy')}`
+      thumbUrl: `https://turf.eas.cornell.edu/maps/f${i + 1}_${name}_thumb.png`,
+      fullSizeUrl: `https://turf.eas.cornell.edu/maps/f${i + 1}_${name}_map.png`,
+      alt: `link to ${title} map for ${format(date, 'MMMM do yyyy')}`
     });
   }
 
@@ -75,7 +71,7 @@ const routeInfo: RouteInfo[] = [
       },
       maps: [{
         title: 'Anthracnose Risk Maps',
-        thumbs: constructThumbs('Anthracnose', null, 'Anthracnose-Risk')
+        thumbs: constructThumbs('anthracnose', 'Anthracnose Risk')
       }]
     }
   },{
@@ -119,7 +115,7 @@ const routeInfo: RouteInfo[] = [
       },
       maps: [{
         title: 'Brown Patch Risk Maps',
-        thumbs: constructThumbs('Brown-Patch', null, 'Brown-Patch-Risk')
+        thumbs: constructThumbs('brownPatch', 'Brown Patch Risk')
       }]
     }
   },{
@@ -164,7 +160,7 @@ const routeInfo: RouteInfo[] = [
       },
       maps: [{
         title: 'Dollarspot Risk Maps',
-        thumbs: constructThumbs('Dollarspot', null, 'Dollarspot-Risk')
+        thumbs: constructThumbs('dollarspot', 'Dollarspot Risk')
       }]
     }
   },{
@@ -207,7 +203,7 @@ const routeInfo: RouteInfo[] = [
       },
       maps: [{
         title: 'Pythium Blight Risk Maps',
-        thumbs: constructThumbs('Pythium-Blight', null, 'Pythium-Blight-Risk')
+        thumbs: constructThumbs('pythiumBlight', 'Pythium Blight Risk')
       }]
     }
   },{
@@ -237,7 +233,7 @@ const routeInfo: RouteInfo[] = [
       },
       maps: [{
         title: 'Heat Stress Index Maps',
-        thumbs: constructThumbs('Heat-Stress', null, 'Heat-Stress-Risk')
+        thumbs: constructThumbs('heatStress', 'Heat Stress Risk')
       }]
     }
   },{
@@ -284,10 +280,10 @@ const routeInfo: RouteInfo[] = [
       },
       maps: [{
         title: 'Amine Maps',
-        thumbs: constructThumbs('Dandelion', 'Amine', 'Amine-Dandelion-Control')
+        thumbs: constructThumbs('amine', 'Amine Dandelion Control')
       },{
         title: 'Ester Maps',
-        thumbs: constructThumbs('Dandelion', 'Ester', 'Ester-Dandelion-Control')
+        thumbs: constructThumbs('ester', 'Ester Dandelion Control')
       }]
     }
   },{
@@ -334,10 +330,10 @@ const routeInfo: RouteInfo[] = [
       },
       maps: [{
         title: 'Embark Maps',
-        thumbs: constructThumbs('Seedhead', 'Embark', 'Embark-Seedhead-Control')
+        thumbs: constructThumbs('embark', 'Embark Seedhead Control')
       },{
         title: 'Proxy Maps',
-        thumbs: constructThumbs('Seedhead', 'Proxy', 'Proxy-Seedhead-Control')
+        thumbs: constructThumbs('proxy', 'Proxy Seedhead Control')
       }]
     }
   },{

@@ -7,6 +7,8 @@ import {
   CircularProgress
 } from '@mui/material';
 
+import { format, parse, subDays } from 'date-fns';
+
 
 
 const dateSX = (i: number) => ({
@@ -155,13 +157,20 @@ const constructDates = (data: StrDateValue[] | DateValue[]) => {
 function renderChart(data: StrDateValue[][], rows: string[], todayFromAcis: boolean): JSX.Element;
 function renderChart(data: StrDateValue[] | RiskTool | HSTool, rows: Row[], todayFromAcis: boolean, colorizer: (val: number, thresholds: ThresholdObj) => string): JSX.Element;
 function renderChart(data: StrDateValue[][] | StrDateValue[] | RiskTool | HSTool, rows: Row[] | string[], todayFromAcis: boolean, colorizer?: (val: number, thresholds: ThresholdObj) => string): JSX.Element {
-  let cells: JSX.Element[][] = [], sample: StrDateValue[] | DateValue[] = [];
+  let cells: JSX.Element[][] = [], sample: StrDateValue[] | DateValue[] = [], precipSum, sDate;
   if (rows instanceof Array && data instanceof Array && data[0][0] instanceof Array) {
     sample = data[0] as StrDateValue[];
     cells = constructValueCells(data as StrDateValue[][], rows as string[]);
+    if (sample.length === 8) {
+      precipSum = sample[7];
+      sample = sample.slice(0,7);
+      cells = [cells[0].slice(0,8)];
+      if (precipSum instanceof Array) {
+        sDate = format(subDays(parse(precipSum[0] as string, 'MM-dd-yyyy', new Date()), 6), 'MM-dd-yyyy');
+      }
+    }
   } else if (colorizer) {
     sample = data instanceof Array ? data as StrDateValue[] : data['season'];
-    // sample = data instanceof Array ? data as StrDateValue[] : data['Daily'];
     cells = constructDotCells(data as StrDateValue[] | RiskTool | HSTool, rows as Row[], colorizer); 
   }
   const dates = constructDates(sample);
@@ -214,18 +223,21 @@ function renderChart(data: StrDateValue[][] | StrDateValue[] | RiskTool | HSTool
     }
   };
 
-  let smallMLeft, mLeft, precipShift = 0;
-  if (sample.length === 10 && sample[9][0] === '7 Day Sum') precipShift++;
+  let smallMLeft, mLeft;
+  const precipShift = 0;
   if (sample.length === 9) {
     const numCells = (todayFromAcis ? 4 : 3) + shift;
     mLeft = `calc((100% - 80px) * (${numCells - precipShift}/9) - 34px)`;
     smallMLeft = `calc((100% - 66px) * (${numCells - precipShift}/9) - 49px)`;
+  } else if (sample.length === 7) {
+    const numCells = (todayFromAcis ? 4 : 3) + shift;
+    mLeft = `calc((100% - 80px) * (${numCells - precipShift}/7) - 34px)`;
+    smallMLeft = `calc((100% - 66px) * (${numCells - precipShift}/7) - 49px)`;
   } else {
     const numCells = (todayFromAcis ? 5 : 4) + shift;
     mLeft = `calc((100% - 80px) * (${numCells - precipShift}/10) - 34px)`;
     smallMLeft = `calc((100% - 66px) * (${numCells - precipShift}/10) - 47px)`;
   }
-
 
   
   return (
@@ -307,6 +319,28 @@ function renderChart(data: StrDateValue[][] | StrDateValue[] | RiskTool | HSTool
 
         {cells}
       </Box>
+
+      {precipSum &&
+        <Box sx={{
+          boxSizing: 'border-box',
+          margin: '10px auto 0px auto',
+          position: 'relative',
+          top: '13px',
+          border: '2px solid rgb(220,220,220)',
+          borderRadius: '4px',
+          padding: '10px',
+          width: 'fit-content',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '5px',
+          alignItems: 'center'
+        }}>
+          <Box sx={{ fontSize: '18px' }}>Total Precipitation</Box>
+          <Box sx={{ marginBottom: '10px' }}>{sDate?.slice(0, 5)} <span style={{ fontSize: '12px' }}>to</span> {precipSum[0].slice(0, 5)}</Box>
+          <Box sx={{ fontWeight: 'bold', fontSize: '24px' }}>{precipSum[1]}in</Box>
+          <Box sx={{ color: 'rgb(80,80,80)', fontSize: '12px', fontStyle: 'italic', position: 'relative', top: '9px' }}>*as shown in map below</Box>
+        </Box>
+      }
     </>
   );
 }
