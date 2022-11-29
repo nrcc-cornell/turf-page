@@ -4,9 +4,16 @@ import { Box } from '@mui/material';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';
-const token = 'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2txYjNjMHYxMGF4NTJ1cWhibHNub3BrdiJ9.1T_U5frbnHaHonvFpHenxQ';
+const token =
+  'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2txYjNjMHYxMGF4NTJ1cWhibHNub3BrdiJ9.1T_U5frbnHaHonvFpHenxQ';
 mapboxgl.accessToken = token;
 import Map, { Popup, ViewState } from 'react-map-gl';
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+mapboxgl.workerClass =
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
 
 import Markers from './Markers';
 
@@ -14,19 +21,19 @@ import { getLocation } from '../../Scripts/Data';
 import MapBar from './MapBar';
 import roundXDigits from '../../Scripts/Rounding';
 
-
-
 const bounds = { south: 37.09, west: -82.7542 };
 
 function isTouchDevice() {
-  return (('ontouchstart' in window) ||
-     (navigator.maxTouchPoints > 0));
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
 // Uses all past locations to find the bounding coordinates for the initial map view
 function calcInitBounds(locations: UserLocation[]) {
-  let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
-  Object.values(locations).forEach(loc => {
+  let minLat = Infinity,
+    maxLat = -Infinity,
+    minLng = Infinity,
+    maxLng = -Infinity;
+  Object.values(locations).forEach((loc) => {
     const lng = loc.lngLat[0];
     const lat = loc.lngLat[1];
     if (lat > maxLat) maxLat = lat;
@@ -34,7 +41,6 @@ function calcInitBounds(locations: UserLocation[]) {
     if (lng > maxLng) maxLng = lng;
     if (lng < minLng) minLng = lng;
   });
-
 
   // If only one location is present, adjust the coordinates to reduce initial zoom
   const adjustment = 0.1;
@@ -51,9 +57,7 @@ function calcInitBounds(locations: UserLocation[]) {
   return [minLng, minLat, maxLng, maxLat];
 }
 
-
-
-export default function MapComp( props: MapProps) {
+export default function MapComp(props: MapProps) {
   // const [popup, setPopup] = useState<PopupContent | null>(null);
   // const [viewState, setViewState] = useState({
   //   longitude: props.currentLocation.lngLat[0],
@@ -69,9 +73,9 @@ export default function MapComp( props: MapProps) {
         top: 100,
         bottom: 10,
         left: 15,
-        right: 15
-      }
-    }
+        right: 15,
+      },
+    },
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,15 +94,18 @@ export default function MapComp( props: MapProps) {
       view.longitude = viewState.longitude;
     }
 
-    setViewState(prev => {
+    setViewState((prev) => {
       return {
         ...prev,
-        ...view
+        ...view,
       };
     });
   };
 
-  const handleMarkerClick = (e: mapboxgl.MapboxEvent<MouseEvent>, loc: UserLocation) => {
+  const handleMarkerClick = (
+    e: mapboxgl.MapboxEvent<MouseEvent>,
+    loc: UserLocation
+  ) => {
     e.originalEvent.stopPropagation();
     props.handleChangeLocations('change', loc);
   };
@@ -121,28 +128,33 @@ export default function MapComp( props: MapProps) {
   const handleMapClick = async (e: mapboxgl.MapLayerMouseEvent) => {
     const lng = e.lngLat.lng;
     const lat = e.lngLat.lat;
-    
+
     if (lng >= bounds.west && lat >= bounds.south) {
-      const newLocation: UserLocation | false = await getLocation(lng, lat, token);
-  
+      const newLocation: UserLocation | false = await getLocation(
+        lng,
+        lat,
+        token
+      );
+
       if (newLocation && mapRef.current) {
         props.handleChangeLocations('add', newLocation);
         mapRef.current.flyTo({
           center: newLocation.lngLat,
           speed: 0.8,
-          essential: true
+          essential: true,
         });
       }
     }
   };
 
-
   return (
-    <Box sx={{
-      width: '100%',
-      height: '100%',
-      position: 'relative'
-    }}>
+    <Box
+      sx={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+      }}
+    >
       <Map
         {...viewState}
         ref={mapRef}
@@ -152,7 +164,7 @@ export default function MapComp( props: MapProps) {
         touchPitch={false}
         doubleClickZoom={false}
         attributionControl={false}
-        onMove={evt => handlePanning(evt.viewState)}
+        onMove={(evt) => handlePanning(evt.viewState)}
         onClick={handleMapClick}
       >
         <Markers
@@ -163,40 +175,45 @@ export default function MapComp( props: MapProps) {
           onMarkerClick={handleMarkerClick}
           onMarkerRightClick={handleMarkerRightClick}
         />
-        {
-          popup && <Popup
+        {popup && (
+          <Popup
             longitude={popup.lngLat[0]}
             latitude={popup.lngLat[1]}
             closeOnClick={false}
             closeButton={false}
             onClose={() => setPopup(null)}
             offset={{
-              'center': [0, 0],
-              'left': [12, 0],
-              'right': [-12, 0],
-              'top': [0, -6],
+              center: [0, 0],
+              left: [12, 0],
+              right: [-12, 0],
+              top: [0, -6],
               'top-left': [10, 3],
               'top-right': [-20, 3],
-              'bottom': [0, -16],
+              bottom: [0, -16],
               'bottom-left': [10, -12],
-              'bottom-right' : [-20, -12]
+              'bottom-right': [-20, -12],
             }}
             style={{ zIndex: 4 }}
           >
             <h3>{popup.address}</h3>
-            <h4>Coordinates: {roundXDigits(popup.lngLat[0], 5)}, {roundXDigits(popup.lngLat[1], 5)}</h4>
-            {
-              popup.isSelected ? '' : <>
+            <h4>
+              Coordinates: {roundXDigits(popup.lngLat[0], 5)},{' '}
+              {roundXDigits(popup.lngLat[1], 5)}
+            </h4>
+            {popup.isSelected ? (
+              ''
+            ) : (
+              <>
                 <h5>Click to Use</h5>
-                {isTouchDevice() ? 
+                {isTouchDevice() ? (
                   <h5>Click and Hold to Remove</h5>
-                  :
+                ) : (
                   <h5>Right Click to Remove</h5>
-                }
+                )}
               </>
-            }
+            )}
           </Popup>
-        }
+        )}
       </Map>
 
       <MapBar

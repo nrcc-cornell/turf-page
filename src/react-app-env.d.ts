@@ -186,7 +186,7 @@ type MapThumbProps = {
 
 type MapThumbs = {
   title: string,
-  thumbs: Thumb[]
+  thumbs: ThumbUrls[]
 };
 
 type MarkersProps = {
@@ -297,12 +297,14 @@ type ThresholdObj = {
   high: number
 };
 
-type Thumb = {
+type ThumbUrls = {
   fullSizeUrl: string,
   thumbUrl: string,
-  alt: string,
-  date: string
-};
+  name: string,
+  title: string
+  alt?: string,
+  date?: string
+}
 
 type Toggle = {
   type: string;

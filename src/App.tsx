@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
 
 import { Box } from '@mui/material';
 
@@ -17,7 +23,7 @@ import {
   RiskMaps,
   Loading,
   StyledButton,
-  Graph
+  Graph,
 } from './Components';
 
 import { AppRouteInfo } from './AppRouteInfo';
@@ -25,8 +31,6 @@ import { AppRouteInfo } from './AppRouteInfo';
 import { getData } from './Scripts/Data';
 import MultiMapPage from './Components/Pages/MultiMapPage';
 import StyledCard from './Components/Pages/StyledCard';
-
-
 
 function App() {
   const [showGraphs, setShowGraphs] = useState(false);
@@ -37,7 +41,10 @@ function App() {
       return JSON.parse(pastLocations);
     } else {
       return [
-        { address: '213 Warren Road, Ithaca, New York', lngLat: [-76.46754, 42.457975] },
+        {
+          address: '213 Warren Road, Ithaca, New York',
+          lngLat: [-76.46754, 42.457975],
+        },
       ];
     }
   });
@@ -46,14 +53,16 @@ function App() {
     if (currentLocation) {
       return JSON.parse(currentLocation);
     } else {
-      return { address: '213 Warren Road, Ithaca, New York', lngLat: [-76.46754, 42.457975] };
+      return {
+        address: '213 Warren Road, Ithaca, New York',
+        lngLat: [-76.46754, 42.457975],
+      };
     }
   });
-  
+
   const goTo = useNavigate();
   const reqPage = useLocation().pathname;
-  
-  
+
   useEffect(() => {
     if (reqPage === '/') {
       const lastPage = localStorage.getItem('lastPage');
@@ -77,54 +86,75 @@ function App() {
       let sx = {};
       if (info.maps.length === 1) {
         sx = {
-          maxWidth: 850
+          maxWidth: 850,
         };
       }
 
       return (
         <StyledCard variant='outlined' sx={sx}>
-          {(info.pageType === 'graph' || info.pageType === 'table') &&
-            <DailyChart data={toolData[info.chart.data].table} rowNames={info.chart.rowNames} todayFromAcis={toolData.todayFromAcis} title={info.chart.title} />
-          }
+          {(info.pageType === 'graph' || info.pageType === 'table') && (
+            <DailyChart
+              data={toolData[info.chart.data].table}
+              rowNames={info.chart.rowNames}
+              todayFromAcis={toolData.todayFromAcis}
+              title={info.chart.title}
+            />
+          )}
 
-          {info.pageType === 'text' &&
-            <ConditionalText fromLast={toolData[info.data].table[0][toolData.todayFromAcis ? 3 : 4][1]} fromNormal={toolData[info.data].table[1][toolData.todayFromAcis ? 3 : 4][1]} />
-          }
-          
-          {info.pageType === 'seedWeed' &&
-            <DailyChart {...info.chart} data={toolData[info.chart.data]} todayFromAcis={toolData.todayFromAcis} />
-          }
+          {info.pageType === 'text' && (
+            <ConditionalText
+              fromLast={
+                toolData[info.data].table[0][toolData.todayFromAcis ? 3 : 4][1]
+              }
+              fromNormal={
+                toolData[info.data].table[1][toolData.todayFromAcis ? 3 : 4][1]
+              }
+            />
+          )}
 
-          {info.pageType === 'risk' &&
+          {info.pageType === 'seedWeed' && (
+            <DailyChart
+              {...info.chart}
+              data={toolData[info.chart.data]}
+              todayFromAcis={toolData.todayFromAcis}
+            />
+          )}
+
+          {info.pageType === 'risk' && (
             <RiskGraph
               data={toolData[info.chart.data]}
               todayFromAcis={toolData.todayFromAcis}
               thresholds={info.chart.rows[0].thresholds}
               title={info.chart.title}
             />
-          }
+          )}
 
           {info.pageType !== 'mapsOnly' && <StyledDivider />}
 
-          {info.pageType === 'graph' &&
-            <Box sx={{width: '100%', textAlign: 'center'}}>
-              {showGraphs ?
-                <StyledButton onClick={() => setShowGraphs(false)}>Show Current Maps</StyledButton>
-                :
-                <StyledButton onClick={() => setShowGraphs(true)}>Show Season Graphs</StyledButton>
-              }
+          {info.pageType === 'graph' && (
+            <Box sx={{ width: '100%', textAlign: 'center' }}>
+              {showGraphs ? (
+                <StyledButton onClick={() => setShowGraphs(false)}>
+                  Show Current Maps
+                </StyledButton>
+              ) : (
+                <StyledButton onClick={() => setShowGraphs(true)}>
+                  Show Season Graphs
+                </StyledButton>
+              )}
             </Box>
-          }
-          
-          {(info.pageType === 'risk' || info.pageType === 'seedWeed') ?
+          )}
+
+          {info.pageType === 'risk' || info.pageType === 'seedWeed' ? (
             <RiskMaps maps={info.maps} text={info.text} />
-            :
-            ((info.pageType === 'graph' && showGraphs) ?
-              <Graph {...toolData[info.chart.data]} units={info.chart.data === 'precip' ? 'inches' : 'GDDs'} />
-              :
-              <MultiMapPage maps={info.maps as MapPageProps[]} />
-            )
-          }
+          ) : info.pageType === 'graph' && showGraphs ? (
+            <Graph
+              {...toolData[info.chart.data]}
+              units={info.chart.data === 'precip' ? 'inches' : 'GDDs'}
+            />
+          ) : (
+            <MultiMapPage maps={info.maps as MapPageProps[]} />
+          )}
         </StyledCard>
       );
     } else {
@@ -132,9 +162,12 @@ function App() {
     }
   };
 
-  const handleChangeLocations = (action: 'add' | 'remove' | 'change', location: UserLocation): void => {
+  const handleChangeLocations = (
+    action: 'add' | 'remove' | 'change',
+    location: UserLocation
+  ): void => {
     if (action === 'add') {
-      setPastLocations(prev => {
+      setPastLocations((prev) => {
         const newLocs = [...prev, location];
         localStorage.setItem('pastLocations', JSON.stringify(newLocs));
         return newLocs;
@@ -142,8 +175,14 @@ function App() {
     }
 
     if (action === 'remove') {
-      setPastLocations(prev => {
-        const newLocs = prev.filter(l => !(l.lngLat[0] === location.lngLat[0] && l.lngLat[1] === location.lngLat[1]));
+      setPastLocations((prev) => {
+        const newLocs = prev.filter(
+          (l) =>
+            !(
+              l.lngLat[0] === location.lngLat[0] &&
+              l.lngLat[1] === location.lngLat[1]
+            )
+        );
         localStorage.setItem('pastLocations', JSON.stringify(newLocs));
         return newLocs;
       });
@@ -156,20 +195,22 @@ function App() {
   };
 
   const memoizedRoutes = useMemo(() => {
-    return AppRouteInfo.map(routeInfo => 
+    return AppRouteInfo.map((routeInfo) => (
       <Route
         key={routeInfo.path}
         path={routeInfo.path}
         element={renderPage(routeInfo.props)}
-      />);
+      />
+    ));
   }, [toolData, showGraphs, AppRouteInfo]);
 
-
   return (
-    <Box sx={{
-      minWidth: 320,
-      position: 'relative'
-    }}>
+    <Box
+      sx={{
+        minWidth: 320,
+        position: 'relative',
+      }}
+    >
       <Header />
 
       <Nav />
@@ -179,32 +220,29 @@ function App() {
         pastLocations={pastLocations}
         handleChangeLocations={handleChangeLocations}
       />
-      
-      <Box component='main' sx={{
-        boxSizing: 'border-box',
-        padding: '20px',
-        width: '100%',
-        minHeight: 'calc(100vh - 333px)',
-        '@media (max-width: 862px)': {
-          padding: '20px 12px'
-        },
-        '@media (max-width: 640px)': {
-          minHeight: 'calc(100vh - 293px)',
-          padding: '20px 6px'
-        }
-      }}>
+
+      <Box
+        component='main'
+        sx={{
+          boxSizing: 'border-box',
+          padding: '20px',
+          width: '100%',
+          minHeight: 'calc(100vh - 333px)',
+          '@media (max-width: 862px)': {
+            padding: '20px 12px',
+          },
+          '@media (max-width: 640px)': {
+            minHeight: 'calc(100vh - 293px)',
+            padding: '20px 6px',
+          },
+        }}
+      >
         <Routes>
-          <Route
-            path='/'
-            element={<Home />}
-          />
-          
+          <Route path='/' element={<Home />} />
+
           {memoizedRoutes}
 
-          <Route
-            path='*'
-            element={<Navigate to='/' replace />}
-          />
+          <Route path='*' element={<Navigate to='/' replace />} />
         </Routes>
       </Box>
 

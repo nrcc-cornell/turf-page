@@ -1,27 +1,13 @@
-import { addDays, format } from 'date-fns';
-
-
-const constructThumbs = (name: string, title: string): Thumb[] => {
-  let today = new Date();
-  if (today.getMonth() < 2) {
-    today = new Date(today.getFullYear() - 1, 10, 30);
-  } else if (today.getMonth() === 11) {
-    today = new Date(today.getFullYear(), 10, 30);
-  }
-
-  const thumbs: Thumb[] = [];
-
+const constructThumbs = (name: string, title: string): ThumbUrls[] => {
+  const thumbs: ThumbUrls[] = [];
   for (let i = 0; i < 6; i++) {
-    const date = addDays(today, i);
-
     thumbs.push({
-      date: format(date, 'MM/dd/yy'),
       thumbUrl: `https://turf.eas.cornell.edu/maps/f${i + 1}_${name}_thumb.png`,
       fullSizeUrl: `https://turf.eas.cornell.edu/maps/f${i + 1}_${name}_map.png`,
-      alt: `link to ${title} map for ${format(date, 'MMMM do yyyy')}`
+      name,
+      title
     });
   }
-
   return thumbs;
 };
 
