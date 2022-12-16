@@ -11,7 +11,7 @@ import {
   Popper,
   Grow,
   Paper,
-  ListItemText
+  ListItemText,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -32,7 +32,7 @@ const LinkLine = styled(Box)({
     position: 'absolute',
     bottom: '2px',
     left: '10%',
-  }
+  },
 });
 
 const btnSX = {
@@ -40,11 +40,9 @@ const btnSX = {
   height: '100%',
   position: 'relative',
   '&:hover': {
-    backgroundColor: 'rgb(149,0,0)'
-  }
+    backgroundColor: 'rgb(149,0,0)',
+  },
 };
-
-
 
 export default function NavBar({ group }: NavBarProp) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -54,12 +52,11 @@ export default function NavBar({ group }: NavBarProp) {
   const location = useLocation();
   const isActiveGroup = location.pathname.split('/')[1] === group.base;
 
-  
   const handleOpen = (event: MouseEvent<HTMLElement>): void => {
     setAnchorEl(event.currentTarget);
     setOpen(true);
   };
-  
+
   const handleClose = (): void => {
     setOpen(false);
   };
@@ -74,8 +71,7 @@ export default function NavBar({ group }: NavBarProp) {
     }
   };
 
-
-  if (group.name === 'Home') {
+  if (group.name === 'Home' || group.name === 'Growth Potential') {
     return (
       <Box>
         <Button
@@ -83,10 +79,10 @@ export default function NavBar({ group }: NavBarProp) {
           sx={{
             ...btnSX,
             '& .MuiTouchRipple-child': {
-              backgroundColor: 'rgb(180,180,180)'
-            }
+              backgroundColor: 'rgb(180,180,180)',
+            },
           }}
-          onClick={() => handleLinkClick('/')}
+          onClick={() => handleLinkClick(group.items[0].pathname)}
         >
           <Typography variant='links'>{group.name}</Typography>
           {isActiveGroup && <LinkLine />}
@@ -108,22 +104,29 @@ export default function NavBar({ group }: NavBarProp) {
         sx={{ zIndex: 3 }}
       >
         {({ TransitionProps }) => (
-          <Grow
-            {...TransitionProps}
-            style={{ transformOrigin: 'top' }}
-          >
-            <Paper sx={{
-              borderTopLeftRadius: 0,
-              borderTopRightRadius: 0,
-              border: '1px solid rgb(242,242,242)',
-              borderTop: '2px solid rgb(189,187,187)'
-            }}>
+          <Grow {...TransitionProps} style={{ transformOrigin: 'top' }}>
+            <Paper
+              sx={{
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+                border: '1px solid rgb(242,242,242)',
+                borderTop: '2px solid rgb(189,187,187)',
+              }}
+            >
               <MenuList>
-                {group.items.map(item => {
+                {group.items.map((item) => {
                   const isActiveLink = location.pathname === item.pathname;
 
                   return (
-                    <MenuItem key={item.label} onClick={() => handleLinkClick(item.pathname)} sx={{ backgroundColor: isActiveLink ? 'rgba(0,0,0,0.08)' : 'white' }}>
+                    <MenuItem
+                      key={item.label}
+                      onClick={() => handleLinkClick(item.pathname)}
+                      sx={{
+                        backgroundColor: isActiveLink
+                          ? 'rgba(0,0,0,0.08)'
+                          : 'white',
+                      }}
+                    >
                       <ListItemText>{item.label}</ListItemText>
                     </MenuItem>
                   );

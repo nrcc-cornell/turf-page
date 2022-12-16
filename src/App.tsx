@@ -24,6 +24,7 @@ import {
   Loading,
   StyledButton,
   Graph,
+  GrowthPotentialPage,
 } from './Components';
 
 import { AppRouteInfo } from './AppRouteInfo';
@@ -88,6 +89,10 @@ function App() {
         sx = {
           maxWidth: 850,
         };
+      }
+
+      if (info.pageType === 'growthPotential') {
+        return <GrowthPotentialPage />;
       }
 
       return (

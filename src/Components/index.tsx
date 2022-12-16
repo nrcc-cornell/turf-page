@@ -10,11 +10,11 @@ import StyledButton from './Pages/StyledBtn';
 import Graph from './Pages/Graph';
 import RiskGraph from './Pages/RiskGraph';
 import ConditionalText from './Pages/ConditionalText';
+import GrowthPotentialPage from './Pages/GrowthPotentialPage';
 
 import ShortCuttAd from './ShortCuttAd';
 
 import LocationDisplay from './LocationComponents/LocationDisplay';
-
 
 export {
   Header,
@@ -30,5 +30,6 @@ export {
   StyledButton,
   Graph,
   RiskGraph,
-  ConditionalText
+  ConditionalText,
+  GrowthPotentialPage,
 };
