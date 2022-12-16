@@ -27,9 +27,9 @@ type DataType =
   | DataGraph
   | DataTable
   | DataText
-  | GrowthPotential;
+  | DataGrowthPotential;
 
-type GrowthPotential = {
+type DataGrowthPotential = {
   pageType: 'growthPotential';
   maps: MapPageProps[];
 };

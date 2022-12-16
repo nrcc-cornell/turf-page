@@ -92,7 +92,13 @@ function App() {
       }
 
       if (info.pageType === 'growthPotential') {
-        return <GrowthPotentialPage />;
+        return (
+          <GrowthPotentialPage
+            currentLocation={currentLocation}
+            pastLocations={pastLocations}
+            handleChangeLocations={handleChangeLocations}
+          />
+        );
       }
 
       return (
@@ -199,16 +205,6 @@ function App() {
     }
   };
 
-  const memoizedRoutes = useMemo(() => {
-    return AppRouteInfo.map((routeInfo) => (
-      <Route
-        key={routeInfo.path}
-        path={routeInfo.path}
-        element={renderPage(routeInfo.props)}
-      />
-    ));
-  }, [toolData, showGraphs, AppRouteInfo]);
-
   return (
     <Box
       sx={{
@@ -245,7 +241,13 @@ function App() {
         <Routes>
           <Route path='/' element={<Home />} />
 
-          {memoizedRoutes}
+          {AppRouteInfo.map((routeInfo) => (
+            <Route
+              key={routeInfo.path}
+              path={routeInfo.path}
+              element={renderPage(routeInfo.props)}
+            />
+          ))}
 
           <Route path='*' element={<Navigate to='/' replace />} />
         </Routes>
