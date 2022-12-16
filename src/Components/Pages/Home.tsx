@@ -1,20 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import {
-  Box,
-  Divider,
-  MenuItem,
-  Modal,
-  TextField
-} from '@mui/material';
+import { Box, Divider, MenuItem, Modal, TextField } from '@mui/material';
 
 import StyledButton from './StyledBtn';
 import StyledCard from './StyledCard';
 import MapPage from './MapPage';
 
 import { frontPageMaps } from '../../AppRouteInfo';
-
 
 const style = {
   position: 'absolute',
@@ -32,14 +25,12 @@ const style = {
   display: 'flex',
   flexDirection: 'column',
   '&:focus-visible': {
-    outline: 'none'
+    outline: 'none',
   },
   '@media (max-width: 500px)': {
-    width: 350
-  }
+    width: 350,
+  },
 };
-
-
 
 export default function Home() {
   const [favMaps, setFavMaps] = useState<number[]>([]);
@@ -55,12 +46,12 @@ export default function Home() {
     if (storedFavMaps) {
       setFavMaps(JSON.parse(storedFavMaps));
     } else {
-      setFavMaps([ 22, 23, 18, 19 ]);
+      setFavMaps([22, 23, 18, 19]);
     }
   }, []);
 
   const handleChange = (val: string, pos: number) => {
-    const newMaps = [ ...favMaps ];
+    const newMaps = [...favMaps];
 
     if (val === 'remove' && favMaps.length > 2) {
       newMaps.splice(pos, 1);
@@ -74,21 +65,15 @@ export default function Home() {
     localStorage.setItem('favMaps', JSON.stringify(newMaps));
   };
 
-
   return (
     <StyledCard variant='outlined'>
       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <StyledButton onClick={handleOpen}>
-          Change Maps
-        </StyledButton>
+        <StyledButton onClick={handleOpen}>Change Maps</StyledButton>
       </Box>
 
-      <Modal
-        open={open}
-        onClose={handleClose}
-      >
+      <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
-          {favMaps.map((fm, i: number) => { 
+          {favMaps.map((fm, i: number) => {
             return (
               <TextField
                 key={i}
@@ -100,7 +85,7 @@ export default function Home() {
                 onChange={(e) => handleChange(e.target.value, i)}
                 sx={{ marginBottom: '10px' }}
               >
-                {favMaps.length > 2 &&
+                {favMaps.length > 2 && (
                   <MenuItem
                     value='remove'
                     sx={{
@@ -112,44 +97,56 @@ export default function Home() {
                       fontSize: '12px',
                       '&:hover': {
                         backgroundColor: 'rgb(200, 0, 0)',
-                        color: 'white'
-                      }
+                        color: 'white',
+                      },
                     }}
-                  >Remove Map</MenuItem>}
-                
-                <Divider/>
+                  >
+                    Remove Map
+                  </MenuItem>
+                )}
+
+                <Divider />
 
                 {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
                 {/* @ts-ignore - necessary for loading object as value */}
-                {frontPageMaps.map((m, i) => <MenuItem key={i} value={i}>{m.alt}</MenuItem>)}
+                {frontPageMaps.map((m, i) => (
+                  <MenuItem key={i} value={i}>
+                    {m.alt}
+                  </MenuItem>
+                ))}
               </TextField>
             );
           })}
 
-          {favMaps.length < 8 &&
+          {favMaps.length < 8 && (
             <StyledButton
               onClick={() => handleChange('add', 0)}
               sx={{
                 width: 150,
                 position: 'absolute',
                 bottom: 32,
-                left: 'calc(50% - 75px)'
+                left: 'calc(50% - 75px)',
               }}
-            >Add Map</StyledButton>}
+            >
+              Add Map
+            </StyledButton>
+          )}
         </Box>
       </Modal>
-      
-      <Box sx={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        boxSizing: 'border-box'
-      }}>
-        {favMaps.map((n, i) => 
+
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          boxSizing: 'border-box',
+        }}
+      >
+        {favMaps.map((n, i) => (
           <Box
             key={i}
             sx={{
               width: '50%',
-              '@media (max-width: 750px)': { width: '100%' }
+              '@media (max-width: 750px)': { width: '100%' },
             }}
             onClick={() => navigate(frontPageMaps[n].path)}
           >
@@ -164,11 +161,11 @@ export default function Home() {
                 maxWidth: 720,
                 margin: '0 auto',
                 border: 'none',
-                borderRadius: 0
+                borderRadius: 0,
               }}
             />
-          </Box>)
-        }
+          </Box>
+        ))}
       </Box>
     </StyledCard>
   );
