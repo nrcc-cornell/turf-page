@@ -26,48 +26,18 @@ function isTouchDevice() {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
-// Uses all past locations to find the bounding coordinates for the initial map view
-function calcInitBounds(locations: UserLocation[]) {
-  let minLat = Infinity,
-    maxLat = -Infinity,
-    minLng = Infinity,
-    maxLng = -Infinity;
-  Object.values(locations).forEach((loc) => {
-    const lng = loc.lngLat[0];
-    const lat = loc.lngLat[1];
-    if (lat > maxLat) maxLat = lat;
-    if (lat < minLat) minLat = lat;
-    if (lng > maxLng) maxLng = lng;
-    if (lng < minLng) minLng = lng;
-  });
-
-  // If only one location is present, adjust the coordinates to reduce initial zoom
-  const adjustment = 0.1;
-  if (minLat === maxLat) {
-    minLat -= adjustment;
-    maxLat += adjustment;
-  }
-
-  if (minLng === maxLng) {
-    minLng -= adjustment;
-    maxLng += adjustment;
-  }
-
-  return [minLng, minLat, maxLng, maxLat];
-}
-
 export default function GrowthPotentialMap(props: MapProps) {
   const [popup, setPopup] = useState<PopupContent | null>(null);
   const [viewState, setViewState] = useState({
-    bounds: calcInitBounds(props.pastLocations),
-    fitBoundsOptions: {
-      padding: {
-        top: 100,
-        bottom: 10,
-        left: 15,
-        right: 15,
-      },
-    },
+    bounds: [-79.9, 40.45, -71.8, 45.05],
+    // fitBoundsOptions: {
+    //   padding: {
+    //     top: 100,
+    //     bottom: 10,
+    //     left: 15,
+    //     right: 15,
+    //   },
+    // },
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -150,7 +120,7 @@ export default function GrowthPotentialMap(props: MapProps) {
       <Map
         {...viewState}
         ref={mapRef}
-        mapStyle='mapbox://styles/mapbox/satellite-streets-v11'
+        mapStyle='mapbox://styles/precipadmin/clbqxcrdb000014pjs0qz90h5'
         boxZoom={false}
         dragRotate={false}
         touchPitch={false}
