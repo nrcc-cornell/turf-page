@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { Box } from '@mui/material';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
-import mapboxgl from 'mapbox-gl';
+import mapboxgl, { PaddingOptions } from 'mapbox-gl';
 const token =
   'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2txYjNjMHYxMGF4NTJ1cWhibHNub3BrdiJ9.1T_U5frbnHaHonvFpHenxQ';
 mapboxgl.accessToken = token;
@@ -15,10 +15,10 @@ mapboxgl.workerClass =
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
 
-import Markers from '../LocationComponents/Markers';
+import Markers from '../../LocationComponents/Markers';
 
-import { getLocation } from '../../Scripts/Data';
-import roundXDigits from '../../Scripts/Rounding';
+import { getLocation } from '../../../Scripts/Data';
+import roundXDigits from '../../../Scripts/Rounding';
 
 const bounds = { south: 37.09, west: -82.7542 };
 
@@ -26,18 +26,76 @@ function isTouchDevice() {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
-export default function GrowthPotentialMap(props: MapProps) {
+type InitViewOrViewState = {
+  longitude?: number;
+  latitude?: number;
+  zoom?: number;
+  bearing?: number;
+  pitch?: number;
+  padding?: PaddingOptions;
+  bounds?: number[];
+};
+
+function mapStyle(
+  imgsrc: string,
+  viewState: InitViewOrViewState
+): mapboxgl.Style | string {
+  if (viewState && viewState.zoom && viewState.zoom >= 11) {
+    return 'mapbox://styles/mapbox/satellite-streets-v11';
+  }
+
+  const style: mapboxgl.Style = {
+    version: 8,
+    sources: {
+      mapbox: {
+        type: 'vector',
+        url: 'mapbox://mapbox.mapbox-streets-v8',
+      },
+    },
+    layers: [
+      {
+        id: 'water',
+        source: 'mapbox',
+        'source-layer': 'water',
+        type: 'fill',
+        paint: { 'fill-color': '#2c2c2c' },
+      },
+      {
+        id: 'boundaries',
+        source: 'mapbox',
+        'source-layer': 'admin',
+        type: 'line',
+      },
+    ],
+  };
+
+  if (imgsrc.length) {
+    style['sources']['overlay'] = {
+      type: 'image',
+      url: imgsrc || '',
+      coordinates: [
+        [-79.95970329697062, 46.54645497007963],
+        [-69.66501014096089, 46.54645497007963],
+        [-69.66501014096083, 39.33905737461734],
+        [-79.95970329697053, 39.3390573746173],
+      ],
+    };
+
+    style.layers.push({
+      id: 'overlay',
+      source: 'overlay',
+      type: 'raster',
+      paint: { 'raster-opacity': 0.85 },
+    });
+  }
+
+  return style;
+}
+
+export default function GrowthPotentialMap(props: GPMapProps) {
   const [popup, setPopup] = useState<PopupContent | null>(null);
   const [viewState, setViewState] = useState({
     bounds: [-79.9, 40.45, -71.8, 45.05],
-    // fitBoundsOptions: {
-    //   padding: {
-    //     top: 100,
-    //     bottom: 10,
-    //     left: 15,
-    //     right: 15,
-    //   },
-    // },
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -113,14 +171,14 @@ export default function GrowthPotentialMap(props: MapProps) {
     <Box
       sx={{
         width: '100%',
-        height: '100%',
-        position: 'relative',
+        height: '500px',
+        border: '1px solid black',
       }}
     >
       <Map
         {...viewState}
         ref={mapRef}
-        mapStyle='mapbox://styles/precipadmin/clbqxcrdb000014pjs0qz90h5'
+        mapStyle={mapStyle(props.imgsrc, viewState)}
         boxZoom={false}
         dragRotate={false}
         touchPitch={false}

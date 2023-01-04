@@ -10,7 +10,7 @@ import StyledButton from './Pages/StyledBtn';
 import Graph from './Pages/Graph';
 import RiskGraph from './Pages/RiskGraph';
 import ConditionalText from './Pages/ConditionalText';
-import GrowthPotentialPage from './Pages/GrowthPotentialPage';
+import GrowthPotentialPage from './Pages/GrowthPotential/GrowthPotentialPage';
 
 import ShortCuttAd from './ShortCuttAd';
 

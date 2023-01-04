@@ -196,6 +196,10 @@ type MapProps = {
   ) => void;
 };
 
+type GPMapProps = MapProps & {
+  imgsrc: string;
+};
+
 type MapThumbProps = {
   date: string;
   thumbUrl: string;
@@ -341,6 +345,11 @@ type Toggle = {
 
 type RiskTool = HSTool & {
   '7 Day Avg': DateValue[];
+};
+
+type AvgTemps = {
+  dates: string[];
+  temps: number[];
 };
 
 type ToolData = Indices & GraphDataResults;

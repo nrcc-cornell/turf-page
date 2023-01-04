@@ -731,7 +731,6 @@ const getData = async (lngLat: number[]): Promise<ToolData> => {
   }
 
   const sDate = format(subDays(today, 15), 'yyyy-MM-dd');
-  // const seasonStart = new Date(today.getFullYear(), 2, 1);
   const seasonStart = subDays(new Date(today.getFullYear(), 2, 1), 4);
 
   const data: DayHourly[] | null = await getToolRawData(
