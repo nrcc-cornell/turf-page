@@ -72,5 +72,5 @@ export default function growthPotentialModel(
   const soilSatGP = soilSatToGP(ssValue, ssOptimum, ssK);
   const lightGP = lightToGP(date, latitude);
 
-  return roundXDigits(tempGP * soilSatGP * lightGP * 100, 0);
+  return Math.max(0, roundXDigits(tempGP * soilSatGP * lightGP * 100, 0));
 }

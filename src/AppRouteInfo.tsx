@@ -610,6 +610,19 @@ const routeInfo: RouteInfo[] = [
     },
   },
   {
+    path: '/irrigation/topsoil-moisture/forecast',
+    props: {
+      pageType: 'overlayMap',
+      maps: [
+        {
+          url: '',
+          alt: '',
+          description: [],
+        },
+      ],
+    },
+  },
+  {
     path: '/irrigation/topsoil-moisture/current',
     props: {
       pageType: 'mapsOnly',

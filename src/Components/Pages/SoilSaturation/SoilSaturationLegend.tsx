@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 
-type GPLegend = {
+type SSLegend = {
   title: string;
 };
 
@@ -53,7 +53,7 @@ const colors = {
   c5: '#344792',
 };
 
-export default function GrowthPotentialLegend(props: GPLegend) {
+export default function SoilSaturationLegend(props: SSLegend) {
   return (
     <Box sx={mapLegend}>
       <Box sx={mapLegendTitle}>{props.title.replace(' inches', '"')}</Box>

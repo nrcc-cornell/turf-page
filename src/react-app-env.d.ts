@@ -27,11 +27,21 @@ type DataType =
   | DataGraph
   | DataTable
   | DataText
-  | DataGrowthPotential;
+  | DataGrowthPotential
+  | DataOverlayMap;
+
+type DataOverlayMap = {
+  pageType: 'overlayMap';
+  maps: MapPageProps[];
+};
 
 type DataGrowthPotential = {
   pageType: 'growthPotential';
   maps: MapPageProps[];
+};
+
+type GrowthPotentialGraph = {
+  data: StrDateValue[];
 };
 
 type DataMapsOnly = {
@@ -196,7 +206,7 @@ type MapProps = {
   ) => void;
 };
 
-type GPMapProps = MapProps & {
+type OverlayMapProps = MapProps & {
   imgsrc: string;
 };
 

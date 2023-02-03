@@ -32,6 +32,7 @@ export default function GrowthPotentialSelectors(props: GPToggler) {
       <Box
         sx={{
           display: 'flex',
+          justifyContent: 'center',
           flexWrap: 'wrap',
           gap: '10px',
           '@media (max-width: 400px)': {

@@ -1,21 +1,21 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
-type GPDivider = {
+type PageDivider = {
   type: number;
 };
 
-export default function GrowthPotentialDivider(props: GPDivider) {
+export default function PageDivider(props: PageDivider) {
   let styles = {};
   switch (props.type) {
     case 1:
       styles = {
-        width: '80%',
-        margin: '15px auto 22px auto',
+        width: '75%',
+        margin: '0 auto',
         height: '2px',
         backgroundColor: 'rgb(239,64,53)',
         '@media (max-width: 1100px)': {
-          margin: '15px auto 0px auto',
+          width: '100%',
         },
       };
       break;
@@ -34,17 +34,15 @@ export default function GrowthPotentialDivider(props: GPDivider) {
         margin: '0 10px',
         '@media (max-width: 1100px)': {
           height: '2px',
-          width: '50%',
+          width: '75%',
           backgroundColor: 'rgb(239,64,53)',
-          margin: '0px auto 5px auto',
+          margin: '20px auto',
         },
       };
       break;
     default:
       break;
   }
-
-  console.log(props.type, styles);
 
   return <Box sx={styles} />;
 }

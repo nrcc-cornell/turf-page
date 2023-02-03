@@ -6,13 +6,14 @@ type Mark = {
   label: string;
 };
 
-type GPSlider = {
+type MapSlider = {
+  label: string;
   idx: number;
   marks: Mark[];
   setFunction: Dispatch<SetStateAction<number>>;
 };
 
-export default function GrowthPotentialSlider(props: GPSlider) {
+export default function MapSlider(props: MapSlider) {
   return (
     <Box
       sx={{
@@ -32,7 +33,7 @@ export default function GrowthPotentialSlider(props: GPSlider) {
           },
         }}
       >
-        Soil Saturation Overlay Forecast Date
+        {props.label}
       </Typography>
       <Slider
         track={false}

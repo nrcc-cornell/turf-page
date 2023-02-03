@@ -15,10 +15,10 @@ mapboxgl.workerClass =
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
 
-import Markers from '../../LocationComponents/Markers';
+import Markers from './LocationComponents/Markers';
 
-import { getLocation } from '../../../Scripts/Data';
-import roundXDigits from '../../../Scripts/Rounding';
+import { getLocation } from '../Scripts/Data';
+import roundXDigits from '../Scripts/Rounding';
 
 const bounds = { south: 37.09, west: -82.7542 };
 
@@ -92,7 +92,7 @@ function mapStyle(
   return style;
 }
 
-export default function GrowthPotentialMap(props: GPMapProps) {
+export default function OverlayMap(props: OverlayMapProps) {
   const [popup, setPopup] = useState<PopupContent | null>(null);
   const [viewState, setViewState] = useState({
     bounds: [-79.9, 40.45, -71.8, 45.05],

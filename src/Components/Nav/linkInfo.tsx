@@ -77,6 +77,10 @@ const menuGroups: MenuObj[] = [
       },
       { pathname: '/irrigation/moisture-deficit', label: 'Moisture Deficit' },
       {
+        pathname: '/irrigation/topsoil-moisture/forecast/',
+        label: 'Topsoil Moisture - Forecast',
+      },
+      {
         pathname: '/irrigation/topsoil-moisture/current/',
         label: 'USDA Topsoil Moisture - Current',
       },

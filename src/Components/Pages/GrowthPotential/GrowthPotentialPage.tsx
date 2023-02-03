@@ -1,28 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 
-import { Box, Typography, TextField, MenuItem } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 import growthPotentialModel from '../../../Scripts/GrowthPotentialModel';
 
 import StyledButton from '../StyledBtn';
 import StyledCard from '../StyledCard';
-import GrowthPotentialLegend from './GrowthPotentialLegend';
-import GrowthPotentialTable from './GrowthPotentialTable';
-import GrowthPotentialSlider from './GrowthPotentialSlider';
-import GrowthPotentialMap from './GrowthPotentialMap';
+// import GrowthPotentialLegend from './GrowthPotentialLegend';
+// import GrowthPotentialSlider from './GrowthPotentialSlider';
+// import GrowthPotentialMap from './GrowthPotentialMap';
 import GrowthPotentialSelectors from './GrowthPotentialSelectors';
-import GrowthPotentialDivider from './GrowthPotentialDivider';
+import PageDivider from '../../PageDivider';
+import GrowthPotentialGraph from './GrowthPotentialGraph';
+import Loading from '../../Loading';
+
+import addObservedData from '../../../Scripts/calcPastSoilSaturation';
 
 type RunoffCoords = {
   lats: number[];
   lons: number[];
 };
 
-type GPModelData = {
+export type ForecastSS = {
   two: number[];
   six: number[];
   ten: number[];
+  avgt: number[];
+  dates: string[];
+};
+
+export type GPModelData = {
+  soilSats: number[];
   avgt: number[];
   dates: string[];
 };
@@ -52,14 +61,6 @@ type ProxyBody = CoordsBody | SoilSaturationBody | OverlayBody;
 export type ModelOutput = {
   dates: string[];
   values: number[];
-};
-
-const NO_SS: GPModelData = {
-  two: [],
-  six: [],
-  ten: [],
-  avgt: [],
-  dates: [],
 };
 
 const convertCoordsToIdxs = (
@@ -94,206 +95,217 @@ const convertCoordsToIdxs = (
   return { idxLat, idxLng };
 };
 
-async function updateStateFromProxy<T>(
-  body: ProxyBody,
-  endpoint: string,
-  setFunction: (a: T) => void
-) {
+async function getFromProxy<T>(body: ProxyBody, endpoint: string) {
   const proxyUrl = 'https://cors-proxy.benlinux915.workers.dev/';
-  // const proxyUrl = 'http://127.0.0.1:8787/';
 
   const response = await fetch(proxyUrl + endpoint, {
     method: 'POST',
     body: JSON.stringify(body),
   });
 
+  let results: T | null = null;
   if (response.ok) {
-    if (endpoint === 'soil-saturation-overlay') {
-      const blob = await response.blob();
-      setFunction(URL.createObjectURL(blob) as unknown as T);
-    } else {
-      const results: T = await response.json();
-      setFunction(results);
-    }
-  } else {
-    if (endpoint === 'coordinates') {
-      alert(
-        'A fatal error has occurred on this page. Please refresh to try again.'
-      );
-    } else {
-      alert(
-        'An error has occurred on this page. Please make a different location or depth selection to try again.'
-      );
-    }
+    results = await response.json();
   }
+  return results;
 }
 
-const depthOptions = {
-  two: '2 inches',
-  six: '6 inches',
-  ten: 'Surface - 10 inches',
+const generateRecommendation = (
+  modelResults: ModelOutput | null,
+  thresholds: number[]
+) => {
+  let text = '';
+  if (!modelResults) {
+    const thisMonth = new Date().getMonth() + 1;
+    if (thisMonth > 10 || thisMonth < 3) {
+      text =
+        'Data for this model is unavailable after November. Please check back in March.';
+    } else {
+      text =
+        'There was a problem getting data for this model. Please refresh to try again.';
+    }
+  } else {
+    const today = format(new Date(), 'yyyyMMdd');
+    const iOfToday = modelResults.dates.findIndex((date) => date === today);
+    const value = modelResults.values[iOfToday];
+
+    if (value < thresholds[1]) {
+      text = 'Low growth is expected today, fertilization is unnecessary.';
+    } else if (value < thresholds[2]) {
+      text = 'Moderate growth is expected today, refrain from fertilizing.';
+    } else {
+      text = 'High growth is expected today, fertilization is recommended';
+    }
+  }
+
+  return (
+    <Box sx={{ textAlign: 'center', width: '50%', margin: '0 auto' }}>
+      {text}
+    </Box>
+  );
 };
+
+const thresholds = [0, 25, 66];
 
 export default function GrowthPotentialPage(props: DisplayProps) {
   const today = new Date();
   const todayStr = format(today, 'yyyyMMdd');
-  const [coordArrs, setCoordArrs] = useState<RunoffCoords>({
-    lats: [],
-    lons: [],
-  });
-  const [depth, setDepth] = useState<Depths>('two');
-  const [modelData, setModelData] = useState<GPModelData>(NO_SS);
-  const [overlay, setOverlay] = useState('');
-  const [forecastDateIdx, setForecastDateIdx] = useState(0);
-  const [modelResults, setModelResults] = useState<ModelOutput>({
-    dates: [],
-    values: [],
-  });
+  const [coordArrs, setCoordArrs] = useState<RunoffCoords | null>(null);
+  const [modelData, setModelData] = useState<GPModelData | null>(null);
+  const [modelResults, setModelResults] = useState<ModelOutput | null>(null);
   const [ssOptimum, setSSOptimum] = useState(75);
   const [atOptimum, setATOptimum] = useState(67.5);
   const [ssK, setSSK] = useState(30);
   const [atK, setATK] = useState(10);
   const [showParameters, setShowParameters] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    updateStateFromProxy<RunoffCoords>(
-      { dateStr: todayStr },
-      'coordinates',
-      setCoordArrs
-    );
+    (async () => {
+      const results = await getFromProxy<RunoffCoords>(
+        { dateStr: todayStr },
+        'coordinates'
+      );
+      setCoordArrs(results);
+    })();
   }, []);
 
   useEffect(() => {
-    if (coordArrs.lats.length && coordArrs.lons.length) {
-      const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
-        convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
+    (async () => {
+      if (coordArrs) {
+        setLoading(true);
+        const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
+          convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
 
-      updateStateFromProxy<GPModelData>(
-        { dateStr: todayStr, idxLat, idxLng },
-        'soil-saturation',
-        setModelData
-      );
-    }
+        const forecastSoilSats = await getFromProxy<ForecastSS>(
+          { dateStr: todayStr, idxLat, idxLng },
+          'soil-saturation'
+        );
+
+        if (forecastSoilSats) {
+          const newModelData = await addObservedData(
+            forecastSoilSats,
+            today.getFullYear(),
+            props.currentLocation.lngLat
+          );
+          console.log(
+            newModelData?.dates.map((date, i) => [
+              date,
+              newModelData.soilSats[i],
+            ])
+          );
+          setModelData(newModelData);
+        } else {
+          setModelData(null);
+        }
+      }
+    })();
   }, [props.currentLocation, coordArrs]);
 
   useEffect(() => {
-    updateStateFromProxy<string>(
-      {
-        dateStr: todayStr,
-        depth,
-        forecastDateStr:
-          modelData.dates[forecastDateIdx] || format(new Date(), 'yyyyMMdd'),
-      },
-      'soil-saturation-overlay',
-      setOverlay
-    );
-  }, [depth, forecastDateIdx]);
+    if (modelData && modelData.dates.length === 15) {
+      setLoading(true);
+      const dates = modelData.dates;
+      const soilSats = modelData.soilSats;
+      const avgTemps = modelData.avgt;
 
-  useEffect(() => {
-    const dates = modelData.dates;
-    const soilSaturations = modelData[depth];
-    const avgTemps = modelData.avgt;
-
-    if (dates.length === 10) {
       const modelOutput: ModelOutput = {
         dates: [],
         values: [],
       };
-      for (let i = 0; i < 7; i++) {
+
+      const tempValues: number[] = [];
+      for (let i = 0; i < 15; i++) {
         const date = dates[i];
-        const ssValue = soilSaturations[i];
+        const ssValue = soilSats[i];
         const atValue = avgTemps[i];
-        modelOutput.dates.push(date);
-        modelOutput.values.push(
-          growthPotentialModel(
-            props.currentLocation.lngLat[1],
-            date,
-            ssValue,
-            ssOptimum,
-            ssK,
-            atValue,
-            atOptimum,
-            atK
-          )
+        const gp = growthPotentialModel(
+          props.currentLocation.lngLat[1],
+          date,
+          ssValue,
+          ssOptimum,
+          ssK,
+          atValue,
+          atOptimum,
+          atK
         );
+
+        tempValues.push(gp);
+
+        if (tempValues.length === 5) {
+          modelOutput.dates.push(date);
+          modelOutput.values.push(
+            tempValues.reduce((sum, val) => sum + val, 0) / 5
+          );
+          tempValues.shift();
+        }
       }
       setModelResults(modelOutput);
     } else {
-      setModelResults({ dates: [], values: [] });
+      setModelResults(null);
     }
-  }, [modelData, depth, ssOptimum, ssK, atOptimum, atK]);
+    setLoading(false);
+  }, [modelData, ssOptimum, ssK, atOptimum, atK]);
 
   const toggleShowParameters = () => {
     setShowParameters(!showParameters);
   };
 
-  return (
-    <StyledCard
-      variant='outlined'
-      sx={{
-        padding: '10px',
-        boxSizing: 'border-box',
-        maxWidth: '1100px',
-        '@media (max-width: 448px)': {
-          width: '100%',
-          padding: '10px 0px',
-          border: 'none',
-        },
-      }}
-    >
-      <Typography variant='h5' sx={{ marginLeft: '6px' }}>
-        Growth Potential Page
-      </Typography>
-      <Box
+  if (loading) {
+    return <Loading />;
+  } else {
+    return (
+      <StyledCard
+        variant='outlined'
         sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '10px',
-          margin: '6px',
-        }}
-      >
-        <TextField
-          select
-          size='small'
-          value={depth}
-          onChange={(e) => setDepth(e.target.value as Depths)}
-          sx={{ width: '200px', textAlign: 'center' }}
-          label='Soil Saturation Depth'
-        >
-          {Object.entries(depthOptions).map(([k, v]) => (
-            <MenuItem key={k} value={k}>
-              {v}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Box>
-
-      <GrowthPotentialDivider type={1} />
-
-      <Box
-        sx={{
-          display: 'flex',
-          width: '100%',
-          justifyContent: 'space-around',
-          '@media (max-width: 1100px)': {
-            flexDirection: 'column',
+          padding: '10px',
+          boxSizing: 'border-box',
+          maxWidth: '1100px',
+          '@media (max-width: 448px)': {
+            width: '100%',
+            padding: '10px 0px',
+            border: 'none',
           },
         }}
       >
         <Box
           sx={{
-            width: '371px',
             display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-            margin: '10px auto',
-            '@media (max-width: 400px)': {
-              width: '308px',
+            width: '100%',
+            justifyContent: 'space-around',
+            '@media (max-width: 1100px)': {
+              flexDirection: 'column',
             },
           }}
         >
-          {showParameters && (
-            <>
+          <Box
+            sx={{
+              width: 'calc(50% - 11px)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+              margin: '0 auto',
+              '@media (max-width: 1100px)': {
+                width: '75%',
+              },
+            }}
+          >
+            <Typography variant='h5'>Growth Potential Estimates</Typography>
+
+            {generateRecommendation(modelResults, thresholds)}
+
+            <PageDivider type={1} />
+
+            <GrowthPotentialGraph
+              // modelResults={{
+              //   dates: [],
+              //   values: modelData ? modelData.soilSats : [],
+              // }}
+              modelResults={modelResults}
+              thresholds={thresholds}
+            />
+
+            {showParameters && (
               <GrowthPotentialSelectors
                 ssK={ssK}
                 setSSK={setSSK}
@@ -304,23 +316,46 @@ export default function GrowthPotentialPage(props: DisplayProps) {
                 atOptimum={atOptimum}
                 setATOptimum={setATOptimum}
               />
-              <GrowthPotentialDivider type={2} />
-            </>
-          )}
+            )}
 
-          <GrowthPotentialTable {...modelResults} />
+            <StyledButton
+              sx={{ width: 'fit-content', margin: '0 auto' }}
+              onClick={toggleShowParameters}
+            >
+              {showParameters ? 'Hide Parameters' : 'Customize Model'}
+            </StyledButton>
+          </Box>
 
-          <StyledButton
-            sx={{ width: 'fit-content', margin: '0 auto' }}
-            onClick={toggleShowParameters}
+          <PageDivider type={3} />
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 'calc(50% - 11px)',
+              height: showParameters ? 748 : 573,
+              position: 'relative',
+              margin: '0 auto',
+            }}
           >
-            {showParameters ? 'Hide Parameters' : 'Customize Model'}
-          </StyledButton>
-        </Box>
+            <Box
+              sx={{
+                width: '100%',
+                height: '500px',
+                backgroundColor: 'rgb(225,225,225)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                fontStyle: 'italic',
+                color: 'rgb(150,150,150)',
+              }}
+            >
+              <div>Placeholder for map</div>
+            </Box>
+          </Box>
 
-        <GrowthPotentialDivider type={3} />
-
-        <Box
+          {/* <Box
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -345,14 +380,9 @@ export default function GrowthPotentialPage(props: DisplayProps) {
           <GrowthPotentialLegend
             title={`Soil Saturation (${depthOptions[depth]}, %)`}
           />
+        </Box> */}
         </Box>
-      </Box>
-    </StyledCard>
-  );
+      </StyledCard>
+    );
+  }
 }
-
-// Email Carl et al
-// Make sure to ask about model assumptions and see if Art wants to check the code for math mistakes
-// Temps from runoff risk, not ACIS
-// p=6.0
-// 4 variables configurable

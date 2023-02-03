@@ -32,6 +32,7 @@ import { AppRouteInfo } from './AppRouteInfo';
 import { getData } from './Scripts/Data';
 import MultiMapPage from './Components/Pages/MultiMapPage';
 import StyledCard from './Components/Pages/StyledCard';
+import SoilSaturationPage from './Components/Pages/SoilSaturation/SoilSaturationPage';
 
 function App() {
   const [showGraphs, setShowGraphs] = useState(false);
@@ -94,6 +95,14 @@ function App() {
       if (info.pageType === 'growthPotential') {
         return (
           <GrowthPotentialPage
+            currentLocation={currentLocation}
+            pastLocations={pastLocations}
+            handleChangeLocations={handleChangeLocations}
+          />
+        );
+      } else if (info.pageType === 'overlayMap') {
+        return (
+          <SoilSaturationPage
             currentLocation={currentLocation}
             pastLocations={pastLocations}
             handleChangeLocations={handleChangeLocations}
