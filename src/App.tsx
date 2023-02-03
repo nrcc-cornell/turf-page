@@ -27,6 +27,7 @@ import {
 } from './Components';
 
 import { AppRouteInfo } from './AppRouteInfo';
+import { usePageTracking } from './Scripts/usePageTracking';
 
 import { getData } from './Scripts/Data';
 import MultiMapPage from './Components/Pages/MultiMapPage';
@@ -62,6 +63,7 @@ function App() {
 
   const goTo = useNavigate();
   const reqPage = useLocation().pathname;
+  usePageTracking();
 
   useEffect(() => {
     if (reqPage === '/') {
