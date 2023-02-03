@@ -48,7 +48,7 @@ const convertTableToBuckets = (dataList: (string | null)[][]) => {
         // Calculate distance from bucket divider
         const hTop = constants.topBucket - topInches;
         const hBottom = constants.topBucket - bottomInches;
-        console.log(hTop, hBottom);
+        // console.log(hTop, hBottom);
 
         // Calculate amount of horizon in each bucket
         let topPart = 0,
@@ -65,21 +65,21 @@ const convertTableToBuckets = (dataList: (string | null)[][]) => {
           bottomPart = Math.abs(hTop - hBottom);
         }
 
-        console.log('---------------------------------------------');
-        console.log(topInches, bottomInches);
+        // console.log('---------------------------------------------');
+        // console.log(topInches, bottomInches);
         // Add weighted portion of variables to summing obj for each bucket
         if (topPart) {
           topPart = topPart / constants.topBucket;
           buckets.top.clayProportion +=
             (parseFloat(horizon[0]) / 100) * topPart;
           buckets.top.bulkDensity += parseFloat(horizon[1]) * topPart;
-          console.log(
-            'Old Top Max, New WV portion: ',
-            buckets.top.wvMax,
-            horizon[2]
-          );
+          // console.log(
+          //   'Old Top Max, New WV portion: ',
+          //   buckets.top.wvMax,
+          //   horizon[2]
+          // );
           buckets.top.wvMax += (parseFloat(horizon[2]) / 100) * topPart;
-          console.log('New Top Max: ', buckets.top.wvMax);
+          // console.log('New Top Max: ', buckets.top.wvMax);
         }
 
         if (bottomPart) {
@@ -87,13 +87,13 @@ const convertTableToBuckets = (dataList: (string | null)[][]) => {
           buckets.bottom.clayProportion +=
             (parseFloat(horizon[0]) / 100) * bottomPart;
           buckets.bottom.bulkDensity += parseFloat(horizon[1]) * bottomPart;
-          console.log(
-            'Old Bottom Max, New WV portion: ',
-            buckets.bottom.wvMax,
-            horizon[2]
-          );
+          // console.log(
+          //   'Old Bottom Max, New WV portion: ',
+          //   buckets.bottom.wvMax,
+          //   horizon[2]
+          // );
           buckets.bottom.wvMax += (parseFloat(horizon[2]) / 100) * bottomPart;
-          console.log('New Bottom Max: ', buckets.bottom.wvMax);
+          // console.log('New Bottom Max: ', buckets.bottom.wvMax);
         }
       }
 
@@ -190,7 +190,7 @@ const adjustWVTop = (
         );
   const etIn = pet * constants.Kc;
   const prcpAdj = prcp <= constants.intercept ? 0 : prcp - constants.intercept;
-  console.log(wvTop, etIn, Ks, prcpAdj, wvTop - etIn * Ks + prcpAdj);
+  // console.log(wvTop, etIn, Ks, prcpAdj, wvTop - etIn * Ks + prcpAdj);
   return wvTop - etIn * Ks + prcpAdj;
 };
 
@@ -252,13 +252,13 @@ const calcSoilSaturationAtDepth = (
   const topMax = constants.topBucket * wvMax;
   const bottomMax = constants.bottomBucket() * wvMax;
 
-  console.log('***********************************************************');
-  console.log('topMax: ', topMax, 'bottomMax: ', bottomMax);
+  // console.log('***********************************************************');
+  // console.log('topMax: ', topMax, 'bottomMax: ', bottomMax);
 
   let wvTop = topMax;
   let wvBottom = bottomMax;
 
-  console.log(`Init wvTop: ${wvTop}, Init wvBottom: ${wvBottom}`);
+  // console.log(`Init wvTop: ${wvTop}, Init wvBottom: ${wvBottom}`);
 
   const results: number[] = [];
   const percentSats: number[] = [];
@@ -277,9 +277,9 @@ const calcSoilSaturationAtDepth = (
 
     if (wvBottom > bottomMax) wvBottom = bottomMax;
     if (wvBottom < 0) wvBottom = 0.01;
-    console.log(
-      `Day ${i}: wvTop result - ${wvTop}, wvBottom result - ${wvBottom} (et - ${etData[i]}, prcp - ${tempsAndPrcp[3]})`
-    );
+    // console.log(
+    //   `Day ${i}: wvTop result - ${wvTop}, wvBottom result - ${wvBottom} (et - ${etData[i]}, prcp - ${tempsAndPrcp[3]})`
+    // );
 
     percentSats.push(Math.round((wvTop / topMax) * 1000) / 10);
     if (numDays - i <= 9) {

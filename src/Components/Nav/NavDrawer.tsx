@@ -82,6 +82,8 @@ export default function TemporaryDrawer() {
   };
 
   const handleGroupSelect = (group: MenuObj) => {
+    console.log(section, group, menuGroups);
+
     if (group.name === 'Home') {
       changePage('/');
     } else if (group.name === 'Growth Potential') {
@@ -154,7 +156,7 @@ export default function TemporaryDrawer() {
 
                 {group.name !== 'Home' && group.name !== 'Growth Potential' && (
                   <Collapse
-                    in={section === group.base}
+                    in={section === group.name}
                     timeout='auto'
                     unmountOnExit
                   >

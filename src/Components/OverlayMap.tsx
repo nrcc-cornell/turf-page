@@ -99,7 +99,7 @@ export default function OverlayMap(props: OverlayMapProps) {
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mapRef = useRef<any | null>(null);
+  const overlayMapRef = useRef<any | null>(null);
 
   const handlePanning = (view: ViewState) => {
     if (view.latitude > 47.53 || view.latitude < bounds.south) {
@@ -156,9 +156,9 @@ export default function OverlayMap(props: OverlayMapProps) {
         token
       );
 
-      if (newLocation && mapRef.current) {
+      if (newLocation && overlayMapRef.current) {
         props.handleChangeLocations('add', newLocation);
-        mapRef.current.flyTo({
+        overlayMapRef.current.flyTo({
           center: newLocation.lngLat,
           speed: 0.8,
           essential: true,
@@ -177,7 +177,7 @@ export default function OverlayMap(props: OverlayMapProps) {
     >
       <Map
         {...viewState}
-        ref={mapRef}
+        ref={overlayMapRef}
         mapStyle={mapStyle(props.imgsrc, viewState)}
         boxZoom={false}
         dragRotate={false}
