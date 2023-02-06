@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 import { Box } from '@mui/material';
 
@@ -7,7 +7,7 @@ import mapboxgl, { PaddingOptions } from 'mapbox-gl';
 const token =
   'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2txYjNjMHYxMGF4NTJ1cWhibHNub3BrdiJ9.1T_U5frbnHaHonvFpHenxQ';
 mapboxgl.accessToken = token;
-import Map, { Popup, ViewState } from 'react-map-gl';
+import Map, { Layer, Popup, Source, ViewState } from 'react-map-gl';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -21,6 +21,10 @@ import { getLocation } from '../Scripts/Data';
 import roundXDigits from '../Scripts/Rounding';
 
 const bounds = { south: 37.09, west: -82.7542 };
+const mainMapStyle =
+  'mapbox://styles/precipadmin/clbqxcrdb000014pjs0qz90h5/draft';
+const zoomedMapStyle = 'mapbox://styles/mapbox/satellite-streets-v11';
+const overlayName = 'soil-sat';
 
 function isTouchDevice() {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -43,13 +47,12 @@ function mapStyle(
   if (viewState && viewState.zoom && viewState.zoom >= 11) {
     return 'mapbox://styles/mapbox/satellite-streets-v11';
   }
-
   const style: mapboxgl.Style = {
     version: 8,
     sources: {
       mapbox: {
         type: 'vector',
-        url: 'mapbox://mapbox.mapbox-streets-v8',
+        url: 'mapbox://styles/precipadmin/clbqxcrdb000014pjs0qz90h5',
       },
     },
     layers: [
@@ -93,24 +96,35 @@ function mapStyle(
 }
 
 export default function OverlayMap(props: OverlayMapProps) {
+  const [mapStyle, setMapStyle] = useState(mainMapStyle);
   const [popup, setPopup] = useState<PopupContent | null>(null);
   const [viewState, setViewState] = useState({
     bounds: [-79.9, 40.45, -71.8, 45.05],
+    longitude: props.currentLocation.lngLat[0],
+    latitude: props.currentLocation.lngLat[1],
+    zoom: 8.5,
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const overlayMapRef = useRef<any | null>(null);
 
+  useEffect(() => {
+    if ('zoom' in viewState && overlayMapRef.current) {
+      const currStyle = overlayMapRef.current.getStyle().name;
+      if (viewState.zoom >= 11 && currStyle === 'Soil Saturation') {
+        setMapStyle(zoomedMapStyle);
+      } else if (viewState.zoom < 11 && currStyle !== 'Soil Saturation') {
+        setMapStyle(mainMapStyle);
+      }
+    }
+  }, [viewState]);
+
   const handlePanning = (view: ViewState) => {
     if (view.latitude > 47.53 || view.latitude < bounds.south) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       view.latitude = viewState.latitude;
     }
 
     if (view.longitude > -66.89 || view.longitude < bounds.west) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       view.longitude = viewState.longitude;
     }
 
@@ -178,7 +192,7 @@ export default function OverlayMap(props: OverlayMapProps) {
       <Map
         {...viewState}
         ref={overlayMapRef}
-        mapStyle={mapStyle(props.imgsrc, viewState)}
+        mapStyle={mapStyle}
         boxZoom={false}
         dragRotate={false}
         touchPitch={false}
@@ -187,6 +201,27 @@ export default function OverlayMap(props: OverlayMapProps) {
         onMove={(evt) => handlePanning(evt.viewState)}
         onClick={handleMapClick}
       >
+        {props.imgsrc && (
+          <Source
+            id={overlayName}
+            type='image'
+            url={props.imgsrc}
+            coordinates={[
+              [-79.95970329697062, 46.54645497007963],
+              [-69.66501014096089, 46.54645497007963],
+              [-69.66501014096083, 39.33905737461734],
+              [-79.95970329697053, 39.3390573746173],
+            ]}
+          >
+            <Layer
+              id={overlayName + '-layer'}
+              source={overlayName}
+              type='raster'
+              paint={{ 'raster-opacity': viewState.zoom >= 11 ? 0 : 0.85 }}
+            />
+          </Source>
+        )}
+
         <Markers
           currentLocation={props.currentLocation}
           pastLocations={props.pastLocations}

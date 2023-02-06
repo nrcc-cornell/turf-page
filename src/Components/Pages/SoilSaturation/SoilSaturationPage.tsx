@@ -231,7 +231,7 @@ export default function SoilSaturationPage(props: DisplayProps) {
         }}
       >
         <MapSlider
-          label='Soil Saturation Overlay Forecast Date'
+          label='Soil Saturation Forecast Date'
           idx={forecastDateIdx}
           marks={modelData.dates.slice(0, 6).map((date, i) => ({
             value: i,
