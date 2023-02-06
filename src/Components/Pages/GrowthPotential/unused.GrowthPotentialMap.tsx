@@ -4,8 +4,7 @@ import { Box } from '@mui/material';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl, { PaddingOptions } from 'mapbox-gl';
-const token =
-  'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2txYjNjMHYxMGF4NTJ1cWhibHNub3BrdiJ9.1T_U5frbnHaHonvFpHenxQ';
+const token = '';
 mapboxgl.accessToken = token;
 import Map, { Popup, ViewState } from 'react-map-gl';
 

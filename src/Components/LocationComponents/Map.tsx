@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';
 const token =
-  'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2txYjNjMHYxMGF4NTJ1cWhibHNub3BrdiJ9.1T_U5frbnHaHonvFpHenxQ';
+  'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2xkdGFiNTVwMXo2cjNycWU1N2syaGw4bSJ9.AGGEeNa70dDIEFL3W6KezQ';
 mapboxgl.accessToken = token;
 import Map, { Popup, ViewState } from 'react-map-gl';
 
