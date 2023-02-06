@@ -5,15 +5,14 @@ import { Box, Typography } from '@mui/material';
 
 import growthPotentialModel from '../../../Scripts/GrowthPotentialModel';
 
-import StyledButton from '../StyledBtn';
 import StyledCard from '../StyledCard';
 // import GrowthPotentialLegend from './GrowthPotentialLegend';
 // import GrowthPotentialSlider from './GrowthPotentialSlider';
 // import GrowthPotentialMap from './GrowthPotentialMap';
-import GrowthPotentialSelectors from './GrowthPotentialSelectors';
 import PageDivider from '../../PageDivider';
 import GrowthPotentialGraph from './GrowthPotentialGraph';
 import Loading from '../../Loading';
+import IrrigationSwitch from './IrrigationSwitch';
 
 import addObservedData from '../../../Scripts/calcPastSoilSaturation';
 
@@ -153,11 +152,7 @@ export default function GrowthPotentialPage(props: DisplayProps) {
   const [coordArrs, setCoordArrs] = useState<RunoffCoords | null>(null);
   const [modelData, setModelData] = useState<GPModelData | null>(null);
   const [modelResults, setModelResults] = useState<ModelOutput | null>(null);
-  const [ssOptimum, setSSOptimum] = useState(75);
-  const [atOptimum, setATOptimum] = useState(67.5);
-  const [ssK, setSSK] = useState(30);
-  const [atK, setATK] = useState(10);
-  const [showParameters, setShowParameters] = useState(false);
+  const [isIrrigation, setIsIrrigation] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -217,17 +212,13 @@ export default function GrowthPotentialPage(props: DisplayProps) {
       const tempValues: number[] = [];
       for (let i = 0; i < 15; i++) {
         const date = dates[i];
-        const ssValue = soilSats[i];
+        const ssValue = isIrrigation ? 0.75 : soilSats[i];
         const atValue = avgTemps[i];
         const gp = growthPotentialModel(
           props.currentLocation.lngLat[1],
           date,
           ssValue,
-          ssOptimum,
-          ssK,
-          atValue,
-          atOptimum,
-          atK
+          atValue
         );
 
         tempValues.push(gp);
@@ -241,15 +232,11 @@ export default function GrowthPotentialPage(props: DisplayProps) {
         }
       }
       setModelResults(modelOutput);
+      setLoading(false);
     } else {
       setModelResults(null);
     }
-    setLoading(false);
-  }, [modelData, ssOptimum, ssK, atOptimum, atK]);
-
-  const toggleShowParameters = () => {
-    setShowParameters(!showParameters);
-  };
+  }, [modelData, isIrrigation]);
 
   if (loading) {
     return <Loading />;
@@ -296,6 +283,11 @@ export default function GrowthPotentialPage(props: DisplayProps) {
 
             <PageDivider type={1} />
 
+            <IrrigationSwitch
+              checked={isIrrigation}
+              setFunction={setIsIrrigation}
+            />
+
             <GrowthPotentialGraph
               // modelResults={{
               //   dates: [],
@@ -304,26 +296,6 @@ export default function GrowthPotentialPage(props: DisplayProps) {
               modelResults={modelResults}
               thresholds={thresholds}
             />
-
-            {showParameters && (
-              <GrowthPotentialSelectors
-                ssK={ssK}
-                setSSK={setSSK}
-                ssOptimum={ssOptimum}
-                setSSOptimum={setSSOptimum}
-                atK={atK}
-                setATK={setATK}
-                atOptimum={atOptimum}
-                setATOptimum={setATOptimum}
-              />
-            )}
-
-            <StyledButton
-              sx={{ width: 'fit-content', margin: '0 auto' }}
-              onClick={toggleShowParameters}
-            >
-              {showParameters ? 'Hide Parameters' : 'Customize Model'}
-            </StyledButton>
           </Box>
 
           <PageDivider type={3} />
@@ -334,7 +306,7 @@ export default function GrowthPotentialPage(props: DisplayProps) {
               alignItems: 'center',
               justifyContent: 'center',
               width: 'calc(50% - 11px)',
-              height: showParameters ? 748 : 573,
+              height: 573,
               position: 'relative',
               margin: '0 auto',
             }}

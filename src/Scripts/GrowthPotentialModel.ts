@@ -58,18 +58,21 @@ const lightToGP = (dateStr: string, latitude: number) => {
   return currDaylength / maxDaylength;
 };
 
+const constants = {
+  ssOptimum: 75,
+  atOptimum: 67.5,
+  ssK: 30,
+  atK: 10,
+};
+
 export default function growthPotentialModel(
   latitude: number,
   date: string,
   ssValue: number,
-  ssOptimum: number,
-  ssK: number,
-  atValue: number,
-  atOptimum: number,
-  atK: number
+  atValue: number
 ): number {
-  const tempGP = tempToGP(atValue, atOptimum, atK);
-  const soilSatGP = soilSatToGP(ssValue, ssOptimum, ssK);
+  const tempGP = tempToGP(atValue, constants.atOptimum, constants.atK);
+  const soilSatGP = soilSatToGP(ssValue, constants.ssOptimum, constants.ssK);
   const lightGP = lightToGP(date, latitude);
 
   return Math.max(0, roundXDigits(tempGP * soilSatGP * lightGP * 100, 0));
