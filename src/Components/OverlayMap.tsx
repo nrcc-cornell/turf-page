@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Box } from '@mui/material';
 
 import 'mapbox-gl/dist/mapbox-gl.css';
-import mapboxgl, { PaddingOptions } from 'mapbox-gl';
+import mapboxgl from 'mapbox-gl';
 const token =
   'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2xkdGFiNTVwMXo2cjNycWU1N2syaGw4bSJ9.AGGEeNa70dDIEFL3W6KezQ';
 mapboxgl.accessToken = token;
@@ -28,71 +28,6 @@ const overlayName = 'soil-sat';
 
 function isTouchDevice() {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-}
-
-type InitViewOrViewState = {
-  longitude?: number;
-  latitude?: number;
-  zoom?: number;
-  bearing?: number;
-  pitch?: number;
-  padding?: PaddingOptions;
-  bounds?: number[];
-};
-
-function mapStyle(
-  imgsrc: string,
-  viewState: InitViewOrViewState
-): mapboxgl.Style | string {
-  if (viewState && viewState.zoom && viewState.zoom >= 11) {
-    return 'mapbox://styles/mapbox/satellite-streets-v11';
-  }
-  const style: mapboxgl.Style = {
-    version: 8,
-    sources: {
-      mapbox: {
-        type: 'vector',
-        url: 'mapbox://styles/precipadmin/clbqxcrdb000014pjs0qz90h5',
-      },
-    },
-    layers: [
-      {
-        id: 'water',
-        source: 'mapbox',
-        'source-layer': 'water',
-        type: 'fill',
-        paint: { 'fill-color': '#2c2c2c' },
-      },
-      {
-        id: 'boundaries',
-        source: 'mapbox',
-        'source-layer': 'admin',
-        type: 'line',
-      },
-    ],
-  };
-
-  if (imgsrc.length) {
-    style['sources']['overlay'] = {
-      type: 'image',
-      url: imgsrc || '',
-      coordinates: [
-        [-79.95970329697062, 46.54645497007963],
-        [-69.66501014096089, 46.54645497007963],
-        [-69.66501014096083, 39.33905737461734],
-        [-79.95970329697053, 39.3390573746173],
-      ],
-    };
-
-    style.layers.push({
-      id: 'overlay',
-      source: 'overlay',
-      type: 'raster',
-      paint: { 'raster-opacity': 0.85 },
-    });
-  }
-
-  return style;
 }
 
 export default function OverlayMap(props: OverlayMapProps) {
