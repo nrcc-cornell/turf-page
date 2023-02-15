@@ -33,10 +33,7 @@ export default function GrowthPotentialGraph(props: {
     datesConverted = props.modelResults.dates.map(
       (date: string) => date.slice(4, 6) + '-' + date.slice(6)
     );
-    const modelValues = props.modelResults.values.map((v, i) => [
-      datesConverted[i],
-      v,
-    ]);
+    const modelValues = props.modelResults.values;
 
     series = [
       // { data: modelValues },
@@ -49,7 +46,7 @@ export default function GrowthPotentialGraph(props: {
       {
         data: nullArray
           .slice(1)
-          .concat([modelValues[todayIdx]])
+          .concat(modelValues[todayIdx])
           .concat(nullArray.slice(1)),
         name: 'Today',
         color: 'rgb(163,41,41)',
@@ -91,7 +88,6 @@ export default function GrowthPotentialGraph(props: {
     },
     series,
     xAxis: {
-      type: 'category',
       categories: datesConverted,
     },
     yAxis: {
