@@ -71,7 +71,11 @@ export default function NavBar({ group }: NavBarProp) {
     }
   };
 
-  if (group.name === 'Home' || group.name === 'Growth Potential') {
+  if (
+    group.name === 'Home' ||
+    group.name === 'Growth Potential' ||
+    group.name === 'Runoff Risk'
+  ) {
     return (
       <Box>
         <Button

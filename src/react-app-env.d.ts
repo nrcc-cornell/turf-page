@@ -28,6 +28,7 @@ type DataType =
   | DataTable
   | DataText
   | DataGrowthPotential
+  | DataRunoffRisk
   | DataOverlayMap;
 
 type DataOverlayMap = {
@@ -37,6 +38,11 @@ type DataOverlayMap = {
 
 type DataGrowthPotential = {
   pageType: 'growthPotential';
+  maps: MapPageProps[];
+};
+
+type DataRunoffRisk = {
+  pageType: 'runoff-risk';
   maps: MapPageProps[];
 };
 

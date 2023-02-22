@@ -15,7 +15,7 @@ export default function Nav() {
           backgroundColor: 'rgb(179,27,27)',
           display: 'flex',
           height: 40,
-          '@media (max-width: 640px)': {
+          '@media (max-width: 700px)': {
             display: 'none',
           },
         }}
@@ -51,7 +51,7 @@ export default function Nav() {
           position: 'absolute',
           top: 83,
           left: 10,
-          '@media (min-width: 641px)': {
+          '@media (min-width: 701px)': {
             display: 'none',
           },
         }}

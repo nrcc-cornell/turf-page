@@ -663,6 +663,19 @@ const routeInfo: RouteInfo[] = [
       ],
     },
   },
+  {
+    path: '/runoff-risk',
+    props: {
+      pageType: 'runoff-risk',
+      maps: [
+        {
+          url: '',
+          alt: '',
+          description: [],
+        },
+      ],
+    },
+  },
 ];
 
 const frontPageMaps: HomeMap[] = routeInfo

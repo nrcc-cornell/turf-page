@@ -82,11 +82,12 @@ export default function TemporaryDrawer() {
   };
 
   const handleGroupSelect = (group: MenuObj) => {
-    console.log(section, group, menuGroups);
-
     if (group.name === 'Home') {
       changePage('/');
-    } else if (group.name === 'Growth Potential') {
+    } else if (
+      group.name === 'Growth Potential' ||
+      group.name === 'Runoff Risk'
+    ) {
       changePage(group.items[0].pathname);
     } else {
       setSection(section === group.name ? '' : group.name);

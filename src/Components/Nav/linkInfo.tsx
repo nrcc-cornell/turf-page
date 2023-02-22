@@ -7,6 +7,7 @@ import {
   Link,
   Water,
   Expand,
+  Terrain,
 } from '@mui/icons-material';
 
 const menuGroups: MenuObj[] = [
@@ -95,6 +96,12 @@ const menuGroups: MenuObj[] = [
     name: 'Growth Potential',
     icon: <Expand />,
     items: [{ pathname: '/growth-potential', label: '' }],
+  },
+  {
+    base: 'runoff-risk',
+    name: 'Runoff Risk',
+    icon: <Terrain />,
+    items: [{ pathname: '/runoff-risk', label: '' }],
   },
   {
     base: 'x',
