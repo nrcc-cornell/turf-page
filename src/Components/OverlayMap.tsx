@@ -19,12 +19,12 @@ import Markers from './LocationComponents/Markers';
 
 import { getLocation } from '../Scripts/Data';
 import roundXDigits from '../Scripts/Rounding';
+import recolorImage from '../Scripts/recolorCanvas';
 
 const bounds = { south: 37.09, west: -82.7542 };
 const mainMapStyle =
   'mapbox://styles/precipadmin/clbqxcrdb000014pjs0qz90h5/draft';
 const zoomedMapStyle = 'mapbox://styles/mapbox/satellite-streets-v11';
-const overlayName = 'soil-sat';
 
 function isTouchDevice() {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -53,6 +53,16 @@ export default function OverlayMap(props: OverlayMapProps) {
       }
     }
   }, [viewState]);
+
+  useEffect(() => {
+    if (props.src && props.useCanvas) {
+      const img = new Image();
+      img.onload = function () {
+        recolorImage(img);
+      };
+      img.src = props.src;
+    }
+  }, [props.useCanvas, props.src]);
 
   const handlePanning = (view: ViewState) => {
     if (view.latitude > 47.53 || view.latitude < bounds.south) {
@@ -136,11 +146,11 @@ export default function OverlayMap(props: OverlayMapProps) {
         onMove={(evt) => handlePanning(evt.viewState)}
         onClick={handleMapClick}
       >
-        {props.imgsrc && (
+        {props.src && !props.useCanvas && (
           <Source
-            id={overlayName}
+            id='overlay'
             type='image'
-            url={props.imgsrc}
+            url={props.src}
             coordinates={[
               [-79.95970329697062, 46.54645497007963],
               [-69.66501014096089, 46.54645497007963],
@@ -149,8 +159,30 @@ export default function OverlayMap(props: OverlayMapProps) {
             ]}
           >
             <Layer
-              id={overlayName + '-layer'}
-              source={overlayName}
+              id='overlay-layer'
+              source='overlay'
+              type='raster'
+              paint={{ 'raster-opacity': viewState.zoom >= 11 ? 0 : 0.85 }}
+            />
+          </Source>
+        )}
+
+        <canvas id='canvasId'></canvas>
+        {props.src && props.useCanvas && (
+          <Source
+            id='canvasSource'
+            type='canvas'
+            canvas='canvasId'
+            coordinates={[
+              [-79.95970329697062, 46.54645497007963],
+              [-69.66501014096089, 46.54645497007963],
+              [-69.66501014096083, 39.33905737461734],
+              [-79.95970329697053, 39.3390573746173],
+            ]}
+          >
+            <Layer
+              id='overlay-layer'
+              source='canvasSource'
               type='raster'
               paint={{ 'raster-opacity': viewState.zoom >= 11 ? 0 : 0.85 }}
             />

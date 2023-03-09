@@ -137,7 +137,7 @@ const constructValueCells = (data: StrDateValue[][], rowNames: string[]) => {
   return res;
 };
 
-const constructDates = (data: StrDateValue[] | DateValue[]) => {
+const constructDates = (data: StrDateValue[]) => {
   return data.map((arr, i) => {
     let date = '';
     if (typeof arr[0] === 'string') {
@@ -168,6 +168,104 @@ const constructDates = (data: StrDateValue[] | DateValue[]) => {
   });
 };
 
+const obsForeLine = (arr: StrDateValue[], numRows: number) => {
+  const lineSX = (isLeft: boolean) => ({
+    width: '20px',
+    height: '2px',
+    backgroundColor: 'rgb(200,200,200)',
+    margin: '0px 6px',
+    position: 'absolute',
+    top: 8,
+    zIndex: 1,
+    [isLeft ? 'right' : 'left']: isLeft ? 55 : 59,
+  });
+
+  const arrowSX = {
+    content: '""',
+    height: 6,
+    width: 6,
+    position: 'absolute',
+    top: -3,
+    transform: 'rotate(45deg)',
+  };
+
+  const beforeSX = {
+    '&::before': {
+      ...arrowSX,
+      borderLeft: '2px solid rgb(200,200,200)',
+      borderBottom: '2px solid rgb(200,200,200)',
+      left: 0,
+    },
+  };
+
+  const afterSX = {
+    '&::after': {
+      ...arrowSX,
+      borderRight: '2px solid rgb(200,200,200)',
+      borderTop: '2px solid rgb(200,200,200)',
+      right: 0,
+    },
+  };
+
+  const today = format(new Date(), 'MM-dd-yyyy');
+  let todayIdx = arr.findIndex((vals) => vals[0] === today);
+
+  if (todayIdx === -1) {
+    todayIdx = arr.length - 1;
+  }
+
+  const obsForeRow = [];
+  for (let i = 0; i <= arr.length; i++) {
+    const isObserved = i === todayIdx + 1;
+    const isForecasted = i === todayIdx + 2;
+
+    let text = '';
+    const sxExtras: { [key: string]: string } = {};
+    if (isObserved) {
+      text = 'Observed';
+      sxExtras.paddingRight = '4px';
+      sxExtras.textAlign = 'right';
+      sxExtras.zIndex = '1';
+    } else if (isForecasted) {
+      text = 'Forecast';
+      sxExtras.paddingLeft = '12px';
+      sxExtras.textAlign = 'left';
+    }
+
+    obsForeRow.push(
+      <Box
+        key={uuid()}
+        sx={{
+          border: 'none',
+          backgroundColor: 'white',
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          ...sxExtras,
+        }}
+      >
+        {isObserved && <Box sx={{ ...lineSX(true), ...beforeSX }} />}
+        <Typography variant='underChart'>{text}</Typography>
+        {isObserved && (
+          <Box
+            sx={{
+              position: 'absolute',
+              backgroundColor: 'rgb(230,230,230)',
+              height: numRows * 25 + 55 + numRows + 'px',
+              width: '3px',
+              top: 0,
+              right: -1,
+              zIndex: 1,
+            }}
+          />
+        )}
+        {isForecasted && <Box sx={{ ...lineSX(false), ...afterSX }} />}
+      </Box>
+    );
+  }
+  return obsForeRow;
+};
+
 function renderChart(
   data: StrDateValue[][],
   rows: string[],
@@ -186,7 +284,7 @@ function renderChart(
   colorizer?: (val: number, thresholds: ThresholdObj) => string
 ): JSX.Element {
   let cells: JSX.Element[][] = [],
-    sample: StrDateValue[] | DateValue[] = [],
+    sample: StrDateValue[] = [],
     precipSum,
     sDate;
   if (
@@ -217,148 +315,13 @@ function renderChart(
   }
   const dates = constructDates(sample);
 
-  // Handles edge case of approaching the end of the season, 11/30
-  let shift = 0;
-  if (new Date().getMonth() === 10 && new Date().getDate() > 25)
-    shift = new Date().getDate() - 25;
-
-  const lineSX = {
-    width: '40px',
-    height: '2px',
-    backgroundColor: 'rgb(200,200,200)',
-    margin: '0px 6px',
-    position: 'relative',
-    '@media (max-width: 942px)': {
-      width: shift >= 4 ? '12px' : '40px',
-    },
-    '@media (max-width: 636px)': {
-      width: shift >= 3 ? '12px' : '40px',
-    },
-    '@media (max-width: 570px)': {
-      width: shift >= 2 ? '12px' : '40px',
-    },
-  };
-
-  const arrowSX = {
-    content: '""',
-    height: 6,
-    width: 6,
-    position: 'absolute',
-    top: -3,
-    transform: 'rotate(45deg)',
-  };
-
-  const beforeSX = {
-    '&::before': {
-      ...arrowSX,
-      borderLeft: '2px solid rgb(200,200,200)',
-      borderBottom: '2px solid rgb(200,200,200)',
-      left: 0,
-    },
-  };
-
-  const afterSX = {
-    '&::after': {
-      ...arrowSX,
-      borderRight: '2px solid rgb(200,200,200)',
-      borderTop: '2px solid rgb(200,200,200)',
-      right: 0,
-    },
-  };
-
-  let smallMLeft, mLeft;
-  const precipShift = 0;
-  if (sample.length === 9) {
-    const numCells = (todayFromAcis ? 4 : 3) + shift;
-    mLeft = `calc((100% - 80px) * (${numCells - precipShift}/9) - 34px)`;
-    smallMLeft = `calc((100% - 66px) * (${numCells - precipShift}/9) - 49px)`;
-  } else if (sample.length === 7) {
-    const numCells = (todayFromAcis ? 4 : 3) + shift;
-    mLeft = `calc((100% - 80px) * (${numCells - precipShift}/7) - 34px)`;
-    smallMLeft = `calc((100% - 66px) * (${numCells - precipShift}/7) - 49px)`;
-  } else {
-    const numCells = (todayFromAcis ? 5 : 4) + shift;
-    mLeft = `calc((100% - 80px) * (${numCells - precipShift}/10) - 34px)`;
-    smallMLeft = `calc((100% - 66px) * (${numCells - precipShift}/10) - 47px)`;
-  }
-
   return (
     <>
       <Box
         sx={{
-          display: 'flex',
-          position: 'relative',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginLeft: mLeft,
-          marginTop: '8px',
-          width: 225,
-          top: 2,
-          '@media (max-width: 380px)': {
-            marginLeft: smallMLeft,
-          },
-        }}
-      >
-        <Box sx={{ ...lineSX, ...beforeSX }}></Box>
-        <Typography variant='underChart' sx={{ marginRight: '8px' }}>
-          Observed
-        </Typography>
-        <Box
-          sx={{
-            backgroundColor: 'rgb(225,225,225)',
-            width: '3px',
-            height: `${cells.length * 25 + 50 + cells.length}px`,
-            position: 'absolute',
-            top: -3,
-            left: '114px',
-            zIndex: 1,
-          }}
-        ></Box>
-        <Typography
-          variant='underChart'
-          sx={{
-            color: shift === 5 ? 'white' : 'rgb(180,180,180)',
-            '@media (max-width: 588px)': {
-              color: shift >= 4 ? 'white' : 'rgb(180,180,180)',
-            },
-            '@media (max-width: 384px)': {
-              color: shift >= 3 ? 'white' : 'rgb(180,180,180)',
-            },
-          }}
-        >
-          Forecast
-        </Typography>
-        <Box
-          sx={{
-            ...lineSX,
-            ...afterSX,
-            '@media (max-width: 814px)': {
-              backgroundColor: shift >= 4 ? 'white' : 'rgb(200,200,200)',
-              '&::after': {
-                borderColor: shift >= 4 ? 'white' : 'rgb(200,200,200)',
-              },
-            },
-            '@media (max-width: 484px)': {
-              backgroundColor: shift >= 3 ? 'white' : 'rgb(200,200,200)',
-              '&::after': {
-                borderColor: shift >= 3 ? 'white' : 'rgb(200,200,200)',
-              },
-            },
-            '@media (max-width: 400px)': {
-              backgroundColor: shift >= 2 ? 'white' : 'rgb(200,200,200)',
-              '&::after': {
-                borderColor: shift >= 2 ? 'white' : 'rgb(200,200,200)',
-              },
-            },
-          }}
-        ></Box>
-      </Box>
-
-      <Box
-        sx={{
           display: 'grid',
           gridTemplateColumns: `81px repeat(${sample.length}, calc((100% - 80px) / ${sample.length}))`,
-          gridTemplateRows: `38px repeat(${cells.length}, 25px)`,
+          gridTemplateRows: `16px 38px repeat(${cells.length}, 25px)`,
           rowGap: '1px',
           backgroundColor: 'rgb(240,240,240)',
           justifyItems: 'center',
@@ -371,6 +334,8 @@ function renderChart(
           },
         }}
       >
+        {obsForeLine(sample, cells.length)}
+
         <Box sx={{ ...HeaderSX, padding: '5px 12px' }}>As of 8am on</Box>
         {dates}
 

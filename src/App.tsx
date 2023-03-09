@@ -34,6 +34,7 @@ import { getData } from './Scripts/Data';
 import MultiMapPage from './Components/Pages/MultiMapPage';
 import StyledCard from './Components/Pages/StyledCard';
 import SoilSaturationPage from './Components/Pages/SoilSaturation/SoilSaturationPage';
+import RunoffRiskPage from './Components/Pages/RunoffRisk/RunoffRiskPage';
 
 function App() {
   const [showGraphs, setShowGraphs] = useState(false);
@@ -103,7 +104,13 @@ function App() {
           />
         );
       } else if (info.pageType === 'runoff-risk') {
-        return <div>Runoff Risk</div>;
+        return (
+          <RunoffRiskPage
+            currentLocation={currentLocation}
+            pastLocations={pastLocations}
+            handleChangeLocations={handleChangeLocations}
+          />
+        );
       } else if (info.pageType === 'overlayMap') {
         return (
           <SoilSaturationPage

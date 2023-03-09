@@ -597,28 +597,50 @@ const sliceLastSeason = (lastSeasonData: GridDatum[]) => {
   };
 };
 
+const findMatch = (arr1: StrDateValue[], arr2: StrDateValue[]) => {
+  let start = -1;
+  let index = -1;
+  while (start === -1) {
+    index++;
+    if (index < arr1.length) {
+      const dayMonth = arr1[index][0].slice(0, 5);
+      start = arr2.findIndex((arr) => arr[0].slice(0, 5) === dayMonth);
+    } else {
+      break;
+    }
+  }
+
+  return { idxArr1: start === -1 ? -1 : index, idxArr2: start };
+};
+
 const calcDeparture = (
   current: StrDateValue[],
   normal: StrDateValue[]
 ): StrDateValue[] => {
-  const dayMonth = current[0][0].slice(0, 5);
-  const start = normal.findIndex((arr) => arr[0] === dayMonth);
-  const relevantDays = normal.slice(start, start + 9);
+  const { idxArr1, idxArr2 } = findMatch(current, normal);
+  if (idxArr2 === -1) return [];
 
-  return current.map((day, i) => {
+  const relevantDays = normal.slice(idxArr2, idxArr2 + (9 - idxArr1));
+
+  return current.slice(idxArr1).map((day, i) => {
     return [day[0], day[1] - relevantDays[i][1]];
   });
 };
 
 const calcGddDiffs = (current: StrDateValue[], past: StrDateValue[]) => {
-  const dayMonth = current[0][0].slice(0, 5);
-  const start = past.findIndex((arr) => arr[0].slice(0, 5) === dayMonth);
-  const relevantDays = past.slice(start, start + 9);
-
   const tableDiffGdds: StrDateValue[] = [],
     tableDiffDays: StrDateValue[] = [];
+  const { idxArr1, idxArr2 } = findMatch(current, past);
 
-  current.forEach((day, i) => {
+  if (idxArr2 === -1)
+    return {
+      tableDiffGdds,
+      tableDiffDays,
+    };
+
+  const relevantDays = past.slice(idxArr2, idxArr2 + (9 - idxArr1));
+
+  current.slice(idxArr1).forEach((day, i) => {
     let nDay = relevantDays[i][1];
     const cDay = day[1];
 
@@ -634,7 +656,7 @@ const calcGddDiffs = (current: StrDateValue[], past: StrDateValue[]) => {
         break;
       }
 
-      const dayIdx = start + i + counter;
+      const dayIdx = idxArr2 + i + counter;
       if (dayIdx < 0 || dayIdx >= past.length) {
         break;
       }
@@ -709,7 +731,10 @@ const getGraphPagesData = async (
       normal: normalPrecip,
     },
     temp: {
-      table: [tableTemp, departureTemp],
+      table: [
+        tableTemp.slice(tableTemp.length - departureTemp.length),
+        departureTemp,
+      ],
     },
     todayFromAcis: hasToday,
   };

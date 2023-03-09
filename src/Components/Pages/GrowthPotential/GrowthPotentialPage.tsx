@@ -183,12 +183,6 @@ export default function GrowthPotentialPage(props: DisplayProps) {
             today.getFullYear(),
             props.currentLocation.lngLat
           );
-          console.log(
-            newModelData?.dates.map((date, i) => [
-              date,
-              newModelData.soilSats[i],
-            ])
-          );
           setModelData(newModelData);
         } else {
           setModelData(null);

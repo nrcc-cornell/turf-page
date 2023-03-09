@@ -174,7 +174,7 @@ export default function GrowthPotentialMap(props: OverlayMapProps) {
         border: '1px solid black',
       }}
     >
-      <Map
+      {/* <Map
         {...viewState}
         ref={mapRef}
         mapStyle={mapStyle(props.imgsrc, viewState)}
@@ -233,7 +233,7 @@ export default function GrowthPotentialMap(props: OverlayMapProps) {
             )}
           </Popup>
         )}
-      </Map>
+      </Map> */}
     </Box>
   );
 }

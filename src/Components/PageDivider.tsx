@@ -3,6 +3,7 @@ import React from 'react';
 
 type PageDivider = {
   type: number;
+  sx?: { [key:string]: string }
 };
 
 export default function PageDivider(props: PageDivider) {
@@ -44,5 +45,5 @@ export default function PageDivider(props: PageDivider) {
       break;
   }
 
-  return <Box sx={styles} />;
+  return <Box sx={{...styles, ...props.sx}} />;
 }

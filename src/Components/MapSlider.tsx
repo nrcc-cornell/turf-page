@@ -1,9 +1,9 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { ReactElement, Dispatch, SetStateAction } from 'react';
 import { Box, Slider, Typography } from '@mui/material';
 
 type Mark = {
   value: number;
-  label: string;
+  label: ReactElement<any,any>;
 };
 
 type MapSlider = {
@@ -18,9 +18,11 @@ export default function MapSlider(props: MapSlider) {
     <Box
       sx={{
         height: '100px',
-        width: '100%',
+        width: '95%',
+        maxWidth: '600px',
         boxSizing: 'border-box',
         paddingTop: '10px',
+        marginBottom: '10px',
       }}
     >
       <Typography
