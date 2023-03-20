@@ -26,23 +26,7 @@ export default function MapThumb(props: MapThumbProps) {
         }
       }}
     >
-      {(props.alt.includes('Seedhead') || props.alt.includes('Dandelion')) ?
-        <CardMedia
-          component={Box}
-          sx={{
-            backgroundColor: 'rgb(240,240,240)',
-            fontSize: '10px',
-            fontStyle: 'italic',
-            height: 'calc(100% - 26px)',
-            minHeight: 70,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            textAlign: 'center'
-          }}
-        ><span>Temporarily Unavailable</span></CardMedia>
-        :
-        (error ? 
+      {error ? 
           <CardMedia
             component={Box}
             sx={{
@@ -63,7 +47,7 @@ export default function MapThumb(props: MapThumbProps) {
             image={props.thumbUrl}
             alt={props.alt}
             onError={() => setError(true)}
-          />)
+          />
       }
       
     
