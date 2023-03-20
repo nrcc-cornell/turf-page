@@ -39,11 +39,13 @@ export type VariableOptions = {
 export const variableOptions = {
 'Runoff Risk (24-hour)': {
   overlay: 'RRAF_dailyRiskPercWinter',
+  // overlay: 'turf_24hr',
   legend: runoffRiskLegendInfo,
   useCanvas: true
 },
 'Runoff Risk (72-hour)': {
   overlay: 'RRAF_dailyRiskPercWinter72Hour',
+  // overlay: 'turf_72hr',
   legend: runoffRiskLegendInfo,
   useCanvas: true
 },

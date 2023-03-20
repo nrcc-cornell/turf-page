@@ -2,7 +2,7 @@ const constructThumbs = (name: string, title: string): ThumbUrls[] => {
   const thumbs: ThumbUrls[] = [];
   for (let i = 0; i < 6; i++) {
     thumbs.push({
-      thumbUrl: `https://turf.eas.cornell.edu/maps/f${i + 1}_${name}_thumb.png`,
+      thumbUrl: `https://turf.eas.cornell.edu/maps/f${i + 1}_${name}_map.png`,
       fullSizeUrl: `https://turf.eas.cornell.edu/maps/f${
         i + 1
       }_${name}_map.png`,

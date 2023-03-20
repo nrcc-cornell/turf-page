@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { format, addDays } from 'date-fns';
 
-import { Box, Typography, CircularProgress, CardMedia } from '@mui/material';
+import { Box, Typography, CircularProgress } from '@mui/material';
 import MapThumb from './MapThumb';
 
 const BoxSX = {
@@ -24,9 +24,7 @@ export default function WeekMaps(props: WeekMapsProps) {
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState(new Date());
 
-  const tempSkip = ['Amine Maps', 'Ester Maps', 'Proxy Maps', 'Embark Maps'];
   useEffect(() => {
-    if (tempSkip.includes(props.title)) setLoading(false);
     (async () => {
       return fetch(`maps/f1_${props.thumbs[0].name}_thumb.png`)
         .then((res) => {
@@ -178,40 +176,7 @@ export default function WeekMaps(props: WeekMapsProps) {
           <CircularProgress color='inherit' />
         </Box>
 
-        {tempSkip.includes(props.title) ? (
-          <Box
-            sx={{
-              display: loading ? 'none' : 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: 'calc(100% - 65px)',
-              maxWidth: 557.34,
-              '@media (max-width: 720px)': {
-                width: '100%',
-              },
-            }}
-          >
-            <CardMedia
-              component={Box}
-              sx={{
-                backgroundColor: 'rgb(240,240,240)',
-                border: '1px solid rgb(200,200,200)',
-                fontSize: '10px',
-                fontStyle: 'italic',
-                height: '80%',
-                minHeight: '100px',
-                width: '80%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                textAlign: 'center',
-              }}
-            >
-              <span>Temporarily Unavailable</span>
-            </CardMedia>
-          </Box>
-        ) : (
-          <Box
+        <Box
             component='img'
             onLoad={loaded}
             src={props.thumbs[bigMap].fullSizeUrl}
@@ -226,7 +191,6 @@ export default function WeekMaps(props: WeekMapsProps) {
               },
             }}
           />
-        )}
       </Box>
     </Box>
   );
