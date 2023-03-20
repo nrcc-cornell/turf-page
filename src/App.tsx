@@ -92,6 +92,8 @@ function App() {
         };
       }
 
+      console.log(toolData);
+
       return (
         <StyledCard variant='outlined' sx={sx}>
           {(info.pageType === 'graph' || info.pageType === 'table') && (

@@ -160,9 +160,11 @@ function renderChart(data: StrDateValue[][] | StrDateValue[] | RiskTool | HSTool
   let cells: JSX.Element[][] = [], sample: StrDateValue[] | DateValue[] = [], precipSum, sDate;
   if (rows instanceof Array && data instanceof Array && data[0][0] instanceof Array) {
     sample = data[0] as StrDateValue[];
+    
     cells = constructValueCells(data as StrDateValue[][], rows as string[]);
     if (sample.length === 8) {
       precipSum = sample[7];
+
       sample = sample.slice(0,7);
       cells = [cells[0].slice(0,8)];
       if (precipSum instanceof Array) {

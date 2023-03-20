@@ -61,7 +61,7 @@ export default class ArrSummer {
   }
 
   unshiftPop(val: number) {
-    if (val === -999) return false;
+    if (val === -999) val = 0;
     
     if (this.length < 7) {
       this.add(val);

@@ -419,11 +419,12 @@ const getTableData = async (
       ((!hasToday && isYesterday(dateObj)) ||
         (hasToday && isSameDay(dateObj, today))) &&
       typeof precipTotal === 'number'
-    )
+    ) {
       sevenDay = [
         format(subDays(dateObj, 1), 'MM-dd-yyyy'),
         roundXDigits(precipTotal, 2),
       ];
+    }
 
     const tempTotal = tempArr.unshiftPop(dayArr[4]);
     if (typeof tempTotal === 'number') {
@@ -611,6 +612,8 @@ const calcDeparture = (
 };
 
 const calcGddDiffs = (current: StrDateValue[], past: StrDateValue[]) => {
+  console.log(current, past);
+  
   const dayMonth = current[0][0].slice(0, 5);
   const start = past.findIndex((arr) => arr[0].slice(0, 5) === dayMonth);
   const relevantDays = past.slice(start, start + 9);

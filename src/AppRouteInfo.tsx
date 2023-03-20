@@ -394,7 +394,7 @@ const routeInfo: RouteInfo[] = [
         rowNames: ['Last Year', 'Normal']
       },
       maps: [{
-        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdifg.png',
+        url: 'http://turf.eas.cornell.edu/maps/gdds_last_year_map.png',
         alt: 'Difference in base 50°F GGD accumulation over last year',
         title: 'Difference from Last Year',
         description: [
@@ -402,7 +402,7 @@ const routeInfo: RouteInfo[] = [
           'In terms of GDD, the comparisons are able to answer the question, "How different is the GDD accumulation in the current growing season from the same day in the previous season ?" A mapped value of -25 indicates that the GDD accummulation in the current year is 25 GGD less than was accumulated in the previous year. For example, if 48 GDD have accumulated by April 7 this year, a value of -25 would indicate that 73 GDD had already been accumulated by April 7 of the previous year.'
         ]
       },{
-        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdptg.png',
+        url: 'http://turf.eas.cornell.edu/maps/gdds_normal_map.png',
         alt: 'Base 50°F GGD accumulation difference from "normal"',
         title: 'Difference from "Normal"',
         description: [
@@ -418,7 +418,7 @@ const routeInfo: RouteInfo[] = [
       pageType: 'text',
       data: 'gdd50DiffDays',
       maps: [{
-        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdifd.png',
+        url: 'http://turf.eas.cornell.edu/maps/days_last_year_map.png',
         alt: 'Difference in base 50°F GDD accumulation over last year',
         title: 'Difference from Last Year',
         description: [
@@ -426,7 +426,7 @@ const routeInfo: RouteInfo[] = [
           `In terms of days, the GDD comparisons are able to answer the question, "When during the previous growing season did the current 50°F GDD accumulation occur ?" A mapped value of -7 indicates that the current season is 7 days behind the previous year's accumulation. If 58 GDD were accumulated on April 7, 2017, a value of -7 would indicate that 58 GDD had already been accumulated on April 1, 2016.`
         ]
       },{
-        url: 'https://www.nrcc.cornell.edu/dyn_images/grass/sgdptd.png',
+        url: 'http://turf.eas.cornell.edu/maps/days_normal_map.png',
         alt: 'Base 50°F GDD accumulation difference from "normal"',
         title: 'Difference from "Normal"',
         description: [
