@@ -6,6 +6,7 @@ import {
   useNavigate,
   useLocation,
 } from 'react-router-dom';
+import { format } from 'date-fns';
 
 import { Box } from '@mui/material';
 
@@ -92,7 +93,11 @@ function App() {
         };
       }
 
-      console.log(toolData);
+      let todayIdx = 0;
+      if (info.pageType === 'text') {
+        const today = format(new Date(), 'MM-dd-yyyy');
+        todayIdx = toolData[info.data].table[0].findIndex(arr => arr[0] === today);
+      }
 
       return (
         <StyledCard variant='outlined' sx={sx}>
@@ -108,10 +113,10 @@ function App() {
           {info.pageType === 'text' && (
             <ConditionalText
               fromLast={
-                toolData[info.data].table[0][toolData.todayFromAcis ? 3 : 4][1]
+                toolData[info.data].table[0][todayIdx][1]
               }
               fromNormal={
-                toolData[info.data].table[1][toolData.todayFromAcis ? 3 : 4][1]
+                toolData[info.data].table[1][todayIdx][1]
               }
             />
           )}

@@ -612,14 +612,18 @@ const calcDeparture = (
 };
 
 const calcGddDiffs = (current: StrDateValue[], past: StrDateValue[]) => {
-  console.log(current, past);
+  const seasonStartIdx = past.findIndex((arr) => arr[0].slice(0, 5) === '03-15');
+  const from315 = past.slice(seasonStartIdx);
   
   const dayMonth = current[0][0].slice(0, 5);
-  const start = past.findIndex((arr) => arr[0].slice(0, 5) === dayMonth);
-  const relevantDays = past.slice(start, start + 9);
+  const start = from315.findIndex((arr) => arr[0].slice(0, 5) === dayMonth);
+  const relevantDays = from315.slice(start, start + 9);
 
-  const tableDiffGdds: StrDateValue[] = [],
-    tableDiffDays: StrDateValue[] = [];
+  const tableDiffGdds: StrDateValue[] = [];
+  const tableDiffDays: StrDateValue[] = [];
+
+  console.log(current);
+  console.log(relevantDays);
 
   current.forEach((day, i) => {
     let nDay = relevantDays[i][1];
@@ -638,10 +642,13 @@ const calcGddDiffs = (current: StrDateValue[], past: StrDateValue[]) => {
       }
 
       const dayIdx = start + i + counter;
-      if (dayIdx < 0 || dayIdx >= past.length) {
+      if (dayIdx < 0) {
+        counter++;
+        break;
+      } else if (dayIdx >= from315.length) {
         break;
       }
-      nDay = past[dayIdx][1];
+      nDay = from315[dayIdx][1];
     }
 
     tableDiffDays.push([day[0], counter]);
@@ -676,8 +683,8 @@ const getGraphPagesData = async (
   ]);
 
   const { normal32, normal50, normalPrecip, normalTemp, iOfSeasonStart } =
-    calcNormals(pastSeasonsData, beginLastSeason);
-
+  calcNormals(pastSeasonsData, beginLastSeason);
+  
   const { last32, last50, lastPrecip } = sliceLastSeason(
     pastSeasonsData.slice(iOfSeasonStart)
   );

@@ -167,6 +167,8 @@ export default function WeekMaps(props: WeekMapsProps) {
               width: 'calc(100% - 65px)',
               maxWidth: 557.34,
               objectFit: 'contain',
+              padding: '2px',
+              boxSizing: 'border-box',
               '@media (max-width: 720px)': {
                 width: '100%'
               }
