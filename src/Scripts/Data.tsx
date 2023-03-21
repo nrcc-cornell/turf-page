@@ -419,11 +419,12 @@ const getTableData = async (
       ((!hasToday && isYesterday(dateObj)) ||
         (hasToday && isSameDay(dateObj, today))) &&
       typeof precipTotal === 'number'
-    )
+    ) {
       sevenDay = [
         format(subDays(dateObj, 1), 'MM-dd-yyyy'),
         roundXDigits(precipTotal, 2),
       ];
+    }
 
     const tempTotal = tempArr.unshiftPop(dayArr[4]);
     if (typeof tempTotal === 'number') {
@@ -628,17 +629,20 @@ const calcDeparture = (
 };
 
 const calcGddDiffs = (current: StrDateValue[], past: StrDateValue[]) => {
-  const tableDiffGdds: StrDateValue[] = [],
-    tableDiffDays: StrDateValue[] = [];
-  const { idxArr1, idxArr2 } = findMatch(current, past);
+  const seasonStartIdx = past.findIndex((arr) => arr[0].slice(0, 5) === '03-15');
+  const from315 = past.slice(seasonStartIdx);
+  
+  const { idxArr1, idxArr2 } = findMatch(current, from315);
+  const relevantDays = from315.slice(idxArr2, idxArr2 + (9 - idxArr1));
+
+  const tableDiffGdds: StrDateValue[] = [];
+  const tableDiffDays: StrDateValue[] = [];
 
   if (idxArr2 === -1)
     return {
       tableDiffGdds,
       tableDiffDays,
     };
-
-  const relevantDays = past.slice(idxArr2, idxArr2 + (9 - idxArr1));
 
   current.slice(idxArr1).forEach((day, i) => {
     let nDay = relevantDays[i][1];
@@ -657,10 +661,13 @@ const calcGddDiffs = (current: StrDateValue[], past: StrDateValue[]) => {
       }
 
       const dayIdx = idxArr2 + i + counter;
-      if (dayIdx < 0 || dayIdx >= past.length) {
+      if (dayIdx < 0) {
+        counter++;
+        break;
+      } else if (dayIdx >= from315.length) {
         break;
       }
-      nDay = past[dayIdx][1];
+      nDay = from315[dayIdx][1];
     }
 
     tableDiffDays.push([day[0], counter]);
@@ -695,8 +702,8 @@ const getGraphPagesData = async (
   ]);
 
   const { normal32, normal50, normalPrecip, normalTemp, iOfSeasonStart } =
-    calcNormals(pastSeasonsData, beginLastSeason);
-
+  calcNormals(pastSeasonsData, beginLastSeason);
+  
   const { last32, last50, lastPrecip } = sliceLastSeason(
     pastSeasonsData.slice(iOfSeasonStart)
   );

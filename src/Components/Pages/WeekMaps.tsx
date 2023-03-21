@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { format, addDays } from 'date-fns';
 
-import { Box, Typography, CircularProgress } from '@mui/material';
+import {
+  Box,
+  Typography,
+  CircularProgress,
+} from '@mui/material';
 import MapThumb from './MapThumb';
 
 const BoxSX = {
@@ -22,8 +26,8 @@ const BoxSX = {
 export default function WeekMaps(props: WeekMapsProps) {
   const [bigMap, setBigMap] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState(new Date());
-
+  const [startDate, setStartDate] = useState(new Date());  
+  
   useEffect(() => {
     (async () => {
       return fetch(`maps/f1_${props.thumbs[0].name}_thumb.png`)
@@ -186,6 +190,8 @@ export default function WeekMaps(props: WeekMapsProps) {
               width: 'calc(100% - 65px)',
               maxWidth: 557.34,
               objectFit: 'contain',
+              padding: '2px',
+              boxSizing: 'border-box',
               '@media (max-width: 720px)': {
                 width: '100%',
               },

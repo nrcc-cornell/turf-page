@@ -20,39 +20,36 @@ export default function MapThumb(props: MapThumbProps) {
         },
       }}
     >
-      {error ? (
-        <CardMedia
-          component={Box}
-          sx={{
-            backgroundColor: 'rgb(240,240,240)',
-            fontSize: '10px',
-            fontStyle: 'italic',
-            height: 'calc(100% - 26px)',
-            minHeight: 70,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            textAlign: 'center',
-          }}
-        >
-          <span>Img Failed to Load</span>
-        </CardMedia>
-      ) : (
-        <CardMedia
-          component='img'
-          image={props.thumbUrl}
-          alt={props.alt}
-          onError={() => setError(true)}
-        />
-      )}
-
-      <CardContent
-        sx={{
-          padding: '6px !important',
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
+      {error ? 
+          <CardMedia
+            component={Box}
+            sx={{
+              backgroundColor: 'rgb(240,240,240)',
+              fontSize: '10px',
+              fontStyle: 'italic',
+              height: 'calc(100% - 26px)',
+              minHeight: 70,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              textAlign: 'center'
+            }}
+          ><span>Img Failed to Load</span></CardMedia>
+          :
+          <CardMedia
+            component='img'
+            image={props.thumbUrl}
+            alt={props.alt}
+            onError={() => setError(true)}
+          />
+      }
+      
+    
+      <CardContent sx={{
+        padding: '6px !important',
+        display: 'flex',
+        justifyContent: 'center'
+      }}>
         <Typography variant='dayMapDate'>{props.date}</Typography>
       </CardContent>
     </Card>
