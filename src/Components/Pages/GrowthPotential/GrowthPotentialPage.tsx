@@ -138,6 +138,8 @@ export default function GrowthPotentialPage(props: DisplayProps) {
 
   useEffect(() => {
     (async () => {
+      console.log('fire get');
+      
       if (coordArrs) {
         setLoading(true);
         const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
@@ -148,14 +150,18 @@ export default function GrowthPotentialPage(props: DisplayProps) {
           'soil-saturation'
         );
 
+        console.log(forecastSoilSats);
         if (forecastSoilSats) {
           const newModelData = await addObservedData(
             forecastSoilSats,
             today.getFullYear(),
             props.currentLocation.lngLat
           );
+          console.log('set model data');
+          console.log(newModelData);
           setModelData(newModelData);
         } else {
+          console.log('set model data to null');
           setModelData(null);
         }
       }
@@ -163,6 +169,7 @@ export default function GrowthPotentialPage(props: DisplayProps) {
   }, [props.currentLocation, coordArrs]);
 
   useEffect(() => {
+    console.log('fire model');
     if (modelData && modelData.dates.length === 15) {
       setLoading(true);
       const dates = modelData.dates;
@@ -196,12 +203,16 @@ export default function GrowthPotentialPage(props: DisplayProps) {
           tempValues.shift();
         }
       }
+      console.log('if');
       setModelResults(modelOutput);
       setLoading(false);
     } else {
+      console.log('else');
       setModelResults(null);
     }
   }, [modelData, isIrrigation]);
+
+  console.log(modelData);
 
   if (loading) {
     return <Loading />;

@@ -297,7 +297,7 @@ const calcPastSoilSaturations = async (
   year: number
 ) => {
   try {
-    year = 2022;
+    // year = 2022;
     const sDate = new Date(year, 1, 27); // Feb 27th
     const today = new Date(year, 9, 31); // Oct 31st
 
@@ -310,6 +310,8 @@ const calcPastSoilSaturations = async (
       ),
       fetchSoilDataViaPostRest(`${lng} ${lat}`),
     ]);
+
+    console.log(etData, tempPrcpData, soilTable);
 
     const buckets = convertTableToBuckets(soilTable);
 
@@ -357,7 +359,9 @@ const addObservedData = async (
   year: number,
   coords: [number, number]
 ) => {
+  console.log(...coords, year);
   const pastSoilSats = await calcPastSoilSaturations(...coords, year);
+  console.log(pastSoilSats, forecastSoilSats);
   return combinePastAndForecastSoilSats(pastSoilSats, forecastSoilSats);
 };
 
