@@ -19,10 +19,9 @@ export default function MapPage(props: MapPageProps) {
 
   const loaded = () => setLoading(false);
 
-
   return (
     <Card variant='outlined' sx={props.mainSX}>
-      <CardMedia
+      {!(props.title === 'Moisture Deficit Forecast') && <CardMedia
         onError={() => setError(true)} 
         sx={{
           height: 300,
@@ -33,9 +32,23 @@ export default function MapPage(props: MapPageProps) {
         }}
       >
         <CircularProgress color='inherit' />
-      </CardMedia>
+      </CardMedia>}
 
-      {error ?
+      {props.title === 'Moisture Deficit Forecast' ? <CardMedia
+              component={Box}
+              sx={{
+                height: 200,
+                backgroundColor: 'rgb(240,240,240)',
+                fontSize: '10px',
+                fontStyle: 'italic',
+                minHeight: 70,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                textAlign: 'center',
+                border: '2px solid rgb(70,70,70)'
+              }}
+            ><span>This Map is Temporarily Unavailable</span></CardMedia> : (error ?
         <CardMedia
           component={Box}
           sx={{
@@ -63,7 +76,7 @@ export default function MapPage(props: MapPageProps) {
             }
           }}
         />
-      }
+      )}
 
       {props.description.length === 0 && 
         <Box sx={{
