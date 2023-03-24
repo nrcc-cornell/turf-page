@@ -5,8 +5,6 @@ import { Card, CardContent, CardMedia, Typography, Box } from '@mui/material';
 export default function MapThumb(props: MapThumbProps) {
   const [error, setError] = useState(false);
 
-  console.log(props);
-
   return (
     <Card
       variant='outlined'

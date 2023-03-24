@@ -41,8 +41,6 @@ export default function MultiMapPage(props: MultiMapPage) {
     };
   }
 
-  console.log(props);
-  
   return (
     <Box
       sx={{

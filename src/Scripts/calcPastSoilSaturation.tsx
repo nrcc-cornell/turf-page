@@ -243,6 +243,9 @@ const calcSoilSaturationAtDepth = (
     DA = 0;
   }
 
+  console.log(tempPrcpData);
+  console.log(etData);
+
   // 1 - Calculate decimal percentage of max water volume in top and in bottom
   // 2 - Average the max ??????
   // 3 - Multiply avg max by depth of bucket in inches to get max volume in inches
@@ -294,12 +297,11 @@ const calcSoilSaturationAtDepth = (
 const calcPastSoilSaturations = async (
   lng: number,
   lat: number,
-  year: number
+  today: Date
 ) => {
   try {
-    // year = 2022;
+    const year = today.getFullYear();
     const sDate = new Date(year, 1, 27); // Feb 27th
-    const today = new Date(year, 9, 31); // Oct 31st
 
     const [etData, tempPrcpData, soilTable] = await Promise.all([
       fetchETData([lng, lat], year),
@@ -311,7 +313,8 @@ const calcPastSoilSaturations = async (
       fetchSoilDataViaPostRest(`${lng} ${lat}`),
     ]);
 
-    console.log(etData, tempPrcpData, soilTable);
+    console.log(etData);
+    console.log(tempPrcpData);
 
     const buckets = convertTableToBuckets(soilTable);
 
@@ -324,11 +327,11 @@ const calcPastSoilSaturations = async (
 
     const dates: string[] = [];
     const avgts: number[] = [];
-    const precips: number[] = [];
-    tempPrcpData.slice(-9).forEach((arr: [string, number, number, number]) => {
+    // const precips: number[] = [];
+    tempPrcpData.slice(-10, -1).forEach((arr: [string, number, number, number]) => {
       dates.push(arr[0].split('-').join(''));
       avgts.push((arr[1] + arr[2]) / 2);
-      precips.push(arr[3]);
+      // precips.push(arr[3]);
     });
 
     return { pastSoilSaturations, dates, avgts };
@@ -344,7 +347,6 @@ const combinePastAndForecastSoilSats = (
 ): GPModelData | null => {
   if (past) {
     return {
-      // soilSats: past.pastSoilSaturations,
       soilSats: past.pastSoilSaturations.concat(forecast.two.slice(0, 6)),
       avgt: past.avgts.concat(forecast.avgt.slice(0, 6)),
       dates: past.dates.concat(forecast.dates.slice(0, 6)),
@@ -356,12 +358,12 @@ const combinePastAndForecastSoilSats = (
 
 const addObservedData = async (
   forecastSoilSats: ForecastSS,
-  year: number,
+  today: Date,
   coords: [number, number]
 ) => {
-  console.log(...coords, year);
-  const pastSoilSats = await calcPastSoilSaturations(...coords, year);
-  console.log(pastSoilSats, forecastSoilSats);
+  const pastSoilSats = await calcPastSoilSaturations(...coords, today);
+  console.log(pastSoilSats);
+  console.log(forecastSoilSats);
   return combinePastAndForecastSoilSats(pastSoilSats, forecastSoilSats);
 };
 

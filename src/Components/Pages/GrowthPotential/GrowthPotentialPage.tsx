@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { isBefore } from 'date-fns';
 
 import { Box, Typography } from '@mui/material';
 
@@ -138,9 +139,10 @@ export default function GrowthPotentialPage(props: DisplayProps) {
 
   useEffect(() => {
     (async () => {
-      console.log('fire get');
-      
-      if (coordArrs) {
+      if (isBefore(today, new Date(today.getFullYear(), 2, 9))) {
+        setModelData(null);
+        setLoading(false);
+      } else if (coordArrs) {
         setLoading(true);
         const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
           convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
@@ -150,26 +152,22 @@ export default function GrowthPotentialPage(props: DisplayProps) {
           'soil-saturation'
         );
 
-        console.log(forecastSoilSats);
         if (forecastSoilSats) {
           const newModelData = await addObservedData(
             forecastSoilSats,
-            today.getFullYear(),
+            today,
             props.currentLocation.lngLat
           );
-          console.log('set model data');
-          console.log(newModelData);
           setModelData(newModelData);
         } else {
-          console.log('set model data to null');
           setModelData(null);
+          setLoading(false);
         }
       }
     })();
   }, [props.currentLocation, coordArrs]);
 
   useEffect(() => {
-    console.log('fire model');
     if (modelData && modelData.dates.length === 15) {
       setLoading(true);
       const dates = modelData.dates;
@@ -203,19 +201,46 @@ export default function GrowthPotentialPage(props: DisplayProps) {
           tempValues.shift();
         }
       }
-      console.log('if');
       setModelResults(modelOutput);
       setLoading(false);
     } else {
-      console.log('else');
       setModelResults(null);
+      setLoading(false);
     }
   }, [modelData, isIrrigation]);
 
-  console.log(modelData);
-
   if (loading) {
     return <Loading />;
+  } else if (!modelResults) {
+    return (
+      <StyledCard
+        variant='outlined'
+        sx={{
+          padding: '10px',
+          boxSizing: 'border-box',
+          maxWidth: '1100px',
+          border: 'none',
+          '@media (max-width: 448px)': {
+            width: '100%',
+            padding: '10px 0px',
+            border: 'none',
+          },
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            width: '100%',
+            justifyContent: 'space-around',
+            '@media (max-width: 1100px)': {
+              flexDirection: 'column',
+            },
+          }}
+        >
+          This tool is not active until March 9th. Please check back then.
+        </Box>
+      </StyledCard>
+    );
   } else {
     return (
       <StyledCard

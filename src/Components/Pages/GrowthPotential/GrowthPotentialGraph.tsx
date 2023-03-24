@@ -34,6 +34,7 @@ export default function GrowthPotentialGraph(props: {
       (date: string) => date.slice(4, 6) + '-' + date.slice(6)
     );
     const modelValues = props.modelResults.values;
+    console.log(props.modelResults);
 
     series = [
       // { data: modelValues },

@@ -73,10 +73,6 @@ export default function RunoffRiskDailyChart(props: RRDailyChart) {
   const oneDayVals = props.oneDayPercentages.map(perc => convertRiskPercToRiskText(perc));
   const threeDayVals = props.threeDayPercentages.map(perc => convertRiskPercToRiskText(perc));
 
-  console.log(props);
-  console.log(oneDayVals);
-  console.log(threeDayVals);
-
   const headerCell = (text: string, sx?: { [key:string]: string }) => <Box key={uuid()} sx={{...cellSX, borderRight: '1px solid rgb(240,240,240)', flex: '0 0 68px', justifyContent: 'flex-start', ...sx}}><Box sx={headerSX}>{text}</Box></Box>;
 
   const renderDotRow = (headerText: string, rowData: { color: string, riskText: string }[]) => {

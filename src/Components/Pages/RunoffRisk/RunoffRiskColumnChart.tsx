@@ -16,8 +16,6 @@ type RRColumnChart = {
 };
 
 export default function RunoffRiskColumnChart(props: RRColumnChart) {
-  console.log(props);
-  
   const options = {
     chart: {
       borderColor: '#98AFC7',
