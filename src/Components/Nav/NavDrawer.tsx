@@ -84,10 +84,7 @@ export default function TemporaryDrawer() {
   const handleGroupSelect = (group: MenuObj) => {
     if (group.name === 'Home') {
       changePage('/');
-    } else if (
-      group.name === 'Growth Potential' ||
-      group.name === 'Runoff Risk'
-    ) {
+    } else if (group.items.length === 1 && group.items[0].label === '') {
       changePage(group.items[0].pathname);
     } else {
       setSection(section === group.name ? '' : group.name);

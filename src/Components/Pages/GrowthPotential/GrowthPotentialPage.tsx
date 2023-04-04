@@ -4,9 +4,9 @@ import { isBefore } from 'date-fns';
 
 import { Box, Typography } from '@mui/material';
 
-import growthPotentialModel from '../../../Scripts/GrowthPotentialModel';
+import { growthPotentialModel } from '../../../Scripts/GrowthPotentialModel';
 
-import StyledCard from '../StyledCard';
+import StyledCard from '../../StyledCard';
 // import GrowthPotentialLegend from './GrowthPotentialLegend';
 // import GrowthPotentialSlider from './GrowthPotentialSlider';
 // import GrowthPotentialMap from './GrowthPotentialMap';

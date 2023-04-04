@@ -71,11 +71,7 @@ export default function NavBar({ group }: NavBarProp) {
     }
   };
 
-  if (
-    group.name === 'Home' ||
-    group.name === 'Growth Potential' ||
-    group.name === 'Runoff Risk'
-  ) {
+  if (group.items.length === 1 && group.items[0].label === '') {
     return (
       <Box>
         <Button

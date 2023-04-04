@@ -63,6 +63,7 @@ const constructDotCells = (
   rows: Row[],
   colorizer: (val: number, thresholds: ThresholdObj) => string
 ): JSX.Element[][] => {
+  console.log(data, rows);
   const res: JSX.Element[][] = [];
   rows.forEach((rowInfo) => {
     if (rowInfo.name !== 'season') {
@@ -315,6 +316,9 @@ function renderChart(
   }
   const dates = constructDates(sample);
 
+  console.log(sample);
+  console.log(cells);
+
   return (
     <>
       <Box
@@ -407,6 +411,7 @@ const renderNotChart = (numRows: number, a: 'loading' | 'empty') => {
 };
 
 export default function DailyChart(props: DailyChartProps | ListChartProps) {
+  console.log(props.data);
   if ('colorizer' in props) {
     return (
       <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
@@ -416,9 +421,7 @@ export default function DailyChart(props: DailyChartProps | ListChartProps) {
 
         {!props.data
           ? renderNotChart(props.rows.length, 'loading')
-          : // 'Daily' in props.data ?
-          //   props.data['Daily'].length === 0 ? renderNotChart(props.rows.length, 'empty') : renderChart(props.data, props.rows, props.todayFromAcis, props.colorizer)
-          'season' in props.data
+          : 'season' in props.data
           ? props.data['season'].length === 0
             ? renderNotChart(props.rows.length, 'empty')
             : renderChart(

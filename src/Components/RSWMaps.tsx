@@ -8,7 +8,7 @@ import StyledDivider from './StyledDivider';
 
 
 
-export default function RiskMaps(props: RiskMapsProps) {
+export default function RSWMaps(props: RiskMapsProps) {
   return (
     <>
       <Box sx={{

@@ -8,6 +8,7 @@ import {
   Water,
   Expand,
   Terrain,
+  EmojiNature
 } from '@mui/icons-material';
 
 const menuGroups: MenuObj[] = [
@@ -28,6 +29,12 @@ const menuGroups: MenuObj[] = [
       { pathname: '/disease-stress/heat-stress', label: 'Heat Stress index' },
       { pathname: '/disease-stress/pythium-blight', label: 'Pythium Blight' },
     ],
+  },
+  {
+    base: 'pollinator',
+    name: 'Pollinator Risk',
+    icon: <EmojiNature />,
+    items: [{ pathname: '/pollinator-risk', label: '' }],
   },
   {
     base: 'seedhead-weed',

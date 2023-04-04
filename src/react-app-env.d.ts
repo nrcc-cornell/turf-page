@@ -6,12 +6,12 @@ type ChartProps = {
   title: string;
 };
 
-type Colorizer = (val: number, thresholds: ThresholdObj) => string;
-
 type ConditionTextProps = {
   fromLast: number;
   fromNormal: number;
 };
+
+type ColorizerFunc = (val: number) => string;
 
 type ContextType = {
   id: string;
@@ -20,43 +20,29 @@ type ContextType = {
   short_code?: string;
 };
 
-type DataType =
-  | DataMapsOnly
-  | DataRisk
-  | DataSeedWeed
-  | DataGraph
-  | DataTable
-  | DataText
-  | DataGrowthPotential
-  | DataRunoffRisk
-  | DataOverlayMap;
-
-type DataOverlayMap = {
-  pageType: 'overlayMap';
-  maps: MapPageProps[];
+type MapsOnlyPageInfo = {
+  maps: {
+    url: string;
+    alt: string;
+    description: string[];
+    title?: string;
+    mainSX?: {
+      [key: string]: string | number;
+    };
+  }[];
+  pageType: 'mapsOnly' | 'overlayMap' | 'runoff-risk' | 'growthPotential';
 };
 
-type DataGrowthPotential = {
-  pageType: 'growthPotential';
-  maps: MapPageProps[];
-};
-
-type DataRunoffRisk = {
-  pageType: 'runoff-risk';
-  maps: MapPageProps[];
-};
-
-type GrowthPotentialGraph = {
-  data: StrDateValue[];
-};
-
-type DataMapsOnly = {
-  maps: MapPageProps[];
-  pageType: 'mapsOnly';
-};
-
-type DataGraph = {
-  maps: MapPageProps[];
+type GraphPageInfo = {
+  maps: {
+    url: string;
+    alt: string;
+    description: string[];
+    title?: string;
+    mainSX?: {
+      [key: string]: string | number;
+    };
+  }[];
   pageType: 'graph';
   chart: {
     data: 'gdd32' | 'gdd50' | 'precip';
@@ -65,8 +51,45 @@ type DataGraph = {
   };
 };
 
-type DataTable = {
-  maps: MapPageProps[];
+type SeedWeedPageInfo = {
+  maps: {
+    title: string;
+    thumbs: {
+      fullSizeUrl: string;
+      thumbUrl: string;
+      name: string;
+      title: string;
+      alt?: string;
+      date?: string;
+    }[];
+  }[];
+  pageType: 'seedWeed';
+  chart: {
+    rows: {
+      rowName: string;
+      data: 'gdd32' | 'gdd50';
+      colorizer: ColorizerFunc;
+    }[];
+    legend: string[][];
+    title: string;
+  };
+  text: {
+    titlePart: string;
+    description: string[];
+    references?: string[];
+  };
+};
+
+type TablePageInfo = {
+  maps: {
+    url: string;
+    alt: string;
+    description: string[];
+    title?: string;
+    mainSX?: {
+      [key: string]: string | number;
+    };
+  }[];
   pageType: 'table';
   chart: {
     data: 'gdd50DiffGdds' | 'temp';
@@ -75,30 +98,149 @@ type DataTable = {
   };
 };
 
-type DataText = {
-  maps: MapPageProps[];
+type GddDiffDaysPageInfo = {
+  maps: {
+    url: string;
+    alt: string;
+    description: string[];
+    title?: string;
+    mainSX?: {
+      [key: string]: string | number;
+    };
+  }[];
   pageType: 'text';
   data: 'gdd50DiffDays';
 };
 
-type DataRisk = {
-  maps: MapThumbs[];
+type DiseaseStressRiskPageInfo = {
+  maps: {
+    title: string;
+    thumbs: {
+      fullSizeUrl: string;
+      thumbUrl: string;
+      name: string;
+      title: string;
+      alt?: string;
+      date?: string;
+    }[];
+  }[];
   pageType: 'risk';
-  chart: RiskChartProps;
-  text: TextProps;
+  chart: {
+    rows: {
+      thresholds: {
+        low: number;
+        medium: number;
+        high: number;
+      };
+      rowName: string;
+      data: 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress';
+    }[];
+    legend: string[][];
+    title: string;
+  };
+  text: {
+    titlePart: string;
+    description: string[];
+    references?: string[];
+  };
 };
 
-type DataSeedWeed = {
-  maps: MapThumbs[];
-  pageType: 'seedWeed';
-  chart: SeedWeedChartProps;
-  text: TextProps;
+type PollinatorPageInfo = {
+  maps: {
+    title: string;
+    thumbs: ThumbUrls[];
+  }[];
+  pageType: 'pollinator';
+  chart: {
+    rows: {
+      data: string;
+      rowName: string;
+      colorizer: ColorizerFunc;
+    }[];
+    legend: string[][];
+    title: string
+  };
 };
 
-type DataAndFromAcis = {
-  data: GraphDataObj | RiskTool | HSTool | null;
-  todayFromAcis: boolean;
+type PageInfo = DiseaseStressRiskPageInfo | GddDiffDaysPageInfo | TablePageInfo | SeedWeedPageInfo | GraphPageInfo | MapsOnlyPageInfo | PollinatorPageInfo;
+
+// type DataType =
+//   | DataMapsOnly
+//   | DataRisk
+//   | DataSeedWeed
+//   | DataGraph
+//   | DataTable
+//   | DataText
+//   | DataPollinator;
+
+type GrowthPotentialGraph = {
+  data: StrDateValue[];
 };
+
+// type DataMapsOnly = {
+//   maps: MapPageProps[];
+//   pageType: 'mapsOnly' | 'runoff-risk' | 'growthPotential' | 'overlayMap';
+// };
+
+// type DataPollinator = {
+//   maps: MapThumbs[];
+//   pageType: 'pollinator';
+//   chart: {
+//     rows: {
+//       data: string;
+//       rowName: string;
+//       colorizer: ColorizerFunc;
+//       type: 'dots';
+//     }[];
+//     legend: string[][];
+//     title: string
+//   };
+// };
+
+// type DataGraph = {
+//   maps: MapPageProps[];
+//   pageType: 'graph';
+//   chart: {
+//     data: 'gdd32' | 'gdd50' | 'precip';
+//     title: string;
+//     rowNames: string[];
+//   };
+// };
+
+// type DataTable = {
+//   maps: MapPageProps[];
+//   pageType: 'table';
+//   chart: {
+//     data: 'gdd50DiffGdds' | 'temp';
+//     title: string;
+//     rowNames: string[];
+//   };
+// };
+
+// type DataText = {
+//   maps: MapPageProps[];
+//   pageType: 'text';
+//   data: 'gdd50DiffDays';
+// };
+
+// type DataRisk = {
+//   maps: MapThumbs[];
+//   pageType: 'risk';
+//   chart: RiskChartProps;
+//   text: TextProps;
+// };
+
+// type DataSeedWeed = {
+//   maps: MapThumbs[];
+//   pageType: 'seedWeed';
+//   chart: SeedWeedChartProps;
+//   text: TextProps;
+// };
+
+// type DataAndFromAcis = {
+//   data: GraphDataObj | RiskTool | HSTool | null;
+//   todayFromAcis: boolean;
+// };
 
 type DateValue = [Date, number];
 
@@ -110,8 +252,6 @@ type DayValues = {
   heatStress: StrDateValue[];
 };
 
-type DailyChartProps = ChartProps & DataAndFromAcis & { colorizer: Colorizer };
-
 type DisplayProps = {
   currentLocation: UserLocation;
   pastLocations: UserLocation[];
@@ -119,28 +259,6 @@ type DisplayProps = {
     a: 'add' | 'remove' | 'change',
     b: UserLocation
   ) => void;
-};
-
-type OtherTool = {
-  current: StrDateValue[];
-  last: StrDateValue[];
-  normal: StrDateValue[];
-};
-
-type TableData = {
-  table: StrDateValue[][];
-};
-
-type GraphDataObj = TableData & OtherTool;
-
-type GraphDataResults = {
-  gdd32: GraphDataObj;
-  gdd50: GraphDataObj;
-  gdd50DiffGdds: TableData;
-  gdd50DiffDays: TableData;
-  precip: GraphDataObj;
-  temp: TableData;
-  todayFromAcis: boolean;
 };
 
 type GridDatum = [string, number, number, number, number];
@@ -151,25 +269,12 @@ type HomeMap = {
   alt: string;
 };
 
-type HSTool = {
-  // Daily: DateValue[],
-  season: StrDateValue[];
-};
-
 type ImgOptions = {
   href: string;
   src: string;
   alt: string;
   width: number;
   rounded?: boolean;
-};
-
-type Indices = {
-  anthracnose: RiskTool;
-  brownPatch: RiskTool;
-  dollarspot: RiskTool;
-  pythiumBlight: RiskTool;
-  heatStress: HSTool;
 };
 
 type ListChartProps = {
@@ -288,7 +393,7 @@ type RiskChartProps = ChartProps & {
 
 type SeedWeedChartProps = ChartProps & {
   data: 'gdd32' | 'gdd50';
-  colorizer: Colorizer;
+  colorizer: ColorizerFunc;
 };
 
 type SeriesObj = {
@@ -319,7 +424,7 @@ type RiskMapsProps = {
 
 type RouteInfo = {
   path: string;
-  props: DataType;
+  props: PageInfo;
 };
 
 type Row = {
@@ -329,7 +434,7 @@ type Row = {
 
 type SeasonChartProps = {
   data: StrDateValue[];
-  colorizer: Colorizer;
+  colorizer: ColorizerFunc;
   thresholds: ThresholdObj;
 };
 
@@ -360,16 +465,46 @@ type Toggle = {
   type: string;
 };
 
-type RiskTool = HSTool & {
-  '7 Day Avg': DateValue[];
-};
-
 type AvgTemps = {
   dates: string[];
   temps: number[];
 };
 
-type ToolData = Indices & GraphDataResults;
+type RiskData = {
+  season: [string, number][];
+  '7 Day Avg'?: [Date, number][];
+};
+
+type GraphData = {
+  table: [string, number][][];
+  current: [string, number][];
+  last: [string, number][];
+  normal: [string, number][];
+};
+
+type TableData = {
+  table: [string, number][][];
+};
+
+type ToolData = RiskDataResults & GraphDataResults;
+
+type RiskDataResults = {
+  anthracnose: RiskData;
+  brownPatch: RiskData;
+  dollarspot: RiskData;
+  pythiumBlight: RiskData;
+  heatStress: RiskData;
+};
+
+type GraphDataResults = {
+  gdd32: GraphData;
+  gdd50: GraphData;
+  gdd50DiffGdds: TableData;
+  gdd50DiffDays: TableData;
+  precip: GraphData;
+  temp: TableData;
+  todayFromAcis: boolean;
+};
 
 type UserLocation = {
   address: string;

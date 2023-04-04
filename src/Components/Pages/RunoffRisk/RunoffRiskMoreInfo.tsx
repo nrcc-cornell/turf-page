@@ -22,8 +22,8 @@ const styledSpan = (text: string, sx?: { [key:string]: string }) => {
   return <span style={{ fontWeight: 'bold', ...sx }}>{text}</span>;
 };
 
-import StyledButton from '../StyledBtn';
-import StyledDivider from '../StyledDivider';
+import StyledButton from '../../StyledBtn';
+import StyledDivider from '../../StyledDivider';
 
 export default function RunoffRiskMoreInfo() {
   const [showMoreInfo, setShowMoreInfo] = useState(false);

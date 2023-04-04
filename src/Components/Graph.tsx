@@ -16,7 +16,7 @@ Highcharts.Chart.prototype.showResetZoom = function () {
 
 import StyledButton from './StyledBtn';
 
-export default function Graph(props: GraphDataObj & { units: string }) {
+export default function Graph(props: GraphData & { units: string }) {
   const chartComponent = useRef<HighchartsReact.RefObject | null>(null);
   const [isZoomed, setIsZoomed] = useState(true);
 

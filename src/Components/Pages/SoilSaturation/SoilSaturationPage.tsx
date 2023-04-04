@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Typography } from '@mui/material';
 
-import StyledCard from '../StyledCard';
+import StyledCard from '../../StyledCard';
 import RunoffRiskMap from '../RunoffRisk/RunoffRiskMap';
 import { ssVariableOptions } from '../RunoffRisk/rrOptions';
 

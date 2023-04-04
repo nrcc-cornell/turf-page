@@ -6,7 +6,6 @@ import {
   useNavigate,
   useLocation,
 } from 'react-router-dom';
-import { format } from 'date-fns';
 
 import { Box } from '@mui/material';
 
@@ -17,28 +16,25 @@ import {
   ShortCuttAd,
   LocationDisplay,
   Home,
-  DailyChart,
-  ConditionalText,
-  RiskGraph,
-  StyledDivider,
-  RiskMaps,
   Loading,
-  StyledButton,
-  Graph,
   GrowthPotentialPage,
+  PollinatorRiskPage
 } from './Components';
 
 import { AppRouteInfo } from './AppRouteInfo';
 import { usePageTracking } from './Scripts/usePageTracking';
 
 import { getData } from './Scripts/Data';
-import MultiMapPage from './Components/Pages/MultiMapPage';
-import StyledCard from './Components/Pages/StyledCard';
 import SoilSaturationPage from './Components/Pages/SoilSaturation/SoilSaturationPage';
 import RunoffRiskPage from './Components/Pages/RunoffRisk/RunoffRiskPage';
+import DiseaseStressRiskPage from './Components/Pages/DiseaseStressRisk/DiseaseStressRiskPage';
+import SeedWeedPage from './Components/Pages/SeedWeed/SeedWeedPage';
+import GraphPage from './Components/Pages/GraphPage/GraphPage';
+import TablePage from './Components/Pages/TablePage/TablePage';
+import GddDiffDaysPage from './Components/Pages/GddDiffDays/GddDiffDaysPage';
+import MapsOnlyPage from './Components/Pages/MapsOnlyPage/MapsOnlyPage';
 
 function App() {
-  const [showGraphs, setShowGraphs] = useState(false);
   const [toolData, setToolData] = useState<ToolData | null>(null);
   const [pastLocations, setPastLocations] = useState<UserLocation[]>(() => {
     const pastLocations = localStorage.getItem('pastLocations');
@@ -87,7 +83,7 @@ function App() {
     })();
   }, [currentLocation]);
 
-  const renderPage = (info: DataType) => {
+  const renderPage = (info: PageInfo) => {
     if (toolData) {
       let sx = {};
       if (info.maps.length === 1) {
@@ -96,7 +92,58 @@ function App() {
         };
       }
 
-      if (info.pageType === 'growthPotential') {
+      if (info.pageType === 'risk') {
+        return (
+          <DiseaseStressRiskPage
+            data={toolData[info.chart.rows[0].data]}
+            todayFromAcis={toolData.todayFromAcis}
+            sx={sx}
+            pageInfo={info}
+          />
+        );
+      } else if (info.pageType === 'seedWeed') {
+        return (
+          <SeedWeedPage
+            data={toolData[info.chart.rows[0].data]}
+            todayFromAcis={toolData.todayFromAcis}
+            sx={sx}
+            pageInfo={info}
+          />
+        );
+      } else if (info.pageType === 'graph') {
+        return (
+          <GraphPage
+            data={toolData[info.chart.data]}
+            todayFromAcis={toolData.todayFromAcis}
+            sx={sx}
+            pageInfo={info}
+          />
+        );
+      } else if (info.pageType === 'table') {
+        return (
+          <TablePage
+            data={toolData[info.chart.data]}
+            todayFromAcis={toolData.todayFromAcis}
+            sx={sx}
+            pageInfo={info}
+          />
+        );
+      } else if (info.pageType === 'text') {
+        return (
+          <GddDiffDaysPage
+            data={toolData[info.data].table}
+            sx={sx}
+            pageInfo={info}
+          />
+        );
+      } else if (info.pageType === 'mapsOnly') {
+        return (
+          <MapsOnlyPage
+            sx={sx}
+            pageInfo={info}
+          />
+        );
+      } else if (info.pageType === 'growthPotential') {
         return (
           <GrowthPotentialPage
             currentLocation={currentLocation}
@@ -120,81 +167,14 @@ function App() {
             handleChangeLocations={handleChangeLocations}
           />
         );
+      } else if (info.pageType === 'pollinator') {
+        return ( ''
+          // <PollinatorRiskPage latitude={currentLocation.lngLat[1]} dailyChartProps={{
+          //   ...info.chart,
+          //   todayFromAcis: toolData.todayFromAcis
+          // }} />
+        );
       }
-
-      let todayIdx = 0;
-      if (info.pageType === 'text') {
-        const today = format(new Date(), 'MM-dd-yyyy');
-        todayIdx = toolData[info.data].table[0].findIndex(arr => arr[0] === today);
-      }
-
-      return (
-        <StyledCard variant='outlined' sx={sx}>
-          {(info.pageType === 'graph' || info.pageType === 'table') && (
-            <DailyChart
-              data={toolData[info.chart.data].table}
-              rowNames={info.chart.rowNames}
-              todayFromAcis={toolData.todayFromAcis}
-              title={info.chart.title}
-            />
-          )}
-
-          {info.pageType === 'text' && (
-            <ConditionalText
-              fromLast={
-                toolData[info.data].table[0][todayIdx][1]
-              }
-              fromNormal={
-                toolData[info.data].table[1][todayIdx][1]
-              }
-            />
-          )}
-
-          {info.pageType === 'seedWeed' && (
-            <DailyChart
-              {...info.chart}
-              data={toolData[info.chart.data]}
-              todayFromAcis={toolData.todayFromAcis}
-            />
-          )}
-
-          {info.pageType === 'risk' && (
-            <RiskGraph
-              data={toolData[info.chart.data]}
-              todayFromAcis={toolData.todayFromAcis}
-              thresholds={info.chart.rows[0].thresholds}
-              title={info.chart.title}
-            />
-          )}
-
-          {info.pageType !== 'mapsOnly' && <StyledDivider />}
-
-          {info.pageType === 'graph' && (
-            <Box sx={{ width: '100%', textAlign: 'center' }}>
-              {showGraphs ? (
-                <StyledButton onClick={() => setShowGraphs(false)}>
-                  Show Current Maps
-                </StyledButton>
-              ) : (
-                <StyledButton onClick={() => setShowGraphs(true)}>
-                  Show Season Graphs
-                </StyledButton>
-              )}
-            </Box>
-          )}
-
-          {info.pageType === 'risk' || info.pageType === 'seedWeed' ? (
-            <RiskMaps maps={info.maps} text={info.text} />
-          ) : info.pageType === 'graph' && showGraphs ? (
-            <Graph
-              {...toolData[info.chart.data]}
-              units={info.chart.data === 'precip' ? 'inches' : 'GDDs'}
-            />
-          ) : (
-            <MultiMapPage maps={info.maps as MapPageProps[]} />
-          )}
-        </StyledCard>
-      );
     } else {
       return <Loading />;
     }

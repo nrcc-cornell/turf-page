@@ -198,7 +198,7 @@ const xDayAverage = (
 };
 
 // Converts array of DayHourly objects to an object containing an array of indices per risk
-const calcIndices = (days: DayHourly[]): Indices => {
+const calcIndices = (days: DayHourly[]): RiskDataResults => {
   const dayValues: DayValues = {
     anthracnose: [],
     brownPatch: [],

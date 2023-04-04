@@ -1,16 +1,17 @@
 import Header from './Header/Header';
 import Footer from './Footer/Footer';
 import Nav from './Nav/Nav';
-import Home from './Pages/Home';
-import StyledDivider from './Pages/StyledDivider';
-import DailyChart from './Pages/DailyChart';
-import RiskMaps from './Pages/RiskMaps';
+import Home from './Pages/Home/Home';
+import StyledDivider from './StyledDivider';
+import DailyChart from './DailyChart';
+import RiskMaps from './RSWMaps';
 import Loading from './Loading';
-import StyledButton from './Pages/StyledBtn';
-import Graph from './Pages/Graph';
-import RiskGraph from './Pages/RiskGraph';
-import ConditionalText from './Pages/ConditionalText';
+import StyledButton from './StyledBtn';
+import Graph from './Graph';
+import RiskGraph from './Pages/DiseaseStressRisk/RiskGraph';
+import ConditionalText from './ConditionalText';
 import GrowthPotentialPage from './Pages/GrowthPotential/GrowthPotentialPage';
+import PollinatorRiskPage from './Pages/PollinatorRisk/PollinatorRiskPage';
 
 import ShortCuttAd from './ShortCuttAd';
 
@@ -32,4 +33,5 @@ export {
   RiskGraph,
   ConditionalText,
   GrowthPotentialPage,
+  PollinatorRiskPage
 };

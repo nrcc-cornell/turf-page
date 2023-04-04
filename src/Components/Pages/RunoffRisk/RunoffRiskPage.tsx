@@ -8,7 +8,7 @@ import RunoffRiskSummary from './RunoffRiskSummary';
 import RunoffRiskGraphicals from './RunoffRiskGraphicals';
 import RunoffRiskMoreInfo from './RunoffRiskMoreInfo';
 import PageDivider from '../../PageDivider';
-import StyledCard from '../StyledCard';
+import StyledCard from '../../StyledCard';
 
 export type RRProxyBody = {
   option: string;

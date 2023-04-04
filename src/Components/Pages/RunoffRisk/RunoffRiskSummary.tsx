@@ -5,7 +5,7 @@ import HelpIcon from '@mui/icons-material/Help';
 
 import { convertDate, convertRiskPercToRiskText, descriptionFromRiskText } from './rrPageUtils';
 
-import StyledButton from '../StyledBtn';
+import StyledButton from '../../StyledBtn';
 import roundXDigits from '../../../Scripts/Rounding';
 import { RRData } from './RunoffRiskPage';
 

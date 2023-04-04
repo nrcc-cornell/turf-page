@@ -30,7 +30,7 @@ const calcSunDeclinationAngleRadians = (sunRevAngRads: number) => {
   return Math.asin(0.39795 * Math.cos(sunRevAngRads));
 };
 
-const calcDaylength = (dayOfYear: number, p: number, latitude: number) => {
+export const calcDaylength = (dayOfYear: number, p: number, latitude: number) => {
   const sunRevAngRads = calcSunRevolutionAngleRadians(dayOfYear);
   const sunDecAngRads = calcSunDeclinationAngleRadians(sunRevAngRads);
 
@@ -65,7 +65,7 @@ const constants = {
   atK: 10,
 };
 
-export default function growthPotentialModel(
+export function growthPotentialModel(
   latitude: number,
   date: string,
   ssValue: number,

@@ -14,8 +14,8 @@ Highcharts.Chart.prototype.showResetZoom = function () {
   return;
 };
 
-import StyledButton from './StyledBtn';
-import roundXDigits from '../../Scripts/Rounding';
+import StyledButton from '../../StyledBtn';
+import roundXDigits from '../../../Scripts/Rounding';
 
 export default function RiskGraph(props: RiskGraph) {
   const chartComponent = useRef<HighchartsReact.RefObject | null>(null);

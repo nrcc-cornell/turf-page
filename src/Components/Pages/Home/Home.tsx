@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 
 import { Box, Divider, MenuItem, Modal, TextField } from '@mui/material';
 
-import StyledButton from './StyledBtn';
-import StyledCard from './StyledCard';
-import MapPage from './MapPage';
+import StyledButton from '../../StyledBtn';
+import StyledCard from '../../StyledCard';
+import MapPage from '../../MapPage';
 
-import { frontPageMaps } from '../../AppRouteInfo';
+import { frontPageMaps } from '../../../AppRouteInfo';
 
 const style = {
   position: 'absolute',

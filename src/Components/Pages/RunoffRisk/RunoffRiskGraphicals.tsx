@@ -3,7 +3,7 @@ import { parse, format } from 'date-fns';
 import { Box, Typography } from '@mui/material';
 
 import { RRData } from './RunoffRiskPage';
-import StyledButton from '../StyledBtn';
+import StyledButton from '../../StyledBtn';
 import RunoffRiskDailyChart from './RunoffRiskDailyChart';
 import RunoffRiskColumnChart from './RunoffRiskColumnChart';
 import RunoffRiskTempChart from './RunoffRiskTempChart';

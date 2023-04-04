@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 
 import { states } from '../../Scripts/Data';
-import StyledButton from '../Pages/StyledBtn';
+import StyledButton from '../StyledBtn';
 
 
 export default function MapBar(props: MapBarProps ) {
