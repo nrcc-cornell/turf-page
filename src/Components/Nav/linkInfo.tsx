@@ -31,12 +31,6 @@ const menuGroups: MenuObj[] = [
     ],
   },
   {
-    base: 'pollinator',
-    name: 'Pollinator Risk',
-    icon: <EmojiNature />,
-    items: [{ pathname: '/pollinator-risk', label: '' }],
-  },
-  {
     base: 'seedhead-weed',
     name: 'Seedhead/Weed Management',
     icon: <Grass />,
@@ -50,6 +44,12 @@ const menuGroups: MenuObj[] = [
         label: 'Seedhead Recommendations',
       },
     ],
+  },
+  {
+    base: 'pollinator',
+    name: 'Pollinator Risk',
+    icon: <EmojiNature />,
+    items: [{ pathname: '/pollinator-risk', label: '' }],
   },
   {
     base: 'season',

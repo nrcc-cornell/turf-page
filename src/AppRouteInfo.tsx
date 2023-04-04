@@ -257,63 +257,6 @@ const routeInfo: RouteInfo[] = [
     },
   },
   {
-    path: '/pollinator-risk',
-    props: {
-      pageType: 'pollinator',
-      maps: [
-        {
-          title: 'Pollinator Risk from Dandelion Maps',
-          thumbs: constructThumbs('heatStress', 'Heat Stress Risk'),
-        },
-        {
-          title: 'Pollinator Risk from White Clover Maps',
-          thumbs: constructThumbs('heatStress', 'Heat Stress Risk'),
-        },
-      ],
-      chart: {
-        rows: [
-          {
-            rowName: 'Dandelion',
-            data: 'gdd50',
-            colorizer: function (val: number) {
-              let backgroundColor = 'rgb(170,170,170)';
-              if (val < 40) {
-                backgroundColor = 'rgb(0,170,0)';
-              } else if (val < 100) {
-                backgroundColor = 'rgb(255,215,0)';
-              } else if (val < 350) {
-                backgroundColor = 'rgb(255,0,0)';
-              }
-              return backgroundColor;
-            },
-          },
-          {
-            rowName: 'White Clover',
-            data: 'daylength',
-            colorizer: function (val: number) {
-              let backgroundColor = 'rgb(170,170,170)';
-              if (val < 1) {
-                backgroundColor = 'rgb(0,170,0)';
-              } else if (val < 2) {
-                backgroundColor = 'rgb(255,215,0)';
-              } else if (val < 3) {
-                backgroundColor = 'rgb(255,0,0)';
-              }
-              return backgroundColor;
-            },
-          },
-        ],
-        legend: [
-          ['Not yet flowering', 'rgb(0,170,0)'],
-          ['Beginning to flower', 'rgb(255,215,0)'],
-          ['Flowering', 'rgb(255,0,0)'],
-          ['No longer flowering', 'rgb(170,170,170)'],
-        ],
-        title: 'Flowering Statuses',
-      },
-    },
-  },
-  {
     path: '/seedhead-weed/dandelion',
     props: {
       pageType: 'seedWeed',
@@ -436,6 +379,63 @@ const routeInfo: RouteInfo[] = [
           thumbs: constructThumbs('proxy', 'Proxy Seedhead Control'),
         },
       ],
+    },
+  },
+  {
+    path: '/pollinator-risk',
+    props: {
+      pageType: 'pollinator',
+      maps: [
+        {
+          title: 'Pollinator Risk from Dandelion Maps',
+          thumbs: constructThumbs('heatStress', 'Heat Stress Risk'),
+        },
+        {
+          title: 'Pollinator Risk from White Clover Maps',
+          thumbs: constructThumbs('heatStress', 'Heat Stress Risk'),
+        },
+      ],
+      chart: {
+        rows: [
+          {
+            rowName: 'Dandelion',
+            data: 'gdd50',
+            colorizer: function (val: number) {
+              let backgroundColor = 'rgb(170,170,170)';
+              if (val < 40) {
+                backgroundColor = 'rgb(0,170,0)';
+              } else if (val < 100) {
+                backgroundColor = 'rgb(255,215,0)';
+              } else if (val < 350) {
+                backgroundColor = 'rgb(255,0,0)';
+              }
+              return backgroundColor;
+            },
+          },
+          {
+            rowName: 'White Clover',
+            data: 'daylength',
+            colorizer: function (val: number) {
+              let backgroundColor = 'rgb(170,170,170)';
+              if (val < 1) {
+                backgroundColor = 'rgb(0,170,0)';
+              } else if (val < 2) {
+                backgroundColor = 'rgb(255,215,0)';
+              } else if (val < 3) {
+                backgroundColor = 'rgb(255,0,0)';
+              }
+              return backgroundColor;
+            },
+          },
+        ],
+        legend: [
+          ['Not yet flowering', 'rgb(0,170,0)'],
+          ['Beginning to flower', 'rgb(255,215,0)'],
+          ['Flowering', 'rgb(255,0,0)'],
+          ['No longer flowering', 'rgb(170,170,170)'],
+        ],
+        title: 'Pollinator Risk Recommendations',
+      },
     },
   },
   {

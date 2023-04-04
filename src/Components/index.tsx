@@ -9,7 +9,6 @@ import Loading from './Loading';
 import StyledButton from './StyledBtn';
 import Graph from './Graph';
 import RiskGraph from './Pages/DiseaseStressRisk/RiskGraph';
-import ConditionalText from './ConditionalText';
 import GrowthPotentialPage from './Pages/GrowthPotential/GrowthPotentialPage';
 import PollinatorRiskPage from './Pages/PollinatorRisk/PollinatorRiskPage';
 
@@ -31,7 +30,6 @@ export {
   StyledButton,
   Graph,
   RiskGraph,
-  ConditionalText,
   GrowthPotentialPage,
   PollinatorRiskPage
 };

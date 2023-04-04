@@ -38,9 +38,11 @@ export default function RSWMaps(props: RiskMapsProps) {
         })}
       </Box>
 
-      <StyledDivider />
+      {props.text && <>
+        <StyledDivider />
 
-      <TextContent {...props.text} />
+        <TextContent {...props.text} />
+      </>}
     </>
   );
 }

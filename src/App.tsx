@@ -168,11 +168,13 @@ function App() {
           />
         );
       } else if (info.pageType === 'pollinator') {
-        return ( ''
-          // <PollinatorRiskPage latitude={currentLocation.lngLat[1]} dailyChartProps={{
-          //   ...info.chart,
-          //   todayFromAcis: toolData.todayFromAcis
-          // }} />
+        return ( 
+          <PollinatorRiskPage
+            latitude={currentLocation.lngLat[1]}
+            gddData={toolData.gdd50.table[0]}
+            pageInfo={info}
+            todayFromAcis={toolData.todayFromAcis}
+          />
         );
       }
     } else {

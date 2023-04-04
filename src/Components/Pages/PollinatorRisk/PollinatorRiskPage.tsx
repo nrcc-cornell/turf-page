@@ -1,33 +1,28 @@
 import React from 'react';
-import { getDayOfYear, addDays, format } from 'date-fns';
+import { getDayOfYear, addDays, format, parse } from 'date-fns';
 
 import { Typography } from '@mui/material';
 
 import StyledCard from '../../StyledCard';
-import DailyChart from '../../DailyChart';
+import StyledDivider from '../../StyledDivider';
+import RSWMaps from '../../RSWMaps';
+import DailyChart, { StringRow } from '../../DailyChart';
+import PollinatorConditionalText from './PollinatorConditionalText';
 
 import { calcDaylength } from '../../../Scripts/GrowthPotentialModel';
 
 type PollinatorProps = {
   latitude: number;
-  dailyChartProps: {
-    rows: {
-      data: string;
-      rowName: string;
-      colorizer: ColorizerFunc;
-      type: 'dots';
-    }[];
-    legend: string[][];
-    title: string,
-    todayFromAcis: boolean;
-  };
+  gddData: [string, number][];
+  pageInfo: PollinatorPageInfo;
+  todayFromAcis: boolean;
 };
 
 export default function PollinatorRiskPage(props: PollinatorProps) {
-  const categoryByDate = [];
-  const today = new Date();
-  for (let i = 0; i < 7; i++) {
-    const currDay = addDays(today, i);
+  const sDate = parse(props.gddData[0][0], 'MM-dd-yyyy', new Date());
+  const categoryByDate: [string, number][] = [];
+  for (let i = 0; i < props.gddData.length; i++) {
+    const currDay = addDays(sDate, i);
     const dayOfYear = getDayOfYear(currDay);
     const yesterdayDayLength = calcDaylength(dayOfYear - 1, 6, props.latitude);
     const todayDayLength = calcDaylength(dayOfYear, 6, props.latitude);
@@ -49,23 +44,25 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
       }
     }
 
-    categoryByDate.push([format(currDay, 'MM-dd'), cat]);
+    categoryByDate.push([format(currDay, 'MM-dd-yyyy'), cat]);
   }
 
-  console.log(props.dailyChartProps);
+  const data = props.pageInfo.chart.rows.reduce((acc, row) => {
+    acc.push({
+      rowName: row.rowName,
+      type: 'dots',
+      data: (row.data === 'daylength' ? categoryByDate : props.gddData).map(arr => row.colorizer(arr[1]))
+    });
+    return acc;
+  }, [{
+    rowName: 'As of 8am On',
+    type: 'dates',
+    data: props.gddData.map(arr => arr[0].slice(0,5))
+  }] as StringRow[]);
 
-
-  // Need to take in gdd50 data
-  // Need to place gdd50 and daylength data into rows
-  // Need to pass correct structure into DailyChart
-
-
-  // Use latitude to calculate days lengths for clover (covert logic from python code in turf-map-maker)
-  // Get GDD50 values to use for dandelion with thresholds of <40, 40-100, 100-350, >350
-  // Pass both into dot chart creator and place on page
-  
-  // Use today's values to determine the conditional texts to display
-
+  const todayIdx = data[0].data.findIndex(date => date === format(new Date(), 'MM-dd'));
+  const todayDandelionRisk = data[1].data[todayIdx];
+  const todayCloverRisk = data[2].data[todayIdx];
 
   return (
     <StyledCard
@@ -81,9 +78,20 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
         },
       }}
     >
-      <Typography variant='h5' sx={{ marginLeft: '6px' }}>Pollinator Risk Page</Typography>
+      <DailyChart
+        {...props.pageInfo.chart}
+        data={data}
+        todayFromAcis={props.todayFromAcis}
+        numRows={3}
+      />
 
-      {/* <DailyChart {...props.dotChartProps as DailyChartProps} data={} /> */}
+      <StyledDivider />
+
+      <PollinatorConditionalText text={[{ name: 'Dandelion', color: todayDandelionRisk}, { name: 'White Clover', color: todayCloverRisk }]} />
+
+      <StyledDivider />
+
+      <RSWMaps maps={props.pageInfo.maps} />
     </StyledCard>
   );
 }

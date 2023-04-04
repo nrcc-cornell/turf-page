@@ -14,7 +14,7 @@ const getText = (value: number) => {
 
 
 
-export default function ConditionalText(props: ConditionTextProps) {
+export default function GddConditionalText(props: ConditionTextProps) {
   return (
     <Box>  
       <Typography variant='h5' sx={{ marginLeft: '16px', marginBottom: '20px' }}>50°F GDD Differences (Days)</Typography>

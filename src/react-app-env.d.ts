@@ -419,7 +419,7 @@ type RiskGraph = {
 
 type RiskMapsProps = {
   maps: MapThumbs[];
-  text: TextProps;
+  text?: TextProps;
 };
 
 type RouteInfo = {

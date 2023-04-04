@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
 import MultiMapPage from '../../MultiMapPage';
-import ConditionalText from '../../ConditionalText';
+import GddConditionalText from './GddConditionalText';
 
 type GddDiffDaysProps = {
   sx: {
@@ -23,7 +23,7 @@ export default function GddDiffDaysPage(props: GddDiffDaysProps) {
       variant='outlined'
       sx={props.sx}
     >
-      <ConditionalText
+      <GddConditionalText
         fromLast={
           props.data[0][todayIdx][1]
         }
