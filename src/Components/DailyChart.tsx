@@ -294,11 +294,19 @@ const renderLegend = (legendItems: string[][]) => {
     >
       <Box
         sx={{
-          width: 'fit-content',
+          maxWidth: 'fit-content',
           display: 'flex',
           border: '1px solid rgb(240,240,240)',
           borderRadius: '5px',
           padding: '6px 12px',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          '@media (max-width: 755px)': {
+            width: '332px'
+          },
+          '@media (max-width: 380px)': {
+            width: '256px'
+          }
         }}
       >
         {legendItems.map((arr) => {
@@ -323,9 +331,10 @@ const renderLegend = (legendItems: string[][]) => {
                     width: 11,
                   },
                 }}
-              ></Box>
+              />
               <Box
                 sx={{
+                  whiteSpace: 'nowrap',
                   fontSize: '16px',
                   '@media (max-width: 380px)': {
                     fontSize: '12px',

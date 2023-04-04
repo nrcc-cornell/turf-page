@@ -15,7 +15,7 @@ export default function LocationDisplay(props: DisplayProps) {
         boxSizing: 'border-box',
         display: 'flex',
         justifyContent: 'flex-end',
-        '@media (max-width: 700px)': {
+        '@media (max-width: 712px)': {
           backgroundColor: 'rgb(179,27,27)',
           color: 'white',
         },

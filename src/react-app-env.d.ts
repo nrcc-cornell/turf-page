@@ -164,83 +164,9 @@ type PollinatorPageInfo = {
 
 type PageInfo = DiseaseStressRiskPageInfo | GddDiffDaysPageInfo | TablePageInfo | SeedWeedPageInfo | GraphPageInfo | MapsOnlyPageInfo | PollinatorPageInfo;
 
-// type DataType =
-//   | DataMapsOnly
-//   | DataRisk
-//   | DataSeedWeed
-//   | DataGraph
-//   | DataTable
-//   | DataText
-//   | DataPollinator;
-
 type GrowthPotentialGraph = {
   data: StrDateValue[];
 };
-
-// type DataMapsOnly = {
-//   maps: MapPageProps[];
-//   pageType: 'mapsOnly' | 'runoff-risk' | 'growthPotential' | 'overlayMap';
-// };
-
-// type DataPollinator = {
-//   maps: MapThumbs[];
-//   pageType: 'pollinator';
-//   chart: {
-//     rows: {
-//       data: string;
-//       rowName: string;
-//       colorizer: ColorizerFunc;
-//       type: 'dots';
-//     }[];
-//     legend: string[][];
-//     title: string
-//   };
-// };
-
-// type DataGraph = {
-//   maps: MapPageProps[];
-//   pageType: 'graph';
-//   chart: {
-//     data: 'gdd32' | 'gdd50' | 'precip';
-//     title: string;
-//     rowNames: string[];
-//   };
-// };
-
-// type DataTable = {
-//   maps: MapPageProps[];
-//   pageType: 'table';
-//   chart: {
-//     data: 'gdd50DiffGdds' | 'temp';
-//     title: string;
-//     rowNames: string[];
-//   };
-// };
-
-// type DataText = {
-//   maps: MapPageProps[];
-//   pageType: 'text';
-//   data: 'gdd50DiffDays';
-// };
-
-// type DataRisk = {
-//   maps: MapThumbs[];
-//   pageType: 'risk';
-//   chart: RiskChartProps;
-//   text: TextProps;
-// };
-
-// type DataSeedWeed = {
-//   maps: MapThumbs[];
-//   pageType: 'seedWeed';
-//   chart: SeedWeedChartProps;
-//   text: TextProps;
-// };
-
-// type DataAndFromAcis = {
-//   data: GraphDataObj | RiskTool | HSTool | null;
-//   todayFromAcis: boolean;
-// };
 
 type DateValue = [Date, number];
 

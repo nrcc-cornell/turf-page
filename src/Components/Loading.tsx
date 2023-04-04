@@ -22,7 +22,7 @@ export default function Loading() {
         width: '100%',
         fontSize: '20px',
         minHeight: 'calc(100vh - 473px)',
-        '@media (max-width: 700px)': {
+        '@media (max-width: 712px)': {
           minHeight: 'calc(100vh - 433px)',
         },
       }}

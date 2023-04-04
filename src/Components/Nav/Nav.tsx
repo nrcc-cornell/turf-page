@@ -15,7 +15,7 @@ export default function Nav() {
           backgroundColor: 'rgb(179,27,27)',
           display: 'flex',
           height: 40,
-          '@media (max-width: 700px)': {
+          '@media (max-width: 712px)': {
             display: 'none',
           },
         }}
@@ -30,10 +30,10 @@ export default function Nav() {
                   sx={{
                     marginTop: '4px',
                     height: '32px',
-                    width: '1px',
-                    backgroundColor: 'rgb(130,0,0)',
+                    width: '0px',
+                    borderLeft: '1px solid rgb(130,0,0)',
                   }}
-                ></Box>
+                />
               )}
             </Fragment>
           );
@@ -51,7 +51,7 @@ export default function Nav() {
           position: 'absolute',
           top: 83,
           left: 10,
-          '@media (min-width: 701px)': {
+          '@media (min-width: 713px)': {
             display: 'none',
           },
         }}

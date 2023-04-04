@@ -46,7 +46,7 @@ const getSX = {
     cursor: 'pointer',
     color: 'rgb(50,50,255)',
   },
-  '@media (max-width: 700px)': {
+  '@media (max-width: 712px)': {
     color: 'rgb(220,220,220)',
   },
 };
@@ -183,7 +183,7 @@ export default function LocationModal(props: ModalProps) {
               cursor: 'pointer',
               color: 'rgb(50,50,255)',
             },
-            '@media (max-width: 700px)': {
+            '@media (max-width: 712px)': {
               color: 'rgb(220,220,220)',
             },
           }}

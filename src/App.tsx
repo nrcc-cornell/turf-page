@@ -241,7 +241,7 @@ function App() {
           '@media (max-width: 862px)': {
             padding: '20px 12px',
           },
-          '@media (max-width: 700px)': {
+          '@media (max-width: 712px)': {
             minHeight: 'calc(100vh - 293px)',
             padding: '20px 6px',
           },

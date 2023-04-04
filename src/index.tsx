@@ -153,6 +153,9 @@ const theme = createTheme({
       fontSize: '12px',
       fontFamily: '"Roboto", "Arial", "sans-serif"',
       lineHeight: '16px',
+      ['@media screen and (max-width: 800px)']: {
+        fontSize: '10px',
+      },
     },
     dayMapDate: {
       fontSize: '12px',
