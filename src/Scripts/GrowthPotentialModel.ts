@@ -17,6 +17,7 @@ const soilSatToGP = (soilSat: number, optimum: number, k: number) => {
 };
 
 const tempToGP = (avgTemp: number, optimum: number, k: number) => {
+  console.log(Math.exp(-0.5 * ((avgTemp - optimum) / k) ** 2), calcGPEquation(avgTemp, optimum, k));
   return calcGPEquation(avgTemp, optimum, k);
 };
 
@@ -71,9 +72,12 @@ export function growthPotentialModel(
   ssValue: number,
   atValue: number
 ): number {
+  console.log(date);
   const tempGP = tempToGP(atValue, constants.atOptimum, constants.atK);
   const soilSatGP = soilSatToGP(ssValue, constants.ssOptimum, constants.ssK);
   const lightGP = lightToGP(date, latitude);
 
+  console.log(tempGP, soilSatGP, lightGP);
+  console.log(tempGP * soilSatGP * lightGP * 100);
   return Math.max(0, roundXDigits(tempGP * soilSatGP * lightGP * 100, 0));
 }

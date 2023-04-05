@@ -2,7 +2,7 @@ const constructThumbs = (name: string, title: string): ThumbUrls[] => {
   const thumbs: ThumbUrls[] = [];
   for (let i = 0; i < 6; i++) {
     thumbs.push({
-      thumbUrl: `https://turf.eas.cornell.edu/maps/f${i + 1}_${name}_map.png`,
+      thumbUrl: `https://turf.eas.cornell.edu/maps/f${i + 1}_${name}_map_thumb.png`,
       fullSizeUrl: `https://turf.eas.cornell.edu/maps/f${i + 1}_${name}_map.png`,
       name,
       title,
@@ -114,7 +114,7 @@ const routeInfo: RouteInfo[] = [
       maps: [
         {
           title: 'Brown Patch Risk Maps',
-          thumbs: constructThumbs('brownPatch', 'Brown Patch Risk'),
+          thumbs: constructThumbs('brown_patch', 'Brown Patch Risk'),
         },
       ],
     },
@@ -216,7 +216,7 @@ const routeInfo: RouteInfo[] = [
       maps: [
         {
           title: 'Pythium Blight Risk Maps',
-          thumbs: constructThumbs('pythiumBlight', 'Pythium Blight Risk'),
+          thumbs: constructThumbs('pythium_blight', 'Pythium Blight Risk'),
         },
       ],
     },
@@ -251,7 +251,7 @@ const routeInfo: RouteInfo[] = [
       maps: [
         {
           title: 'Heat Stress Index Maps',
-          thumbs: constructThumbs('heatStress', 'Heat Stress Risk'),
+          thumbs: constructThumbs('heat_stress', 'Heat Stress Risk'),
         },
       ],
     },
@@ -388,11 +388,11 @@ const routeInfo: RouteInfo[] = [
       maps: [
         {
           title: 'Pollinator Risk from Dandelion Maps',
-          thumbs: constructThumbs('heatStress', 'Heat Stress Risk'),
+          thumbs: constructThumbs('dandelion', 'Pollinator Risk from Dandelion'),
         },
         {
           title: 'Pollinator Risk from White Clover Maps',
-          thumbs: constructThumbs('heatStress', 'Heat Stress Risk'),
+          thumbs: constructThumbs('clover', 'Pollinator Risk from White Clover'),
         },
       ],
       chart: {
