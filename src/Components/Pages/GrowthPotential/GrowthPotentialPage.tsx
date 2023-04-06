@@ -17,6 +17,7 @@ import IrrigationSwitch from './IrrigationSwitch';
 
 import addObservedData from '../../../Scripts/calcPastSoilSaturation';
 import convertCoordsToIdxs from '../../../Scripts/convertCoordsToIdxs';
+import roundXDigits from '../../../Scripts/Rounding';
 
 type RunoffCoords = {
   lats: number[];
@@ -192,11 +193,13 @@ export default function GrowthPotentialPage(props: DisplayProps) {
         );
 
         tempValues.push(gp);
-
+        console.log('-----------------------');
+        console.log(date, gp, roundXDigits(tempValues.reduce((sum, val) => sum + val, 0) / 5, 0));
+        
         if (tempValues.length === 5) {
           modelOutput.dates.push(date);
           modelOutput.values.push(
-            tempValues.reduce((sum, val) => sum + val, 0) / 5
+            roundXDigits(tempValues.reduce((sum, val) => sum + val, 0) / 5, 0)
           );
           tempValues.shift();
         }

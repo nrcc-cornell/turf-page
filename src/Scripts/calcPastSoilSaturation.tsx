@@ -6,8 +6,8 @@ import {
 
 const constants = {
   bucketDepth: 36,
-  // topBucket: 2,
-  topBucket: 6,
+  topBucket: 2,
+  // topBucket: 6,
   bottomBucket: function () {
     return this.bucketDepth - this.topBucket;
   },
@@ -243,9 +243,6 @@ const calcSoilSaturationAtDepth = (
     DA = 0;
   }
 
-  console.log(tempPrcpData);
-  console.log(etData);
-
   // 1 - Calculate decimal percentage of max water volume in top and in bottom
   // 2 - Average the max ??????
   // 3 - Multiply avg max by depth of bucket in inches to get max volume in inches
@@ -285,7 +282,7 @@ const calcSoilSaturationAtDepth = (
     // );
 
     percentSats.push(Math.round((wvTop / topMax) * 1000) / 10);
-    if (numDays - i <= 9) {
+    if (numDays - i <= 10 && numDays - i > 1) {
       results.push(wvTop / topMax);
     }
   }
@@ -313,9 +310,6 @@ const calcPastSoilSaturations = async (
       fetchSoilDataViaPostRest(`${lng} ${lat}`),
     ]);
 
-    console.log(etData);
-    console.log(tempPrcpData);
-
     const buckets = convertTableToBuckets(soilTable);
 
     const pastSoilSaturations = calcSoilSaturationAtDepth(
@@ -327,11 +321,11 @@ const calcPastSoilSaturations = async (
 
     const dates: string[] = [];
     const avgts: number[] = [];
-    // const precips: number[] = [];
+    const precips: number[] = [];
     tempPrcpData.slice(-10, -1).forEach((arr: [string, number, number, number]) => {
       dates.push(arr[0].split('-').join(''));
       avgts.push((arr[1] + arr[2]) / 2);
-      // precips.push(arr[3]);
+      precips.push(arr[3]);
     });
 
     return { pastSoilSaturations, dates, avgts };
@@ -362,8 +356,6 @@ const addObservedData = async (
   coords: [number, number]
 ) => {
   const pastSoilSats = await calcPastSoilSaturations(...coords, today);
-  console.log(pastSoilSats);
-  console.log(forecastSoilSats);
   return combinePastAndForecastSoilSats(pastSoilSats, forecastSoilSats);
 };
 
