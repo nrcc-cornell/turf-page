@@ -15,7 +15,7 @@ type RRMap<T> = DisplayProps & {
   dropdownOptions: VariableOptions;
   proxyEndpointName: string;
   modelData: T;
-  setModelData: (a: T) => void
+  setModelData: (a: T) => void;
 };
 
 type RunoffCoords = {

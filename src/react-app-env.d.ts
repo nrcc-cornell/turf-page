@@ -30,7 +30,7 @@ type MapsOnlyPageInfo = {
       [key: string]: string | number;
     };
   }[];
-  pageType: 'mapsOnly' | 'overlayMap' | 'runoff-risk' | 'growthPotential';
+  pageType: 'mapsOnly' | 'soilSat' | 'runoffRisk' | 'growthPotential';
 };
 
 type GraphPageInfo = {
@@ -186,6 +186,8 @@ type DisplayProps = {
     b: UserLocation
   ) => void;
 };
+
+type GrowthPotentialPageProps = DisplayProps & { sx: { [key: string]: string }; };
 
 type GridDatum = [string, number, number, number, number];
 

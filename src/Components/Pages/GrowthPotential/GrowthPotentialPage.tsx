@@ -110,16 +110,61 @@ const generateRecommendation = (
     }
   }
 
+  return text;
+};
+
+const renderTools = (modelResults: ModelOutput | null, isIrrigation: boolean, setIsIrrigation: React.Dispatch<React.SetStateAction<boolean>>) => {
+  if (modelResults && modelResults.dates.length === 0) {
+    return renderNotValid(['No valid soil types found in your selected location.', 'Please choose a different location.']);
+  } else {
+    return (<>
+      <Box sx={{ maxWidth: '700px', margin: '40px auto 0px' }}>
+        <Typography variant='h5'>Growth Potential Estimates</Typography>
+      </Box>
+
+      <IrrigationSwitch
+        checked={isIrrigation}
+        setFunction={setIsIrrigation}
+      />
+
+      <GrowthPotentialGraph
+        modelResults={modelResults}
+        thresholds={thresholds}
+      />
+
+      <PageDivider type={1} />
+
+      <Box sx={{ maxWidth: '700px', margin: '20px auto' }}>
+        <Typography variant='h5'>Growth Potential Recommendation</Typography>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography
+            variant='mapPage'
+            sx={{
+              lineHeight: '1.2',
+            }}
+          >{generateRecommendation(modelResults, thresholds)}</Typography>
+        </Box>
+      </Box>
+    </>);
+  }
+};
+
+const renderNotValid = (text:string[]) => {
   return (
-    <Box sx={{ textAlign: 'center', width: '50%', margin: '0 auto' }}>
-      {text}
+    <Box sx={{ textAlign: 'center', margin: '40px 0px' }}>
+      {text.map((str, i) => {
+        return (<React.Fragment key={i}>
+          <Typography sx={{ fontStyle: 'italic', color: 'rgb(180,180,180)' }}>{str}</Typography>
+          {i !== text.length - 1 && <><br/><br/></>}
+        </React.Fragment>);
+      })}
     </Box>
   );
 };
 
 const thresholds = [0, 25, 66];
 
-export default function GrowthPotentialPage(props: DisplayProps) {
+export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
   const today = new Date();
   const todayStr = format(today, 'yyyyMMdd');
   const [coordArrs, setCoordArrs] = useState<RunoffCoords | null>(null);
@@ -159,7 +204,11 @@ export default function GrowthPotentialPage(props: DisplayProps) {
             today,
             props.currentLocation.lngLat
           );
-          setModelData(newModelData);
+          if (newModelData) {
+            setModelData(newModelData);
+          } else {
+            setModelData({ soilSats: [], avgt: [], dates: []} as GPModelData);
+          }
         } else {
           setModelData(null);
           setLoading(false);
@@ -174,7 +223,7 @@ export default function GrowthPotentialPage(props: DisplayProps) {
       const dates = modelData.dates;
       const soilSats = modelData.soilSats;
       const avgTemps = modelData.avgt;
-
+      
       const modelOutput: ModelOutput = {
         dates: [],
         values: [],
@@ -193,8 +242,6 @@ export default function GrowthPotentialPage(props: DisplayProps) {
         );
 
         tempValues.push(gp);
-        console.log('-----------------------');
-        console.log(date, gp, roundXDigits(tempValues.reduce((sum, val) => sum + val, 0) / 5, 0));
         
         if (tempValues.length === 5) {
           modelOutput.dates.push(date);
@@ -205,6 +252,12 @@ export default function GrowthPotentialPage(props: DisplayProps) {
         }
       }
       setModelResults(modelOutput);
+      setLoading(false);
+    } else if (modelData) {
+      setModelResults({
+        dates: [],
+        values: [],
+      } as ModelOutput);
       setLoading(false);
     } else {
       setModelResults(null);
@@ -219,10 +272,11 @@ export default function GrowthPotentialPage(props: DisplayProps) {
       <StyledCard
         variant='outlined'
         sx={{
+          ...props.sx,
           padding: '10px',
           boxSizing: 'border-box',
-          maxWidth: '1100px',
           border: 'none',
+          textAlign: 'center',
           '@media (max-width: 448px)': {
             width: '100%',
             padding: '10px 0px',
@@ -230,18 +284,7 @@ export default function GrowthPotentialPage(props: DisplayProps) {
           },
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'space-around',
-            '@media (max-width: 1100px)': {
-              flexDirection: 'column',
-            },
-          }}
-        >
-          This tool is not active until March 9th. Please check back then.
-        </Box>
+        {renderNotValid(['This tool is not active until March 9th. Please check back then.'])}
       </StyledCard>
     );
   } else {
@@ -249,9 +292,9 @@ export default function GrowthPotentialPage(props: DisplayProps) {
       <StyledCard
         variant='outlined'
         sx={{
+          ...props.sx,
           padding: '10px',
           boxSizing: 'border-box',
-          maxWidth: '1100px',
           '@media (max-width: 448px)': {
             width: '100%',
             padding: '10px 0px',
@@ -259,57 +302,19 @@ export default function GrowthPotentialPage(props: DisplayProps) {
           },
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'space-around',
-            '@media (max-width: 1100px)': {
-              flexDirection: 'column',
-            },
-          }}
-        >
-          <Box
-            sx={{
-              width: 'calc(50% - 11px)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '20px',
-              margin: '0 auto',
-              '@media (max-width: 1100px)': {
-                width: '75%',
-              },
-            }}
-          >
-            <Typography variant='h5'>Growth Potential Estimates</Typography>
+        <Box>
+          <Typography variant='h5'>Growth Potential Forecast for New York State</Typography>
+          <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for managing turfgrass</Typography>
 
-            {generateRecommendation(modelResults, thresholds)}
-
-            <PageDivider type={1} />
-
-            <IrrigationSwitch
-              checked={isIrrigation}
-              setFunction={setIsIrrigation}
-            />
-
-            <GrowthPotentialGraph
-              // modelResults={{
-              //   dates: [],
-              //   values: modelData ? modelData.soilSats : [],
-              // }}
-              modelResults={modelResults}
-              thresholds={thresholds}
-            />
-          </Box>
-
-          <PageDivider type={3} />
+          {props.currentLocation.address.split(', ').slice(-1)[0] === 'New York' ? renderTools(modelResults, isIrrigation, setIsIrrigation) : renderNotValid(['This tool is only valid for locations within NY.','Select a location within NY to see more information.'])}
+          
+          <PageDivider type={1} />
 
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 'calc(50% - 11px)',
               height: 573,
               position: 'relative',
               margin: '0 auto',

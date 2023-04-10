@@ -667,7 +667,7 @@ const routeInfo: RouteInfo[] = [
   {
     path: '/irrigation/topsoil-moisture/forecast',
     props: {
-      pageType: 'overlayMap',
+      pageType: 'soilSat',
       maps: [
         {
           url: '',
@@ -721,7 +721,7 @@ const routeInfo: RouteInfo[] = [
   {
     path: '/runoff-risk',
     props: {
-      pageType: 'runoff-risk',
+      pageType: 'runoffRisk',
       maps: [
         {
           url: '',

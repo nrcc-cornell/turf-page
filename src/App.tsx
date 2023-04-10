@@ -86,7 +86,7 @@ function App() {
   const renderPage = (info: PageInfo) => {
     if (toolData) {
       let sx = {};
-      if (info.maps.length === 1) {
+      if (info.maps.length === 1 || info.pageType === 'growthPotential') {
         sx = {
           maxWidth: 850,
         };
@@ -149,9 +149,10 @@ function App() {
             currentLocation={currentLocation}
             pastLocations={pastLocations}
             handleChangeLocations={handleChangeLocations}
+            sx={sx}
           />
         );
-      } else if (info.pageType === 'runoff-risk') {
+      } else if (info.pageType === 'runoffRisk') {
         return (
           <RunoffRiskPage
             currentLocation={currentLocation}
@@ -159,7 +160,7 @@ function App() {
             handleChangeLocations={handleChangeLocations}
           />
         );
-      } else if (info.pageType === 'overlayMap') {
+      } else if (info.pageType === 'soilSat') {
         return (
           <SoilSaturationPage
             currentLocation={currentLocation}

@@ -20,6 +20,7 @@ import Markers from './LocationComponents/Markers';
 import { getLocation } from '../Scripts/Data';
 import roundXDigits from '../Scripts/Rounding';
 import recolorImage from '../Scripts/recolorCanvas';
+import WarningIcon from './WarningIcon';
 
 const bounds = { south: 37.09, west: -82.7542 };
 const mainMapStyle =
@@ -132,6 +133,7 @@ export default function OverlayMap(props: OverlayMapProps) {
         width: '100%',
         height: '500px',
         border: '1px solid black',
+        position: 'relative'
       }}
     >
       <Map
@@ -237,6 +239,17 @@ export default function OverlayMap(props: OverlayMapProps) {
           </Popup>
         )}
       </Map>
+
+      {props.currentLocation.address.split(', ').slice(-1)[0] !== 'New York' &&
+      <Box sx={{ position: 'absolute',
+      top: 0, left: 0 }}>
+        <WarningIcon onClick={() => overlayMapRef.current.flyTo({
+          center: [-75.5, 42.9],
+          zoom: 5.2,
+          speed: 1.5,
+          essential: true,
+        })}/>
+      </Box>}
     </Box>
   );
 }
