@@ -30,7 +30,7 @@ export default function WeekMaps(props: WeekMapsProps) {
   
   useEffect(() => {
     (async () => {
-      return fetch(`maps/f1_${props.thumbs[0].name}_thumb.png`)
+      return fetch(`maps/f1_${props.thumbs[0].name}_map_thumb.png`)
         .then((res) => {
           const dateStr = res.headers.get('last-modified');
           const date = checkSeason(new Date(dateStr || Date()));
