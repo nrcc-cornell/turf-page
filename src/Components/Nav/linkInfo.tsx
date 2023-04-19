@@ -26,8 +26,8 @@ const menuGroups: MenuObj[] = [
       { pathname: '/disease-stress/anthracnose', label: 'Anthracnose' },
       { pathname: '/disease-stress/brown-patch', label: 'Brown Patch' },
       { pathname: '/disease-stress/dollarspot', label: 'Dollarspot' },
-      { pathname: '/disease-stress/heat-stress', label: 'Heat Stress index' },
       { pathname: '/disease-stress/pythium-blight', label: 'Pythium Blight' },
+      { pathname: '/disease-stress/heat-stress', label: 'Heat Stress Index' },
     ],
   },
   {
