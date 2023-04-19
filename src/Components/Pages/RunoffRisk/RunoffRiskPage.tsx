@@ -7,8 +7,9 @@ import RunoffRiskMap from './RunoffRiskMap';
 import RunoffRiskSummary from './RunoffRiskSummary';
 import RunoffRiskGraphicals from './RunoffRiskGraphicals';
 import RunoffRiskMoreInfo from './RunoffRiskMoreInfo';
-import PageDivider from '../../PageDivider';
 import StyledCard from '../../StyledCard';
+import StyledDivider from '../../StyledDivider';
+import InvalidText from '../../InvalidText';
 
 export type RRProxyBody = {
   option: string;
@@ -55,16 +56,10 @@ const renderTools = (modelData: RRData) => {
   return (<>
       <RunoffRiskSummary data={modelData} />
       
-      <PageDivider type={1} sx={{ marginTop: '10px', marginBottom: '20px' }} />
+      <StyledDivider />
       
       <RunoffRiskGraphicals data={modelData} />
   </>);
-};
-
-const renderNotInNy = () => {
-  return (
-    <Box sx={{ textAlign: 'center', margin: '40px 0px' }}><Typography sx={{ fontStyle: 'italic', color: 'rgb(180,180,180)' }}>This tool is only valid for locations within NY.<br/><br/>Select a location within NY to see more information.</Typography></Box>
-  );
 };
 
 export default function RunoffRiskPage(props: DisplayProps) {
@@ -87,10 +82,10 @@ export default function RunoffRiskPage(props: DisplayProps) {
       <Typography variant='h5' sx={{ marginLeft: '6px' }}>Runoff Risk Forecast for New York State</Typography>
       <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for managing runoff risk of chemical applications to turfgrass</Typography>
       
-      {props.currentLocation.address.split(', ').slice(-1)[0] === 'New York' ? renderTools(modelData) : renderNotInNy()}
+      {props.currentLocation.address.split(', ').slice(-1)[0] === 'New York' ? renderTools(modelData) : <InvalidText type='notNY' />}
       
       
-      <PageDivider type={1} sx={{ marginTop: '20px', marginBottom: '30px' }} />
+      <StyledDivider />
       
       <RunoffRiskMap
         {...props}

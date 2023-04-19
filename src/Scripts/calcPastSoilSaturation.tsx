@@ -150,7 +150,7 @@ const fetchETData = (coords: number[], year: number) => {
     .then((response) => response.json())
     .catch(() => null);
 };
-type EtReturn = AsyncReturnType<typeof fetchETData>;
+export type EtReturn = AsyncReturnType<typeof fetchETData>;
 
 const fetchTempPrcpData = (loc: string, sdate: string, edate: string) => {
   return fetch('https://grid2.rcc-acis.org/GridData', {
@@ -194,7 +194,7 @@ const adjustWVTop = (
   return wvTop - etIn * Ks + prcpAdj;
 };
 
-const getDateAdjustment = (
+export const getDateAdjustment = (
   etData: EtReturn,
   tempPrcpData: tempPrcpReturn,
   year: number
@@ -310,6 +310,7 @@ const calcPastSoilSaturations = async (
       fetchSoilDataViaPostRest(`${lng} ${lat}`),
     ]);
 
+    console.log(etData, tempPrcpData, soilTable);
     const buckets = convertTableToBuckets(soilTable);
 
     const pastSoilSaturations = calcSoilSaturationAtDepth(
@@ -328,6 +329,7 @@ const calcPastSoilSaturations = async (
       precips.push(arr[3]);
     });
 
+    console.log(precips);
     return { pastSoilSaturations, dates, avgts };
   } catch {
     return null;
@@ -356,7 +358,8 @@ const addObservedData = async (
   coords: [number, number]
 ) => {
   const pastSoilSats = await calcPastSoilSaturations(...coords, today);
+  console.log(pastSoilSats, forecastSoilSats);
   return combinePastAndForecastSoilSats(pastSoilSats, forecastSoilSats);
 };
 
-export default addObservedData;
+export { addObservedData, fetchETData };

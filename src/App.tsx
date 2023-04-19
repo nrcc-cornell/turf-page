@@ -33,6 +33,7 @@ import GraphPage from './Components/Pages/GraphPage/GraphPage';
 import TablePage from './Components/Pages/TablePage/TablePage';
 import GddDiffDaysPage from './Components/Pages/GddDiffDays/GddDiffDaysPage';
 import MapsOnlyPage from './Components/Pages/MapsOnlyPage/MapsOnlyPage';
+import LawnWateringPage from './Components/Pages/LawnWatering/LawnWateringPage';
 
 function App() {
   const [toolData, setToolData] = useState<ToolData | null>(null);
@@ -175,6 +176,12 @@ function App() {
             gddData={toolData.gdd50.table[0]}
             pageInfo={info}
             todayFromAcis={toolData.todayFromAcis}
+          />
+        );
+      } else if (info.pageType === 'lawn-watering') {
+        return (
+          <LawnWateringPage
+            currentLocation={currentLocation}
           />
         );
       }

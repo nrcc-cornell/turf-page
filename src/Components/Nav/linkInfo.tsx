@@ -79,6 +79,7 @@ const menuGroups: MenuObj[] = [
     icon: <Water />,
     items: [
       { pathname: '/irrigation/rainfall', label: `Last Week's Rainfall` },
+      { pathname: '/irrigation/lawn-watering-tool', label: `Lawn Watering Tool` },
       {
         pathname: '/irrigation/evapotranspiration',
         label: 'Evapotranspiration',

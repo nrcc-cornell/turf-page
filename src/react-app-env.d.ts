@@ -30,7 +30,7 @@ type MapsOnlyPageInfo = {
       [key: string]: string | number;
     };
   }[];
-  pageType: 'mapsOnly' | 'soilSat' | 'runoffRisk' | 'growthPotential';
+  pageType: 'mapsOnly' | 'soilSat' | 'runoffRisk' | 'growthPotential' | 'lawn-watering';
 };
 
 type GraphPageInfo = {

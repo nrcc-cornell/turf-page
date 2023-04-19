@@ -8,7 +8,7 @@ import OverlayMap from '../../OverlayMap';
 import Legend from './rrLegend';
 
 import convertCoordsToIdxs from '../../../Scripts/convertCoordsToIdxs';
-import updateStateFromProxy from '../../../Scripts/proxy';
+import { updateStateFromProxy } from '../../../Scripts/proxy';
 import { VariableOptions } from './rrOptions';
 
 type RRMap<T> = DisplayProps & {

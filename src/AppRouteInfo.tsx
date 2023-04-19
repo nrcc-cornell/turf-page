@@ -621,6 +621,19 @@ const routeInfo: RouteInfo[] = [
     },
   },
   {
+    path: '/irrigation/lawn-watering-tool',
+    props: {
+      pageType: 'lawn-watering',
+      maps: [
+        {
+          url: '',
+          alt: '',
+          description: [],
+        },
+      ],
+    },
+  },
+  {
     path: '/irrigation/evapotranspiration',
     props: {
       pageType: 'mapsOnly',

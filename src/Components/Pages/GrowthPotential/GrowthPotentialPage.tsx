@@ -10,14 +10,16 @@ import StyledCard from '../../StyledCard';
 // import GrowthPotentialLegend from './GrowthPotentialLegend';
 // import GrowthPotentialSlider from './GrowthPotentialSlider';
 // import GrowthPotentialMap from './GrowthPotentialMap';
-import PageDivider from '../../PageDivider';
 import GrowthPotentialGraph from './GrowthPotentialGraph';
 import Loading from '../../Loading';
 import IrrigationSwitch from './IrrigationSwitch';
+import StyledDivider from '../../StyledDivider';
+import InvalidText from '../../InvalidText';
 
-import addObservedData from '../../../Scripts/calcPastSoilSaturation';
+import { addObservedData } from '../../../Scripts/calcPastSoilSaturation';
 import convertCoordsToIdxs from '../../../Scripts/convertCoordsToIdxs';
 import roundXDigits from '../../../Scripts/Rounding';
+import { getFromProxy } from '../../../Scripts/proxy';
 
 type RunoffCoords = {
   lats: number[];
@@ -38,49 +40,11 @@ export type GPModelData = {
   dates: string[];
 };
 
-type CoordsBody = {
-  dateStr: string;
-};
-
-type SoilSaturationBody = CoordsBody & {
-  idxLng: number;
-  idxLat: number;
-};
-
-type Depths = 'two' | 'six' | 'ten';
-
-type DepthsObj = {
-  depth: Depths;
-};
-
-type OverlayBody = CoordsBody &
-  DepthsObj & {
-    forecastDateStr: string;
-  };
-
-type ProxyBody = CoordsBody | SoilSaturationBody | OverlayBody;
 
 export type ModelOutput = {
   dates: string[];
   values: number[];
 };
-
-
-
-async function getFromProxy<T>(body: ProxyBody, endpoint: string) {
-  const proxyUrl = 'https://cors-proxy.benlinux915.workers.dev/';
-
-  const response = await fetch(proxyUrl + endpoint, {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
-
-  let results: T | null = null;
-  if (response.ok) {
-    results = await response.json();
-  }
-  return results;
-}
 
 const generateRecommendation = (
   modelResults: ModelOutput | null,
@@ -115,7 +79,7 @@ const generateRecommendation = (
 
 const renderTools = (modelResults: ModelOutput | null, isIrrigation: boolean, setIsIrrigation: React.Dispatch<React.SetStateAction<boolean>>) => {
   if (modelResults && modelResults.dates.length === 0) {
-    return renderNotValid(['No valid soil types found in your selected location.', 'Please choose a different location.']);
+    return <InvalidText type='noSoilData' />;
   } else {
     return (<>
       <Box sx={{ maxWidth: '700px', margin: '40px auto 0px' }}>
@@ -132,9 +96,9 @@ const renderTools = (modelResults: ModelOutput | null, isIrrigation: boolean, se
         thresholds={thresholds}
       />
 
-      <PageDivider type={1} />
+      <StyledDivider />
 
-      <Box sx={{ maxWidth: '700px', margin: '20px auto' }}>
+      <Box sx={{ maxWidth: '700px', margin: '0 auto' }}>
         <Typography variant='h5'>Growth Potential Recommendation</Typography>
         <Box sx={{ textAlign: 'center' }}>
           <Typography
@@ -147,19 +111,6 @@ const renderTools = (modelResults: ModelOutput | null, isIrrigation: boolean, se
       </Box>
     </>);
   }
-};
-
-const renderNotValid = (text:string[]) => {
-  return (
-    <Box sx={{ textAlign: 'center', margin: '40px 0px' }}>
-      {text.map((str, i) => {
-        return (<React.Fragment key={i}>
-          <Typography sx={{ fontStyle: 'italic', color: 'rgb(180,180,180)' }}>{str}</Typography>
-          {i !== text.length - 1 && <><br/><br/></>}
-        </React.Fragment>);
-      })}
-    </Box>
-  );
 };
 
 const thresholds = [0, 25, 66];
@@ -204,6 +155,7 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
             today,
             props.currentLocation.lngLat
           );
+          console.log(newModelData);
           if (newModelData) {
             setModelData(newModelData);
           } else {
@@ -284,10 +236,11 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
           },
         }}
       >
-        {renderNotValid(['This tool is not active until March 9th. Please check back then.'])}
+        <InvalidText type='outOfSeason' />
       </StyledCard>
     );
   } else {
+    console.log(props.currentLocation.address.split(', ').slice(-1)[0] === 'New York');
     return (
       <StyledCard
         variant='outlined'
@@ -306,9 +259,9 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
           <Typography variant='h5'>Growth Potential Forecast for New York State</Typography>
           <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for managing turfgrass</Typography>
 
-          {props.currentLocation.address.split(', ').slice(-1)[0] === 'New York' ? renderTools(modelResults, isIrrigation, setIsIrrigation) : renderNotValid(['This tool is only valid for locations within NY.','Select a location within NY to see more information.'])}
+          {props.currentLocation.address.split(', ').slice(-1)[0] === 'New York' ? renderTools(modelResults, isIrrigation, setIsIrrigation) : <InvalidText type='notNY' />}
           
-          <PageDivider type={1} />
+          <StyledDivider />
 
           <Box
             sx={{
