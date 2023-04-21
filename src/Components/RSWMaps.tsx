@@ -23,10 +23,11 @@ export default function RSWMaps(props: RiskMapsProps) {
           return (
             <Fragment key={thumbGroup.title}>
               <Box sx={{
-                flexGrow: 1,
                 margin: '5px 0px',
+                width: '100%',
                 '@media (min-width: 1000px)': {
-                  margin: '0px 8px'
+                  margin: '0px 8px',
+                  width: '50%',
                 }
               }}>
                 <WeekMaps {...thumbGroup} />

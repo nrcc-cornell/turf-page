@@ -27,17 +27,22 @@ export default function PollinatorConditionalText(props: PCTProps) {
   return (
     <Box sx={{
       display: 'flex',
-      justifyContent: 'space-between',
+      justifyContent: 'space-evenly',
       margin: '0 auto',
       width: '98%',
-      '@media (max-width: 1000px)': {
+      gap: '10px',
+      '@media (max-width: 558px)': {
         flexDirection: 'column',
-        gap: '30px',
-        maxWidth: '450px',
-    }
+        gap: '20px'
+      }
     }}>
       {props.text.map(({name, color}, i) => (
-        <Box key={name + i}>
+        <Box key={name + i} sx={{
+          width: '50%',
+          '@media (max-width: 558px)': {
+            width: '100%',
+          }
+        }}>
           <Typography variant='h5'>{name} Recommendation</Typography>
           <Box sx={{ paddingLeft: '20px' }}>
             <Typography
