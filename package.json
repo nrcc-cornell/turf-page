@@ -2,7 +2,7 @@
   "name": "turf-grass",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://turf.eas.cornell.edu/",
+  "homepage": "https://pages.github.coecis.cornell.edu/be99/turf-grass/",
   "dependencies": {
     "@emotion/react": "^11.8.2",
     "@emotion/styled": "^11.8.1",
