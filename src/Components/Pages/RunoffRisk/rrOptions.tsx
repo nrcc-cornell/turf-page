@@ -29,7 +29,6 @@ const soilTempLegendInfo = [
 export type  VariableOption = {
   overlay: string;
   legend: { color: string, label: string }[];
-  useCanvas: boolean;
 }
 
 export type VariableOptions = {
@@ -38,46 +37,36 @@ export type VariableOptions = {
 
 export const variableOptions = {
 'Runoff Risk (24-hour)': {
-  overlay: 'RRAF_dailyRiskPercWinter',
-  // overlay: 'turf_24hr',
+  overlay: 'turf_24hr',
   legend: runoffRiskLegendInfo,
-  useCanvas: true
 },
 'Runoff Risk (72-hour)': {
-  overlay: 'RRAF_dailyRiskPercWinter72Hour',
-  // overlay: 'turf_72hr',
+  overlay: 'turf_72hr',
   legend: runoffRiskLegendInfo,
-  useCanvas: true
 },
 'Soil Temperature (2" depth, °F)': {
   overlay: 'dailyAvgSoilTemp_2in_F',
   legend: soilTempLegendInfo,
-  useCanvas: false
 },
 'Soil Temperature (6" depth, °F)': {
   overlay: 'dailyAvgSoilTemp_6in_F',
   legend: soilTempLegendInfo,
-  useCanvas: false
 },
 'Soil Temperature (sfc-10" depth, °F)': {
   overlay: 'dailyAvgSoilTemp_sfc10_F',
   legend: soilTempLegendInfo,
-  useCanvas: false
 },
 'Precipitation (in)': {
   overlay: 'dailyPrecip_vol_INCHES',
   legend: precipLegendInfo,
-  useCanvas: false
 },
 'Rainfall + Snowmelt (in)': {
   overlay: 'dailyRAIM_vol_INCHES',
   legend: precipLegendInfo,
-  useCanvas: false
 },
 'Snow Water Equivalent (in)': {
   overlay: 'dailyAvgSWE_INCHES',
   legend: precipLegendInfo,
-  useCanvas: false
 }};
 
 
@@ -93,16 +82,13 @@ export const ssVariableOptions = {
   'Soil Saturation (2" depth, %)': {
     overlay: 'dailyAvgSoilSat_2in',
     legend: soilSatLegendInfo,
-    useCanvas: false
   },
     'Soil Saturation (6" depth, %)': {
     overlay: 'dailyAvgSoilSat_2in',
     legend: soilSatLegendInfo,
-    useCanvas: false
   },
     'Soil Saturation (sfc-10" depth, %)': {
     overlay: 'dailyAvgSoilSat_sfc10',
     legend: soilSatLegendInfo,
-    useCanvas: false
   },
 };

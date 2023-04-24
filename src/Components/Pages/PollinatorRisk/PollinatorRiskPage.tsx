@@ -1,8 +1,6 @@
 import React from 'react';
 import { getDayOfYear, addDays, format, parse } from 'date-fns';
 
-import { Typography } from '@mui/material';
-
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
 import RSWMaps from '../../RSWMaps';
@@ -24,8 +22,8 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
   for (let i = 0; i < props.gddData.length; i++) {
     const currDay = addDays(sDate, i);
     const dayOfYear = getDayOfYear(currDay);
-    const yesterdayDayLength = calcDaylength(dayOfYear - 1, 6, props.latitude);
-    const todayDayLength = calcDaylength(dayOfYear, 6, props.latitude);
+    const yesterdayDayLength = calcDaylength(dayOfYear - 1, props.latitude);
+    const todayDayLength = calcDaylength(dayOfYear, props.latitude);
 
     let cat;
     if (yesterdayDayLength < todayDayLength) {
@@ -44,6 +42,7 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
       }
     }
 
+    console.log([format(currDay, 'MM-dd-yyyy'), todayDayLength]);
     categoryByDate.push([format(currDay, 'MM-dd-yyyy'), cat]);
   }
 

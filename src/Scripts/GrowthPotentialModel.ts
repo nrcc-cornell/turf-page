@@ -29,11 +29,12 @@ const calcSunDeclinationAngleRadians = (sunRevAngRads: number) => {
   return Math.asin(0.39795 * Math.cos(sunRevAngRads));
 };
 
-export const calcDaylength = (dayOfYear: number, p: number, latitude: number) => {
+export const calcDaylength = (dayOfYear: number, latitude: number) => {
+  const P = 0.8333;
   const sunRevAngRads = calcSunRevolutionAngleRadians(dayOfYear);
   const sunDecAngRads = calcSunDeclinationAngleRadians(sunRevAngRads);
 
-  const pp180 = (p * Math.PI) / 180;
+  const pp180 = (P * Math.PI) / 180;
   const lp180 = (latitude * Math.PI) / 180;
   return (
     24 -
@@ -48,11 +49,11 @@ export const calcDaylength = (dayOfYear: number, p: number, latitude: number) =>
 const lightToGP = (dateStr: string, latitude: number) => {
   const date = parse(dateStr, 'yyyyMMdd', new Date());
   const dayOfYear = getDayOfYear(date);
-  const currDaylength = calcDaylength(dayOfYear, 6.0, latitude);
+  const currDaylength = calcDaylength(dayOfYear, latitude);
 
   // Day of year for June 21st, the longest day of the year
   const longestDay = getDayOfYear(new Date(date.getFullYear(), 5, 21));
-  const maxDaylength = calcDaylength(longestDay, 6.0, latitude);
+  const maxDaylength = calcDaylength(longestDay, latitude);
 
   return currDaylength / maxDaylength;
 };

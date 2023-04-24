@@ -247,7 +247,6 @@ type MapProps = {
 
 type OverlayMapProps = MapProps & {
   src: string;
-  useCanvas: boolean;
 };
 
 type MapThumbProps = {

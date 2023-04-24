@@ -140,7 +140,7 @@ export default function RunoffRiskMap<T extends Data>(
           })}
           setFunction={setForecastDateIdx}
         />
-        <OverlayMap {...props} src={overlay} useCanvas={legendInfo.useCanvas} />
+        <OverlayMap {...props} src={overlay} />
         <Legend {...legendInfo} />
       </Box>
     </>
