@@ -310,7 +310,6 @@ const calcPastSoilSaturations = async (
       fetchSoilDataViaPostRest(`${lng} ${lat}`),
     ]);
 
-    console.log(etData, tempPrcpData, soilTable);
     const buckets = convertTableToBuckets(soilTable);
 
     const pastSoilSaturations = calcSoilSaturationAtDepth(
@@ -329,7 +328,6 @@ const calcPastSoilSaturations = async (
       precips.push(arr[3]);
     });
 
-    console.log(precips);
     return { pastSoilSaturations, dates, avgts };
   } catch {
     return null;
@@ -358,7 +356,6 @@ const addObservedData = async (
   coords: [number, number]
 ) => {
   const pastSoilSats = await calcPastSoilSaturations(...coords, today);
-  console.log(pastSoilSats, forecastSoilSats);
   return combinePastAndForecastSoilSats(pastSoilSats, forecastSoilSats);
 };
 

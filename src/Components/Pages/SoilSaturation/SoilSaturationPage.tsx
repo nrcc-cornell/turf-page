@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Typography } from '@mui/material';
 
 import StyledCard from '../../StyledCard';
-import RunoffRiskMap from '../RunoffRisk/RunoffRiskMap';
-import { ssVariableOptions } from '../RunoffRisk/rrOptions';
+import MapWithOptions from '../../OverlayMap/MapWithOptions';
+import { ssVariableOptions } from '../../OverlayMap/Options';
 
 type CoordsBody = {
   dateStr: string;
@@ -56,7 +56,7 @@ export default function SoilSaturationPage(props: DisplayProps) {
       }}
     >
       <Typography variant='h5' sx={{ marginLeft: '6px' }}>Soil Saturation Forecast for New York State</Typography>
-      <RunoffRiskMap
+      <MapWithOptions
         {...props}
         dropdownOptions={ssVariableOptions}
         proxyEndpointName='soil-saturation'

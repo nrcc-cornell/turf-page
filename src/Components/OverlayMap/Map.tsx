@@ -15,11 +15,11 @@ mapboxgl.workerClass =
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
 
-import Markers from './LocationComponents/Markers';
-
-import { getLocation } from '../Scripts/Data';
-import roundXDigits from '../Scripts/Rounding';
-import WarningIcon from './WarningIcon';
+  
+import { getLocation } from '../../Scripts/Data';
+import roundXDigits from '../../Scripts/Rounding';
+import WarningIcon from '../WarningIcon';
+import Markers from '../LocationComponents/Markers';
 
 const bounds = { south: 37.09, west: -82.7542 };
 const mainMapStyle =

@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { Box, Typography } from '@mui/material';
 
 import { convertDate, convertRiskPercToRiskText } from './rrPageUtils';
-import { runoffRiskLegendInfo } from './rrOptions';
+import { runoffRiskLegendInfo } from '../../OverlayMap/Options';
 
 type RRDailyChart = {
   dates: string[],

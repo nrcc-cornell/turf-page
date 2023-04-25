@@ -1,6 +1,6 @@
 import { format, parse } from 'date-fns';
 
-import { runoffRiskLegendInfo } from './rrOptions';
+import { runoffRiskLegendInfo } from '../../OverlayMap/Options';
 
 export const convertRiskPercToRiskText = (p: number) => {
   let riskText = '';

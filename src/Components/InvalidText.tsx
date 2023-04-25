@@ -7,7 +7,7 @@ type InvalidTextProps = {
 
 const invalidTexts = {
   'notNY': ['This tool is only valid for locations within NY.','Select a location within NY to see more information.'],
-  'outOfSeason': ['This tool is not active until March 9th. Please check back then.'],
+  'outOfSeason': ['This tool is not active until March 10th. Please check back then.'],
   'noSoilData': ['No soil data was found at this location.','Please try a nearby location to get valid soil data.']
 };
 

@@ -3,19 +3,19 @@ import { parse, format, addDays } from 'date-fns';
 
 import { Box, TextField, MenuItem } from '@mui/material';
 
-import MapSlider from '../../MapSlider';
-import OverlayMap from '../../OverlayMap';
-import Legend from './rrLegend';
+import MapSlider from './Slider';
+import OverlayMap from './Map';
+import Legend from './Legend';
 
-import convertCoordsToIdxs from '../../../Scripts/convertCoordsToIdxs';
-import { updateStateFromProxy } from '../../../Scripts/proxy';
-import { VariableOptions } from './rrOptions';
+import convertCoordsToIdxs from '../../Scripts/convertCoordsToIdxs';
+import { updateStateFromProxy } from '../../Scripts/proxy';
+import { VariableOptions } from './Options';
 
 type RRMap<T> = DisplayProps & {
   dropdownOptions: VariableOptions;
   proxyEndpointName: string;
   modelData: T;
-  setModelData: (a: T) => void;
+  setModelData?: (a: T) => void;
 };
 
 type RunoffCoords = {
@@ -25,7 +25,7 @@ type RunoffCoords = {
 
 type Data = { dates: string[] };
 
-export default function RunoffRiskMap<T extends Data>(
+export default function MapWithOptions<T extends Data>(
   props: RRMap<T>
 ) {
   const today = new Date();
@@ -40,6 +40,8 @@ export default function RunoffRiskMap<T extends Data>(
   const [forecastDateIdx, setForecastDateIdx] = useState(0);
   const [overlay, setOverlay] = useState('');
 
+  console.log(props);
+
   useEffect(() => {
     updateStateFromProxy<RunoffCoords>(
       { dateStr: todayStr },
@@ -49,7 +51,7 @@ export default function RunoffRiskMap<T extends Data>(
   }, []);
 
   useEffect(() => {
-    if (coordArrs.lats.length && coordArrs.lons.length) {
+    if (props.setModelData && coordArrs.lats.length && coordArrs.lons.length) {
       const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
         convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
 
@@ -86,7 +88,7 @@ export default function RunoffRiskMap<T extends Data>(
 
   return (
     <>
-      <Box
+      {Object.keys(props.dropdownOptions).length > 1 && <Box
         sx={{
           display: 'flex',
           justifyContent: 'center',
@@ -108,7 +110,7 @@ export default function RunoffRiskMap<T extends Data>(
             </MenuItem>
           ))}
         </TextField>
-      </Box>
+      </Box>}
 
 
       <Box

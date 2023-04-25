@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Divider, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 
-import { runoffRiskLegendInfo } from './rrOptions';
+import { runoffRiskLegendInfo } from '../../OverlayMap/Options';
 
 const TextSection = styled(Typography)({
   textAlign: 'justify',

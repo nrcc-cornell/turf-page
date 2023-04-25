@@ -42,7 +42,6 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
       }
     }
 
-    console.log([format(currDay, 'MM-dd-yyyy'), todayDayLength]);
     categoryByDate.push([format(currDay, 'MM-dd-yyyy'), cat]);
   }
 

@@ -1,3 +1,12 @@
+export type  VariableOption = {
+  overlay: string;
+  legend: { color: string, label: string }[];
+}
+
+export type VariableOptions = {
+  [key:string]: VariableOption
+}
+
 export const runoffRiskLegendInfo = [
   { color: '#52be80', label: 'Little/No Runoff' },
   { color: '#ffd700', label: 'Low' },
@@ -26,16 +35,7 @@ const soilTempLegendInfo = [
   { color: '#B32423', label: '>50' },
 ];
 
-export type  VariableOption = {
-  overlay: string;
-  legend: { color: string, label: string }[];
-}
-
-export type VariableOptions = {
-  [key:string]: VariableOption
-}
-
-export const variableOptions = {
+export const rrVariableOptions = {
 'Runoff Risk (24-hour)': {
   overlay: 'turf_24hr',
   legend: runoffRiskLegendInfo,
@@ -91,4 +91,18 @@ export const ssVariableOptions = {
     overlay: 'dailyAvgSoilSat_sfc10',
     legend: soilSatLegendInfo,
   },
+};
+
+
+const growthPotentialLegendInfo = [
+  { color: '#209c05', label: 'Low Growth' },
+  { color: '#e6df1e', label: 'Moderate' },
+  { color: '#ff0a0a', label: 'High' }
+];
+
+export const gpVariableOptions = {
+  'Growth Potential (%)': {
+    overlay: 'turf_growth_potential',
+    legend: growthPotentialLegendInfo
+  }
 };

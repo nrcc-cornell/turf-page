@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { VariableOption } from './rrOptions';
+import { VariableOption } from './Options';
 
 type RRLegend = VariableOption & {
   label: string

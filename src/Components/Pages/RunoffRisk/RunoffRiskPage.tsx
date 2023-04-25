@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 
-import { variableOptions } from './rrOptions';
+import { rrVariableOptions } from '../../OverlayMap/Options';
 
-import RunoffRiskMap from './RunoffRiskMap';
+import MapWithOptions from '../../OverlayMap/MapWithOptions';
 import RunoffRiskSummary from './RunoffRiskSummary';
 import RunoffRiskGraphicals from './RunoffRiskGraphicals';
 import RunoffRiskMoreInfo from './RunoffRiskMoreInfo';
@@ -87,9 +87,9 @@ export default function RunoffRiskPage(props: DisplayProps) {
       
       <StyledDivider />
       
-      <RunoffRiskMap
+      <MapWithOptions
         {...props}
-        dropdownOptions={variableOptions}
+        dropdownOptions={rrVariableOptions}
         proxyEndpointName='runoff-risk'
         modelData={modelData}
         setModelData={setModelData}
