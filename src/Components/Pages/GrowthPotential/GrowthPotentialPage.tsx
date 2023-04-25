@@ -9,7 +9,7 @@ import { growthPotentialModel } from '../../../Scripts/GrowthPotentialModel';
 import StyledCard from '../../StyledCard';
 import GrowthPotentialGraph from './GrowthPotentialGraph';
 import Loading from '../../Loading';
-import IrrigationSwitch from './IrrigationSwitch';
+import IrrigationSwitch from '../../IrrigationSwitch';
 import StyledDivider from '../../StyledDivider';
 import InvalidText from '../../InvalidText';
 import MapWithOptions from '../../OverlayMap/MapWithOptions';
@@ -120,16 +120,18 @@ const generateRecommendation = (
   return text;
 };
 
-const renderTools = (modelResults: ModelOutput | null, isIrrigation: boolean, setIsIrrigation: React.Dispatch<React.SetStateAction<boolean>>, isLoading: boolean) => {
-  const THRESHOLDS = [0, 25, 66];
-  
-  if (isLoading) {
+const renderTools = (modelResults: ModelOutput | null, isIrrigation: boolean, setIsIrrigation: React.Dispatch<React.SetStateAction<boolean>>, isLoading: boolean, isNY: boolean) => {
+  if (!isNY) {
+    return <InvalidText type='notNY' />;
+  } else if (isLoading) {
     return <Loading />;
   } else if (!modelResults) {
     return <InvalidText type='outOfSeason' />;
   } else if (modelResults && modelResults.dates.length === 0) {
     return <InvalidText type='noSoilData' />;
   } else {
+    const THRESHOLDS = [0, 25, 66];
+
     return (<>
       <Box sx={{ maxWidth: '700px', margin: '40px auto 0px' }}>
         <Typography variant='h5'>Growth Potential Estimates</Typography>
@@ -186,31 +188,32 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
 
   useEffect(() => {
     (async () => {
-      let newData: GPModelData | null = null;
-      if (coordArrs && isAfter(today, new Date(today.getFullYear(), 2, 9)) && isBefore(today, new Date(today.getFullYear(), 10, 1))) {
-        setLoading(true);
-        const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
-          convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
-  
-        const forecastSoilSats = await getFromProxy<ForecastSS>(
-          { dateStr: overlayDates[0], idxLat, idxLng },
-          'soil-saturation'
-        );
-  
-        if (forecastSoilSats) {
-          newData = await addObservedData(
-            forecastSoilSats,
-            today,
-            props.currentLocation.lngLat
+      if (coordArrs) {
+        let newData: GPModelData | null = null;
+        if (isAfter(today, new Date(today.getFullYear(), 2, 9)) && isBefore(today, new Date(today.getFullYear(), 10, 1))) {
+          setLoading(true);
+          const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
+            convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
+    
+          const forecastSoilSats = await getFromProxy<ForecastSS>(
+            { dateStr: overlayDates[0], idxLat, idxLng },
+            'soil-saturation'
           );
-          if (!newData) newData = { soilSats: [], avgt: [], dates: []} as GPModelData;
+    
+          if (forecastSoilSats) {
+            newData = await addObservedData(
+              forecastSoilSats,
+              today,
+              props.currentLocation.lngLat
+            );
+            if (!newData) newData = { soilSats: [], avgt: [], dates: []} as GPModelData;
+          }
         }
+
+        setModelResults(calcModelResults(newData, isIrrigation, props.currentLocation));
+        setModelData(newData);
+        setLoading(false);
       }
-
-      setModelResults(calcModelResults(newData, isIrrigation, props.currentLocation));
-      setModelData(newData);
-      setLoading(false);
-
     })();
   }, [props.currentLocation, coordArrs]);
 
@@ -236,7 +239,7 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
         <Typography variant='h5'>Growth Potential Forecast for New York State</Typography>
         <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for managing turfgrass</Typography>
 
-        {props.currentLocation.address.split(', ').slice(-1)[0] === 'New York' ? renderTools(modelResults, isIrrigation, setIsIrrigation, loading) : <InvalidText type='notNY' />}
+        {renderTools(modelResults, isIrrigation, setIsIrrigation, loading, props.currentLocation.address.split(', ').slice(-1)[0] === 'New York')}
         
         <StyledDivider />
 

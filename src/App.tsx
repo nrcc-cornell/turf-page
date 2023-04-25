@@ -182,6 +182,8 @@ function App() {
         return (
           <LawnWateringPage
             currentLocation={currentLocation}
+            pageInfo={info}
+            todayFromAcis={toolData.todayFromAcis}
           />
         );
       }

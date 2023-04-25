@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Typography } from '@mui/material';
-import { format, isBefore } from 'date-fns';
+import { Box, TextField, Typography, MenuItem } from '@mui/material';
+import { format, isBefore, isAfter } from 'date-fns';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
 import InvalidText from '../../InvalidText';
 import Loading from '../../Loading';
+import DailyChart, { NumberRow, StringRow } from '../../DailyChart';
 
 import { getFromProxy } from '../../../Scripts/proxy';
 import convertCoordsToIdxs from '../../../Scripts/convertCoordsToIdxs';
 import { fetchETData } from '../../../Scripts/calcPastSoilSaturation';
 import { runWaterDeficitModel, SoilMoistureOptionLevel } from '../../../Scripts/waterDeficitModel';
 import { getDateAdjustment, EtReturn } from '../../../Scripts/calcPastSoilSaturation';
+import roundXDigits from '../../../Scripts/Rounding';
+import LawnWateringConditionalText from './LawnWateringConditionalText';
 
 type LawnWateringPageProps = {
   currentLocation: UserLocation;
+  pageInfo: TablePageInfo;
+  todayFromAcis: boolean;
 }
 
 type ForecastData = {
@@ -39,6 +44,17 @@ type RunoffCoords = {
   lons: number[];
 };
 
+type ModelOutput = {
+  dates: string[];
+  values: number[];
+};
+
+type LWModelData = {
+  precip: number[];
+  et: number[];
+  dates: string[];
+};
+
 const fetchPrecip = async (loc: [number, number], eDate: string) => {
   const response = await fetch('https://grid2.rcc-acis.org/GridData', {
     method: 'POST',
@@ -59,36 +75,96 @@ const fetchPrecip = async (loc: [number, number], eDate: string) => {
   return results.data;
 };
 
-const renderTools = () => {
-  return (<>
-      {/* <DailyChart
-        {...props.pageInfo.chart}
+const renderTools = (
+  modelResults: ModelOutput | null,
+  pageInfo: TablePageInfo,
+  todayFromAcis: boolean,
+  isLoading: boolean,
+  isNY: boolean,
+  lastWater: string,
+  setLastWater: React.Dispatch<React.SetStateAction<string>>,
+  soilCap: string,
+  setSoilCap: React.Dispatch<React.SetStateAction<SoilMoistureOptionLevel>>
+) => {
+  if (!isNY) {
+    return <InvalidText type='notNY' />;
+  } else if (isLoading) {
+    return <Loading />;
+  } else if (!modelResults) {
+    return <InvalidText type='outOfSeason' />;
+  } else {
+    const data = [{
+      rowName: 'As of 8am On',
+      type: 'dates',
+      data: modelResults.dates.slice(-6)
+    },{
+      rowName: pageInfo.chart.rowNames[0],
+      type: 'numbers',
+      data: modelResults.values.slice(-6)
+    }] as (StringRow | NumberRow)[];
+
+    const year = String(new Date().getFullYear());
+    const march1 = year + '-' + modelResults.dates[0];
+    const todayIdx = modelResults.values.length - (todayFromAcis ? 3 : 4);
+    const today = year + '-' + modelResults.dates[todayIdx];
+
+    return (<>
+      <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+        <TextField
+          type='date'
+          label='Last Water Date'
+          value={lastWater}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastWater(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          inputProps={{
+            min: march1,
+            max: today,
+            style: {
+              textAlign: 'center'
+            }
+          }}
+        />
+
+        <TextField
+          select
+          label='Soil Water Capacity'
+          value={soilCap}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSoilCap(e.target.value as SoilMoistureOptionLevel)}
+        >
+          <MenuItem value={SoilMoistureOptionLevel.HIGH}>High (Clay, fine texture)</MenuItem>
+          <MenuItem value={SoilMoistureOptionLevel.MEDIUM}>Medium (Loam, med texture)</MenuItem>
+          <MenuItem value={SoilMoistureOptionLevel.LOW}>Low (Sand, coarse texture)</MenuItem>
+        </TextField>
+      </Box>
+
+      <DailyChart
+        {...pageInfo.chart}
         data={data}
-        todayFromAcis={props.todayFromAcis}
+        todayFromAcis={todayFromAcis}
         numRows={3}
-      /> */}
+      />
       
       <StyledDivider />
       
-      {/* <PollinatorConditionalText text={[{ name: 'Dandelion', color: todayDandelionRisk}, { name: 'White Clover', color: todayCloverRisk }]} /> */}
+      <LawnWateringConditionalText today={modelResults.values[todayIdx]} />
 
       <StyledDivider />
 
       {/* <WastedWater /> */}
-  </>);
+    </>);
+  }
 };
 
-const alignAndExtract = (rawEtData: EtReturn, tempPrcpData: [string, number][], year: number) => {
+const alignAndExtract = (rawEtData: EtReturn, prcpData: [string, number][], year: number) => {
   let etData, etDates;
-  const DA = getDateAdjustment(rawEtData, tempPrcpData, year);
+  const DA = getDateAdjustment(rawEtData, prcpData, year);
   if (DA > 0) {
-    const currentDateIdx = tempPrcpData.findIndex(
+    const currentDateIdx = prcpData.findIndex(
       (arr: [string, number]) => arr[1] === -999
     );
-    console.log(currentDateIdx);
-    tempPrcpData = tempPrcpData.slice(
+    prcpData = prcpData.slice(
       DA,
-      currentDateIdx >= 0 ? currentDateIdx : tempPrcpData.length
+      currentDateIdx >= 0 ? currentDateIdx : prcpData.length
     );
     etData = rawEtData.pet;
     etDates = rawEtData.dates_pet;
@@ -100,19 +176,20 @@ const alignAndExtract = (rawEtData: EtReturn, tempPrcpData: [string, number][], 
     etDates = rawEtData.dates_pet;
   }
 
-  const endIdx = Math.min(etData.length, tempPrcpData.length);
-  const numDays = Math.min(30, endIdx);
-  const startIdx = endIdx - numDays;
+  const startIdx = 0;
+  const endIdx = Math.min(etData.length, prcpData.length);
 
-
-  return { et: etData.slice(startIdx,endIdx), etDates: etDates.slice(startIdx,endIdx), precip: tempPrcpData.slice(startIdx,endIdx).map(arr => arr[1]), precipDates: tempPrcpData.slice(startIdx,endIdx).map(arr => arr[0]) };
+  return { et: etData.slice(startIdx,endIdx), etDates: etDates.slice(startIdx,endIdx), precip: prcpData.slice(startIdx,endIdx).map(arr => arr[1]), precipDates: prcpData.slice(startIdx,endIdx).map(arr => arr[0]) };
 };
 
 export default function LawnWateringPage(props: LawnWateringPageProps) {
   const today = new Date();
   const todayStr = format(today, 'yyyyMMdd');
   const [coordArrs, setCoordArrs] = useState<RunoffCoords | null>(null);
-  const [modelResults, setModelResults] = useState<null>(null);
+  const [modelData, setModelData] = useState<LWModelData | null>(null);
+  const [modelResults, setModelResults] = useState<ModelOutput | null>(null);
+  const [lastWater, setLastWater] = useState('');
+  const [soilCap, setSoilCap] = useState(SoilMoistureOptionLevel.MEDIUM);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -127,122 +204,102 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
   
   useEffect(() => {
     (async () => {
-      // Fetch coords
-    
-      // Fetch et
-      // Fetch prcp forecast
-      // Fetch prcp past
-      
+      if (coordArrs){
+        let newModelResults = null;
+        let newModelData: LWModelData | null = null;
+        if (isAfter(today, new Date(today.getFullYear(), 2, 9)) && isBefore(today, new Date(today.getFullYear(), 10, 1))) {
+          setLoading(true);
+          const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
+            convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
 
-      // Run through model
-      // Format to use in daily chart
-      // Get today for conditional text
-      // Calc wasted water for year
-      
-      
-      
-      setLoading(true);
-      
-      if (isBefore(today, new Date(today.getFullYear(), 2, 9)) || coordArrs === null) {
-        setModelResults(null);
-      } else {
-        const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
-          convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
+          const [ forecast, rawEtData, pastPrecip ] = await Promise.all([
+            getFromProxy<ForecastData>(
+              { dateStr: todayStr, idxLat, idxLng },
+              'runoff-risk'
+            ),
+            fetchETData(props.currentLocation.lngLat, today.getFullYear()),
+            fetchPrecip(props.currentLocation.lngLat, format(today, 'yyyy-MM-dd'))
+          ]);
 
-        const [ forecast, rawEtData, pastPrecip ] = await Promise.all([
-          getFromProxy<ForecastData>(
-            { dateStr: todayStr, idxLat, idxLng },
-            'runoff-risk'
-          ),
-          fetchETData(props.currentLocation.lngLat, today.getFullYear()),
-          fetchPrecip(props.currentLocation.lngLat, format(today, 'yyyy-MM-dd'))
-        ]);
+          if (forecast && rawEtData) {
+            const aligned = alignAndExtract(rawEtData, pastPrecip, today.getFullYear());
+            
+            const numFcstDays = rawEtData.dates_pet_fcst.length;
+            aligned.et = aligned.et.concat(rawEtData.pet_fcst);
+            aligned.etDates = aligned.etDates.concat(rawEtData.dates_pet_fcst);
+            
+            const nextDate = String(parseInt(aligned.precipDates[aligned.precipDates.length - 1].slice(-2)) + 1);
+            const nextDateIdx = forecast.dates.findIndex(dateStr => String(dateStr).slice(-2) === nextDate);
+            aligned.precip = aligned.precip.concat(forecast.precipChart.raim.slice(nextDateIdx, nextDateIdx + numFcstDays));
+            aligned.precipDates = aligned.precipDates.concat(forecast.dates.slice(nextDateIdx, nextDateIdx + numFcstDays).map(val => `${String(val).slice(0,4)}-${String(val).slice(4,6)}-${String(val).slice(6)}`));
+            aligned.precipDates = aligned.precipDates.map(date => date.slice(5));
 
-        if (forecast && rawEtData) {
-          console.clear();
-          console.log(forecast);
-          console.log(rawEtData);
-          console.log(pastPrecip);
+            newModelData = {
+              dates: aligned.precipDates,
+              precip: aligned.precip,
+              et: aligned.et
+            };
 
-          const aligned = alignAndExtract(rawEtData, pastPrecip, today.getFullYear());
-          
-          const nextDate = String(parseInt(aligned.etDates[aligned.etDates.length - 1].slice(-2)) + 1);
-          aligned.et.push(rawEtData.pet_fcst[0]);
-          aligned.etDates.push(rawEtData.dates_pet_fcst[0]);
-
-          if (String(forecast.dates[0]).slice(-2) === nextDate) {
-            aligned.precip.push(forecast.precipChart.raim[0]);
-            aligned.precipDates.push(String(forecast.dates[0]));
-          } else {
-            aligned.precip.push(forecast.precipChart.raim[1]);
-            aligned.precipDates.push(String(forecast.dates[1]));
+            const waterDeficitDaily = runWaterDeficitModel(aligned.precip, aligned.et, soilCap, newModelData.dates.findIndex(date => date === lastWater.slice(5)));
+            newModelResults = waterDeficitDaily.reduce((acc, val, i) => {
+              acc.dates.push(aligned.precipDates[i]);
+              acc.values.push(roundXDigits(val, 2));
+              return acc;
+            }, { dates: [], values: [] } as ModelOutput);
           }
-          console.log(aligned);
-
-          const waterDeficit = runWaterDeficitModel(aligned.precip, aligned.et, 0, SoilMoistureOptionLevel.MEDIUM);
-          console.log(waterDeficit.deficitDaily.map((val, i) => [aligned.precipDates[i], val]));
         }
 
-
-        // if (forecastSoilSats) {
-        //   const newModelData = await addObservedData(
-        //     forecastSoilSats,
-        //     today,
-        //     props.currentLocation.lngLat
-        //   );
-        //   if (newModelData) {
-        //     setModelData(newModelData);
-        //   } else {
-        //     setModelData({ soilSats: [], avgt: [], dates: []} as GPModelData);
-        //   }
-        // }
+        setModelData(newModelData);
+        setModelResults(newModelResults);
+        setLoading(false);
       }
-
-      setLoading(false);
     })();
   }, [props.currentLocation, coordArrs]);
-  
-  if (loading) {
-    return <Loading />;
-  // } else if (!modelResults) {
-  //   return (
-  //     <StyledCard
-  //       variant='outlined'
-  //       sx={{
-  //         padding: '10px',
-  //         boxSizing: 'border-box',
-  //         border: 'none',
-  //         textAlign: 'center',
-  //         '@media (max-width: 448px)': {
-  //           width: '100%',
-  //           padding: '10px 0px',
-  //           border: 'none',
-  //         },
-  //       }}
-  //     >
-  //       <InvalidText type='outOfSeason' />
-  //     </StyledCard>
-  //   );
-  } else {
-    return (
-      <StyledCard
-        variant='outlined'
-        sx={{
-          padding: '10px',
-          boxSizing: 'border-box',
-          maxWidth: '1100px',
-          '@media (max-width: 448px)': {
-            width: '100%',
-            padding: '10px 0px',
-            border: 'none',
-          },
-        }}
-      >
-        <Typography variant='h5' sx={{ marginLeft: '6px' }}>Lawn Watering Forecast for New York State</Typography>
-        <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for reducing water usage when watering lawns</Typography>
 
-        {/* {props.currentLocation.address.split(', ').slice(-1)[0] === 'New York' ? renderTools(modelResults) : <InvalidText type='notNY' />} */}
-      </StyledCard>
-    );
-  }
+  useEffect(() => {
+    if (modelData) {
+      setLoading(true);
+      console.log(modelData.dates.findIndex(date => date === lastWater.slice(5)), lastWater.slice(5));
+      const waterDeficitDaily = runWaterDeficitModel(modelData.precip, modelData.et, soilCap, modelData.dates.findIndex(date => date === lastWater.slice(5)));
+      const newModelResults = waterDeficitDaily.reduce((acc, val, i) => {
+        acc.dates.push(modelData.dates[i]);
+        acc.values.push(roundXDigits(val, 2));
+        return acc;
+      }, { dates: [], values: [] } as ModelOutput);
+  
+      setModelResults(newModelResults);
+      setLoading(false);
+    }
+  }, [lastWater, soilCap]);
+  
+  return (
+    <StyledCard
+      variant='outlined'
+      sx={{
+        padding: '10px',
+        boxSizing: 'border-box',
+        maxWidth: '1100px',
+        '@media (max-width: 448px)': {
+          width: '100%',
+          padding: '10px 0px',
+          border: 'none',
+        },
+      }}
+    >
+      <Typography variant='h5' sx={{ marginLeft: '6px' }}>Lawn Watering Forecast for New York State</Typography>
+      <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for reducing water usage when watering lawns</Typography>
+
+      {renderTools(
+        modelResults,
+        props.pageInfo,
+        props.todayFromAcis,
+        loading,
+        props.currentLocation.address.split(', ').slice(-1)[0] === 'New York',
+        lastWater,
+        setLastWater,
+        soilCap,
+        setSoilCap
+      )}
+    </StyledCard>
+  );
 }

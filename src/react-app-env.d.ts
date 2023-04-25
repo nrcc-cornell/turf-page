@@ -30,7 +30,7 @@ type MapsOnlyPageInfo = {
       [key: string]: string | number;
     };
   }[];
-  pageType: 'mapsOnly' | 'soilSat' | 'runoffRisk' | 'growthPotential' | 'lawn-watering';
+  pageType: 'mapsOnly' | 'soilSat' | 'runoffRisk' | 'growthPotential';
 };
 
 type GraphPageInfo = {
@@ -90,7 +90,7 @@ type TablePageInfo = {
       [key: string]: string | number;
     };
   }[];
-  pageType: 'table';
+  pageType: 'table' | 'lawn-watering';
   chart: {
     data: 'gdd50DiffGdds' | 'temp';
     title: string;

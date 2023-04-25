@@ -624,6 +624,11 @@ const routeInfo: RouteInfo[] = [
     path: '/irrigation/lawn-watering-tool',
     props: {
       pageType: 'lawn-watering',
+      chart: {
+        data: 'temp',
+        title: 'Water Deficit Forecast',
+        rowNames: ['Inches'],
+      },
       maps: [
         {
           url: '',
