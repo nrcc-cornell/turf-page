@@ -7,7 +7,11 @@ import {
 } from '@mui/material';
 import StyledDivider from './StyledDivider';
 
-
+export type TextProps = {
+  titlePart: string;
+  description: string[];
+  references?: string[];
+};
 
 const BoxSX = {
   display: 'flex',

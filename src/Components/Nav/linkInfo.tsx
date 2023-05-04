@@ -11,6 +11,16 @@ import {
   EmojiNature
 } from '@mui/icons-material';
 
+export type MenuObj = {
+  base: string;
+  name: string;
+  icon: JSX.Element;
+  items: {
+    pathname: string;
+    label: string;
+  }[];
+};
+
 const menuGroups: MenuObj[] = [
   {
     base: '',

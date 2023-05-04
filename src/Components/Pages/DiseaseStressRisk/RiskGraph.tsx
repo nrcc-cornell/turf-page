@@ -16,8 +16,31 @@ Highcharts.Chart.prototype.showResetZoom = function () {
 
 import StyledButton from '../../StyledBtn';
 import roundXDigits from '../../../Scripts/Rounding';
+import { RiskDataObj } from '../../../Scripts/Data';
 
-export default function RiskGraph(props: RiskGraph) {
+type SeriesObj = {
+  data: (string | number)[][];
+  name: string;
+  color: string;
+  zIndex: number;
+  id?: string;
+  linkedTo?: string;
+  dashStyle?: 'Dash';
+};
+
+type RiskGraphProps = {
+  data: RiskDataObj;
+  todayFromAcis: boolean;
+  thresholds: {
+    low: number;
+    medium: number;
+    high: number;
+  };
+  title: string;
+};
+
+
+export default function RiskGraph(props: RiskGraphProps) {
   const chartComponent = useRef<HighchartsReact.RefObject | null>(null);
   const [isZoomed, setIsZoomed] = useState(true);
 
@@ -52,7 +75,7 @@ export default function RiskGraph(props: RiskGraph) {
     },
   ];
 
-  if ('7 Day Avg' in props.data) {
+  if (props.data['7 Day Avg'] !== undefined) {
     const otherDatesConverted = props.data['7 Day Avg'].map(
       (arr: [string, number]) => [arr[0].slice(0, 5), Math.max(0, arr[1])]
     );

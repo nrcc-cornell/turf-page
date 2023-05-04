@@ -11,6 +11,15 @@ import {
 import TextContent from './TextContent';
 import StyledDivider from './StyledDivider';
 
+export type MapPageProps = {
+  url: string;
+  alt: string;
+  description: string[];
+  title?: string;
+  mainSX?: {
+    [key: string]: string | number;
+  };
+};
 
 
 export default function MapPage(props: MapPageProps) {

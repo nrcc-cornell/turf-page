@@ -3,9 +3,16 @@ import React, { Fragment } from 'react';
 import { Box } from '@mui/material';
 
 import StyledDivider from './StyledDivider';
-import MapPage from './MapPage';
+import MapPage, { MapPageProps } from './MapPage';
 
-export default function MultiMapPage(props: MultiMapPage) {
+export type MultiMapPageMaps = MapPageProps[];
+
+type MultiMapPageProps = {
+  maps: MultiMapPageMaps;
+};
+
+
+export default function MultiMapPage(props: MultiMapPageProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mainSX: any;
   if (props.maps.length > 1) {

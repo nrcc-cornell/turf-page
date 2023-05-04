@@ -2,17 +2,37 @@ import React from 'react';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
-import MultiMapPage from '../../MultiMapPage';
+import MultiMapPage, { MultiMapPageMaps } from '../../MultiMapPage';
 import DailyChart, { StringRow, NumberRow } from '../../DailyChart';
+
+export type TablePageInfo = {
+  maps: {
+    url: string;
+    alt: string;
+    description: string[];
+    title?: string;
+    mainSX?: {
+      [key: string]: string | number;
+    };
+  }[];
+  pageType: 'table' | 'lawn-watering';
+  chart: {
+    data: 'gdd50DiffGdds' | 'temp';
+    title: string;
+    rowNames: string[];
+  };
+};
+
+export type TableData = {
+  table: [string, number][][];
+};
 
 type TablePageProps = {
   todayFromAcis: boolean;
   sx: {
     [key:string]: string
   };
-  data: {
-    table: [string, number][][];
-  };
+  data: TableData;
   pageInfo: TablePageInfo
 };
 
@@ -44,7 +64,7 @@ export default function TablePage(props: TablePageProps) {
 
       <StyledDivider />
 
-      <MultiMapPage maps={props.pageInfo.maps as MapPageProps[]} />
+      <MultiMapPage maps={props.pageInfo.maps as MultiMapPageMaps} />
     </StyledCard>
   );
 }

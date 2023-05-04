@@ -19,7 +19,17 @@ mapboxgl.workerClass =
 import { getLocation } from '../../Scripts/Data';
 import roundXDigits from '../../Scripts/Rounding';
 import WarningIcon from '../WarningIcon';
-import Markers from '../LocationComponents/Markers';
+import Markers, { PopupContent } from '../LocationComponents/Markers';
+
+type OverlayMapProps = {
+  src: string;
+  currentLocation: UserLocation;
+  pastLocations: UserLocation[];
+  handleChangeLocations: (
+    a: 'add' | 'remove' | 'change',
+    b: UserLocation
+  ) => void;
+};
 
 const bounds = { south: 37.09, west: -82.7542 };
 const mainMapStyle =

@@ -14,6 +14,62 @@ import roundXDigits from './Rounding';
 import DayHourly from './DayClasses';
 import ArrSummer from './ArrSummerClass';
 
+import { GraphData } from '../Components/Graph';
+import { TableData } from '../Components/Pages/TablePage/TablePage';
+
+type GridDatum = [string, number, number, number, number];
+
+type ContextType = {
+  id: string;
+  wikidata?: string;
+  text: string;
+  short_code?: string;
+};
+
+type DayValues = {
+  anthracnose: [string, number][];
+  brownPatch: [string, number][];
+  dollarspot: [string, number][];
+  pythiumBlight: [string, number][];
+  heatStress: [string, number][];
+};
+
+export type RiskDataObj = {
+  season: [string, number][];
+  '7 Day Avg'?: [string, number][];
+};
+
+type RiskDataResults = {
+  anthracnose: RiskDataObj;
+  brownPatch: RiskDataObj;
+  dollarspot: RiskDataObj;
+  pythiumBlight: RiskDataObj;
+  heatStress: RiskDataObj;
+};
+
+type GraphDataResults = {
+  gdd32: GraphData;
+  gdd50: GraphData;
+  gdd50DiffGdds: TableData;
+  gdd50DiffDays: TableData;
+  precip: GraphData;
+  temp: TableData;
+  todayFromAcis: boolean;
+};
+
+export type ToolData = RiskDataResults & GraphDataResults;
+
+type SumObj = { sum: number; count: number };
+
+type DSC = {
+  date: string;
+  gdd32: SumObj;
+  gdd50: SumObj;
+  precip: SumObj;
+  temp: SumObj;
+};
+
+
 const emptyIndices = {
   anthracnose: {
     Daily: [],
@@ -179,10 +235,10 @@ function getPast(
 // Averages X number of days of index values
 const xDayAverage = (
   numDays: number,
-  indices: StrDateValue[]
-): StrDateValue[] => {
-  const past: StrDateValue[] = [];
-  return indices.reduce((acc: StrDateValue[], d) => {
+  indices: [string, number][]
+): [string, number][] => {
+  const past: [string, number][] = [];
+  return indices.reduce((acc: [string, number][], d) => {
     past.push(d);
 
     // If 'past' is 'numDays' long, push [date, average] to 'acc' then remove the oldest day from the list
@@ -400,10 +456,10 @@ const getTableData = async (
   const hasToday = res[res.length - 1][1] !== -999;
 
   // Convert observed values and add to return arrays
-  const gdd32: StrDateValue[] = [],
-    gdd50: StrDateValue[] = [],
-    precip: StrDateValue[] = [],
-    temp: StrDateValue[] = [];
+  const gdd32: [string, number][] = [],
+    gdd50: [string, number][] = [],
+    precip: [string, number][] = [],
+    temp: [string, number][] = [];
 
   let sevenDay = ['', 0];
   const precipArr = new ArrSummer(),
@@ -463,7 +519,7 @@ const getTableData = async (
     }
   }
 
-  precip.push(sevenDay as StrDateValue);
+  precip.push(sevenDay as [string, number]);
 
   return {
     table32: gdd32,
@@ -534,10 +590,10 @@ const calcNormals = (normalYears: GridDatum[], beginLastSeason: string) => {
     })
   );
 
-  const normal32: StrDateValue[] = [],
-    normal50: StrDateValue[] = [],
-    normalPrecip: StrDateValue[] = [],
-    normalTemp: StrDateValue[] = [];
+  const normal32: [string, number][] = [],
+    normal50: [string, number][] = [],
+    normalPrecip: [string, number][] = [],
+    normalTemp: [string, number][] = [];
   sums.forEach((day) => {
     normal32.push([day.date, roundXDigits(day.gdd32.sum / day.gdd32.count, 0)]);
     normal50.push([day.date, roundXDigits(day.gdd50.sum / day.gdd50.count, 0)]);
@@ -563,9 +619,9 @@ const getCurrentSeason = async (today: Date, lngLat: string) => {
 
   const res = await getPast(sDate, eDate, lngLat, true);
 
-  const current32: StrDateValue[] = [],
-    current50: StrDateValue[] = [],
-    currentPrecip: StrDateValue[] = [];
+  const current32: [string, number][] = [],
+    current50: [string, number][] = [],
+    currentPrecip: [string, number][] = [];
   res.forEach((day) => {
     const date = format(parseISO(day[0]), 'MM-dd-yyyy');
     current32.push([date, roundXDigits(day[1], 0)]);
@@ -581,9 +637,9 @@ const getCurrentSeason = async (today: Date, lngLat: string) => {
 };
 
 const sliceLastSeason = (lastSeasonData: GridDatum[]) => {
-  const last32: StrDateValue[] = [],
-    last50: StrDateValue[] = [],
-    lastPrecip: StrDateValue[] = [];
+  const last32: [string, number][] = [],
+    last50: [string, number][] = [],
+    lastPrecip: [string, number][] = [];
   lastSeasonData.forEach((day) => {
     const date = format(parseISO(day[0]), 'MM-dd-yyyy');
     last32.push([date, roundXDigits(day[1], 0)]);
@@ -598,7 +654,7 @@ const sliceLastSeason = (lastSeasonData: GridDatum[]) => {
   };
 };
 
-const findMatch = (arr1: StrDateValue[], arr2: StrDateValue[]) => {
+const findMatch = (arr1: [string, number][], arr2: [string, number][]) => {
   let start = -1;
   let index = -1;
   while (start === -1) {
@@ -615,9 +671,9 @@ const findMatch = (arr1: StrDateValue[], arr2: StrDateValue[]) => {
 };
 
 const calcDeparture = (
-  current: StrDateValue[],
-  normal: StrDateValue[]
-): StrDateValue[] => {
+  current: [string, number][],
+  normal: [string, number][]
+): [string, number][] => {
   const { idxArr1, idxArr2 } = findMatch(current, normal);
   if (idxArr2 === -1) return [];
 
@@ -628,15 +684,15 @@ const calcDeparture = (
   });
 };
 
-const calcGddDiffs = (current: StrDateValue[], past: StrDateValue[]) => {
+const calcGddDiffs = (current: [string, number][], past: [string, number][]) => {
   const seasonStartIdx = past.findIndex((arr) => arr[0].slice(0, 5) === '03-15');
   const from315 = past.slice(seasonStartIdx);
   
   const { idxArr1, idxArr2 } = findMatch(current, from315);
   const relevantDays = from315.slice(idxArr2, idxArr2 + (9 - idxArr1));
 
-  const tableDiffGdds: StrDateValue[] = [];
-  const tableDiffDays: StrDateValue[] = [];
+  const tableDiffGdds: [string, number][] = [];
+  const tableDiffDays: [string, number][] = [];
 
   if (idxArr2 === -1)
     return {

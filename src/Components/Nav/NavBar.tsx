@@ -15,6 +15,18 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+type NavBarProp = {
+  group: {
+    base: string;
+    name: string;
+    icon: JSX.Element;
+    items: {
+      pathname: string;
+      label: string;
+    }[];
+  };
+};
+
 const bkColor = 'rgba(125, 193, 57, 0.75)';
 const LinkLine = styled(Box)({
   height: '5px',

@@ -2,13 +2,22 @@ import React, { Fragment } from 'react';
 
 import { Box } from '@mui/material';
 
-import TextContent from './TextContent';
-import WeekMaps from './WeekMaps';
+import TextContent, { TextProps } from './TextContent';
+import WeekMaps, { ThumbUrls } from './WeekMaps';
 import StyledDivider from './StyledDivider';
 
+export type MapThumbs = {
+  title: string;
+  thumbs: ThumbUrls[];
+};
+
+type RSWMapsProps = {
+  maps: MapThumbs[];
+  text?: TextProps;
+};
 
 
-export default function RSWMaps(props: RiskMapsProps) {
+export default function RSWMaps(props: RSWMapsProps) {
   return (
     <>
       <Box sx={{

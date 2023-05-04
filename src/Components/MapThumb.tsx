@@ -2,8 +2,20 @@ import React, { useState } from 'react';
 
 import { Card, CardContent, CardMedia, Typography, Box } from '@mui/material';
 
+type MapThumbProps = {
+  thumbUrl: string;
+  fullSizeUrl: string;
+  date?: string;
+  alt?: string;
+  border: string;
+  changeMap: () => void;
+};
+
+
 export default function MapThumb(props: MapThumbProps) {
   const [error, setError] = useState(false);
+
+  console.log(props);
 
   return (
     <Card

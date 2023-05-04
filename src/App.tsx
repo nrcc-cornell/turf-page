@@ -21,10 +21,10 @@ import {
   PollinatorRiskPage
 } from './Components';
 
-import { AppRouteInfo } from './AppRouteInfo';
+import { AppRouteInfo, PageInfo } from './AppRouteInfo';
 import { usePageTracking } from './Scripts/usePageTracking';
 
-import { getData } from './Scripts/Data';
+import { getData, ToolData } from './Scripts/Data';
 import SoilSaturationPage from './Components/Pages/SoilSaturation/SoilSaturationPage';
 import RunoffRiskPage from './Components/Pages/RunoffRisk/RunoffRiskPage';
 import DiseaseStressRiskPage from './Components/Pages/DiseaseStressRisk/DiseaseStressRiskPage';

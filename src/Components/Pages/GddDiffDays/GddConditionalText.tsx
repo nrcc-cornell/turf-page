@@ -4,6 +4,11 @@ import {
   Box, Typography
 } from '@mui/material';
 
+type ConditionTextProps = {
+  fromLast: number;
+  fromNormal: number;
+};
+
 const getText = (value: number) => {
   if (Math.abs(value) < 7) {
     return 'within one week of';

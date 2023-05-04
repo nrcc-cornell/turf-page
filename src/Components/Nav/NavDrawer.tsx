@@ -21,7 +21,11 @@ import {
 import { Menu } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
-import menuGroups from './linkInfo';
+import menuGroups, { MenuObj } from './linkInfo';
+
+type Toggle = {
+  type: string;
+};
 
 const StyledListItem = styled(ListItem)({
   '&:hover': {

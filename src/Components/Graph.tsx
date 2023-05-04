@@ -16,6 +16,14 @@ Highcharts.Chart.prototype.showResetZoom = function () {
 
 import StyledButton from './StyledBtn';
 
+export type GraphData = {
+  table: [string, number][][];
+  current: [string, number][];
+  last: [string, number][];
+  normal: [string, number][];
+};
+
+
 export default function Graph(props: GraphData & { units: string }) {
   const chartComponent = useRef<HighchartsReact.RefObject | null>(null);
   const [isZoomed, setIsZoomed] = useState(true);
@@ -66,7 +74,7 @@ export default function Graph(props: GraphData & { units: string }) {
               const data = props[
                 arrName as 'current' | 'last' | 'normal'
               ].slice(minIdx, maxIdx);
-              data.forEach((dayArr: StrDateValue) => {
+              data.forEach((dayArr: [string, number]) => {
                 if (dayArr[1] > max) max = dayArr[1];
                 if (dayArr[1] < min) min = dayArr[1];
               });

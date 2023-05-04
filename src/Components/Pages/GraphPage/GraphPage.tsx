@@ -6,8 +6,26 @@ import StyledCard from '../../StyledCard';
 import StyledButton from '../../StyledBtn';
 import StyledDivider from '../../StyledDivider';
 import Graph from '../../Graph';
-import MultiMapPage from '../../MultiMapPage';
+import MultiMapPage, { MultiMapPageMaps } from '../../MultiMapPage';
 import DailyChart, {StringRow, NumberRow} from '../../DailyChart';
+
+export type GraphPageInfo = {
+  maps: {
+    url: string;
+    alt: string;
+    description: string[];
+    title?: string;
+    mainSX?: {
+      [key: string]: string | number;
+    };
+  }[];
+  pageType: 'graph';
+  chart: {
+    data: 'gdd32' | 'gdd50' | 'precip';
+    title: string;
+    rowNames: string[];
+  };
+};
 
 type GraphPageProps = {
   todayFromAcis: boolean;
@@ -111,7 +129,7 @@ export default function GraphPage(props: GraphPageProps) {
           {...props.data}
           units={props.pageInfo.chart.data === 'precip' ? 'inches' : 'GDDs'}
         />
-      ) : <MultiMapPage maps={props.pageInfo.maps as MapPageProps[]} />}
+      ) : <MultiMapPage maps={props.pageInfo.maps as MultiMapPageMaps} />}
     </StyledCard>
   );
 }

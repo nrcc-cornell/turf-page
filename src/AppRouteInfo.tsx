@@ -1,3 +1,27 @@
+import { DiseaseStressRiskPageInfo } from './Components/Pages/DiseaseStressRisk/DiseaseStressRiskPage';
+import { GddDiffDaysPageInfo } from './Components/Pages/GddDiffDays/GddDiffDaysPage';
+import { TablePageInfo } from './Components/Pages/TablePage/TablePage';
+import { SeedWeedPageInfo } from './Components/Pages/SeedWeed/SeedWeedPage';
+import { GraphPageInfo } from './Components/Pages/GraphPage/GraphPage';
+import { MapsOnlyPageInfo } from './Components/Pages/MapsOnlyPage/MapsOnlyPage';
+import { PollinatorPageInfo } from './Components/Pages/PollinatorRisk/PollinatorRiskPage';
+import { MapPageProps } from './Components/MapPage';
+import { MapThumbs } from './Components/RSWMaps';
+import { ThumbUrls } from './Components/WeekMaps';
+
+export type PageInfo = DiseaseStressRiskPageInfo | GddDiffDaysPageInfo | TablePageInfo | SeedWeedPageInfo | GraphPageInfo | MapsOnlyPageInfo | PollinatorPageInfo;
+
+type RouteInfo = {
+  path: string;
+  props: PageInfo;
+};
+
+type HomeMap = {
+  path: string;
+  url: string;
+  alt: string;
+};
+
 const constructThumbs = (name: string, title: string): ThumbUrls[] => {
   const thumbs: ThumbUrls[] = [];
   for (let i = 0; i < 6; i++) {

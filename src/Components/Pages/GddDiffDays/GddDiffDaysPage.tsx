@@ -3,8 +3,22 @@ import { format } from 'date-fns';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
-import MultiMapPage from '../../MultiMapPage';
+import MultiMapPage, { MultiMapPageMaps } from '../../MultiMapPage';
 import GddConditionalText from './GddConditionalText';
+
+export type GddDiffDaysPageInfo = {
+  maps: {
+    url: string;
+    alt: string;
+    description: string[];
+    title?: string;
+    mainSX?: {
+      [key: string]: string | number;
+    };
+  }[];
+  pageType: 'text';
+  data: 'gdd50DiffDays';
+};
 
 type GddDiffDaysProps = {
   sx: {
@@ -34,7 +48,7 @@ export default function GddDiffDaysPage(props: GddDiffDaysProps) {
 
       <StyledDivider />
 
-      <MultiMapPage maps={props.pageInfo.maps as MapPageProps[]} />
+      <MultiMapPage maps={props.pageInfo.maps as MultiMapPageMaps} />
     </StyledCard>
   );
 }

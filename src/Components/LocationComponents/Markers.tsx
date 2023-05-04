@@ -2,6 +2,18 @@ import React from 'react';
 import { Marker } from 'react-map-gl';
 import { Box } from '@mui/material';
 
+export type PopupContent = UserLocation & {
+  isSelected: boolean;
+};
+
+type MarkersProps = {
+  onMarkerMouseEnter: (a: PopupContent) => void;
+  onMarkerMouseLeave: () => void;
+  onMarkerClick: (a: mapboxgl.MapboxEvent<MouseEvent>, b: UserLocation) => void;
+  onMarkerRightClick: (a: UserLocation, b: boolean) => void;
+  currentLocation: UserLocation;
+  pastLocations: UserLocation[];
+};
 
 
 export default function Markers(props: MarkersProps) {

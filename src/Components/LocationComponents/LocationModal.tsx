@@ -14,6 +14,15 @@ import StyledTooltip from './StyledTooltip';
 
 import { radarStations } from '../../Scripts/Data';
 
+type ModalProps = {
+  currentLocation: UserLocation;
+  pastLocations: UserLocation[];
+  handleChangeLocations: (
+    a: 'add' | 'remove' | 'change',
+    b: UserLocation
+  ) => void;
+};
+
 const style = {
   position: 'absolute',
   top: '50%',

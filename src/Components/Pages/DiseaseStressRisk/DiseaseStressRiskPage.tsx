@@ -4,13 +4,47 @@ import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
 import RiskGraph from './RiskGraph';
 import RSWMaps from '../../RSWMaps';
+import { RiskDataObj } from '../../../Scripts/Data';
+
+export type DiseaseStressRiskPageInfo = {
+  maps: {
+    title: string;
+    thumbs: {
+      fullSizeUrl: string;
+      thumbUrl: string;
+      name: string;
+      title: string;
+      alt?: string;
+      date?: string;
+    }[];
+  }[];
+  pageType: 'risk';
+  chart: {
+    rows: {
+      thresholds: {
+        low: number;
+        medium: number;
+        high: number;
+      };
+      rowName: string;
+      data: 'anthracnose' | 'brownPatch' | 'dollarspot' | 'pythiumBlight' | 'heatStress';
+    }[];
+    legend: string[][];
+    title: string;
+  };
+  text: {
+    titlePart: string;
+    description: string[];
+    references?: string[];
+  };
+};
 
 type DiseaseStressRiskProps = {
   todayFromAcis: boolean;
   sx: {
     [key:string]: string
   };
-  data: RiskData;
+  data: RiskDataObj;
   pageInfo: DiseaseStressRiskPageInfo
 };
 

@@ -5,6 +5,35 @@ import StyledDivider from '../../StyledDivider';
 import RSWMaps from '../../RSWMaps';
 import DailyChart, { StringRow } from '../../DailyChart';
 
+export type SeedWeedPageInfo = {
+  maps: {
+    title: string;
+    thumbs: {
+      fullSizeUrl: string;
+      thumbUrl: string;
+      name: string;
+      title: string;
+      alt?: string;
+      date?: string;
+    }[];
+  }[];
+  pageType: 'seedWeed';
+  chart: {
+    rows: {
+      rowName: string;
+      data: 'gdd32' | 'gdd50';
+      colorizer: ColorizerFunc;
+    }[];
+    legend: string[][];
+    title: string;
+  };
+  text: {
+    titlePart: string;
+    description: string[];
+    references?: string[];
+  };
+};
+
 type SeedWeedProps = {
   todayFromAcis: boolean;
   sx: {

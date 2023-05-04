@@ -1,7 +1,20 @@
 import React from 'react';
 
 import StyledCard from '../../StyledCard';
-import MultiMapPage from '../../MultiMapPage';
+import MultiMapPage, { MultiMapPageMaps } from '../../MultiMapPage';
+
+export type MapsOnlyPageInfo = {
+  maps: {
+    url: string;
+    alt: string;
+    description: string[];
+    title?: string;
+    mainSX?: {
+      [key: string]: string | number;
+    };
+  }[];
+  pageType: 'mapsOnly' | 'soilSat' | 'runoffRisk' | 'growthPotential';
+};
 
 type MapsOnlyPageProps = {
   sx: {
@@ -16,7 +29,7 @@ export default function MapsOnlyPage(props: MapsOnlyPageProps) {
       variant='outlined'
       sx={props.sx}
     >
-      <MultiMapPage maps={props.pageInfo.maps as MapPageProps[]} />
+      <MultiMapPage maps={props.pageInfo.maps as MultiMapPageMaps} />
     </StyledCard>
   );
 }

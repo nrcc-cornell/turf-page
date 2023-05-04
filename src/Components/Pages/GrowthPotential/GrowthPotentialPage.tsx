@@ -25,6 +25,8 @@ type RunoffCoords = {
   lons: number[];
 };
 
+type GrowthPotentialPageProps = DisplayProps & { sx: { [key: string]: string }; };
+
 export type ForecastSS = {
   two: number[];
   six: number[];

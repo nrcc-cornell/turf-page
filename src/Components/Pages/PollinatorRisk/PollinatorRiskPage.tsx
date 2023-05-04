@@ -9,6 +9,25 @@ import PollinatorConditionalText from './PollinatorConditionalText';
 
 import { calcDaylength } from '../../../Scripts/GrowthPotentialModel';
 
+import { ThumbUrls } from '../../WeekMaps';
+
+export type PollinatorPageInfo = {
+  maps: {
+    title: string;
+    thumbs: ThumbUrls[];
+  }[];
+  pageType: 'pollinator';
+  chart: {
+    rows: {
+      data: string;
+      rowName: string;
+      colorizer: ColorizerFunc;
+    }[];
+    legend: string[][];
+    title: string
+  };
+};
+
 type PollinatorProps = {
   latitude: number;
   gddData: [string, number][];

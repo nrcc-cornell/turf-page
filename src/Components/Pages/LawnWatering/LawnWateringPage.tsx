@@ -7,6 +7,7 @@ import StyledDivider from '../../StyledDivider';
 import InvalidText from '../../InvalidText';
 import Loading from '../../Loading';
 import DailyChart, { NumberRow, StringRow } from '../../DailyChart';
+import { TablePageInfo } from '../TablePage/TablePage';
 
 import { getFromProxy } from '../../../Scripts/proxy';
 import convertCoordsToIdxs from '../../../Scripts/convertCoordsToIdxs';

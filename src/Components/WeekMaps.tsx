@@ -8,6 +8,20 @@ import {
 } from '@mui/material';
 import MapThumb from './MapThumb';
 
+export type ThumbUrls = {
+  fullSizeUrl: string;
+  thumbUrl: string;
+  name: string;
+  title: string;
+  alt?: string;
+  date?: string;
+};
+
+type WeekMapsProps = {
+  title: string;
+  thumbs: ThumbUrls[];
+};
+
 const BoxSX = {
   display: 'flex',
   flexDirection: 'column',
@@ -26,7 +40,9 @@ const BoxSX = {
 export default function WeekMaps(props: WeekMapsProps) {
   const [bigMap, setBigMap] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState(new Date());  
+  const [startDate, setStartDate] = useState(new Date());
+
+  console.log(props);
   
   useEffect(() => {
     (async () => {
