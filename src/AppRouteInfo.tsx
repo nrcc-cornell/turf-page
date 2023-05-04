@@ -627,7 +627,7 @@ const routeInfo: RouteInfo[] = [
       chart: {
         data: 'temp',
         title: 'Water Deficit Forecast',
-        rowNames: ['Inches'],
+        rowNames: ['In./Ft. Soil'],
       },
       maps: [
         {

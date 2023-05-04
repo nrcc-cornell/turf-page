@@ -145,7 +145,7 @@ type BucketsReturn = AsyncReturnType<typeof fetchSoilDataViaPostRest>;
 
 const fetchETData = (coords: number[], year: number) => {
   return fetch(
-    `https://0nakxnhta9.execute-api.us-east-1.amazonaws.com/production/irrigation?lat=${coords[1]}&lon=${coords[0]}&year=${year}`
+    `https://x6xfv2cdrl.execute-api.us-east-1.amazonaws.com/production/irrigation?lat=${coords[1]}&lon=${coords[0]}&year=${year}`
   )
     .then((response) => response.json())
     .catch(() => null);

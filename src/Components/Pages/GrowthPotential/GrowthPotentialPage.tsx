@@ -239,7 +239,7 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
         <Typography variant='h5'>Growth Potential Forecast for New York State</Typography>
         <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for managing turfgrass</Typography>
 
-        {renderTools(modelResults, isIrrigation, setIsIrrigation, loading, props.currentLocation.address.split(', ').slice(-1)[0] === 'New York')}
+        {renderTools(modelResults, isIrrigation, setIsIrrigation, loading, props.currentLocation.address.includes('New York'))}
         
         <StyledDivider />
 

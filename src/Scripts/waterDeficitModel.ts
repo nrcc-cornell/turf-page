@@ -6,7 +6,7 @@ export enum SoilMoistureOptionLevel {
 
 // soildata:
 // soil moisture and drainage characteristics for different levels of soil water capacity
-const SOIL_DATA = {
+export const SOIL_DATA = {
   soilmoistureoptions: {
     low: {
       wiltingpoint: 1.0,
@@ -35,6 +35,11 @@ const SOIL_DATA = {
     medium: { daysToDrainToFcFromSat: 1.0 },
     high: { daysToDrainToFcFromSat: 2.0 },
   },
+  soilRecommendations: {
+    low: [[0, 'No deficit, watering is unnecessary'],[-0.5, 'Low deficit, no plant stress, watering is unnecessary'], [-0.85, 'Moderate deficit, plant stress likely, consider watering'], [-999, 'High deficit, severe plant stress likely, watering is recommended']],
+    medium: [[0, 'No deficit, watering is unnecessary'],[-0.7, 'Low deficit, no plant stress, watering is unnecessary'], [-1.275, 'Moderate deficit, plant stress likely, consider watering'], [-999, 'High deficit, severe plant stress likely, watering is recommended']],
+    high: [[0, 'No deficit, watering is unnecessary'],[-1.0, 'Low deficit, no plant stress, watering is unnecessary'], [-1.7, 'Moderate deficit, plant stress likely, consider watering'], [-999, 'High deficit, severe plant stress likely, watering is recommended']],
+  }
 };
 
 // Derived from Brian's csf-waterdef code

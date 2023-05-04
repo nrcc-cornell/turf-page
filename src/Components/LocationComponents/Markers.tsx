@@ -6,12 +6,12 @@ import { Box } from '@mui/material';
 
 export default function Markers(props: MarkersProps) {
   return <>
-    {props.pastLocations.map(loc => {
+    {props.pastLocations.map((loc, i) => {
       const isSelected = loc.lngLat[0] === props.currentLocation.lngLat[0] && loc.lngLat[1] === props.currentLocation.lngLat[1];
           
       return (
         <Marker
-          key={loc.address}
+          key={loc.address + i}
           longitude={loc.lngLat[0]}
           latitude={loc.lngLat[1]}
           onClick={(e) => props.onMarkerClick(e, loc)}

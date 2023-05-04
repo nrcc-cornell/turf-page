@@ -82,7 +82,7 @@ export default function RunoffRiskPage(props: DisplayProps) {
       <Typography variant='h5' sx={{ marginLeft: '6px' }}>Runoff Risk Forecast for New York State</Typography>
       <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for managing runoff risk of chemical applications to turfgrass</Typography>
       
-      {props.currentLocation.address.split(', ').slice(-1)[0] === 'New York' ? renderTools(modelData) : <InvalidText type='notNY' />}
+      {props.currentLocation.address.includes('New York') ? renderTools(modelData) : <InvalidText type='notNY' />}
       
       
       <StyledDivider />

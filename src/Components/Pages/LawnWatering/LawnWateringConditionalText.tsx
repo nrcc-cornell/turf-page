@@ -1,42 +1,25 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+import { SOIL_DATA, SoilMoistureOptionLevel } from '../../../Scripts/waterDeficitModel';
 
 type LWCTProps = {
+  soilcap: SoilMoistureOptionLevel;
   today: number;
 }
 
-const valueToText = (value: number) => {
-  const THRESHOLDS = [{
-    threshold: -1.0,
-    text: 'Very dry, water'
-  },{
-    threshold: -0.75,
-    text: 'Pretty dry, water'
-  },{
-    threshold: -0.5,
-    text: 'Dry, water'
-  },{
-    threshold: -0.25,
-    text: 'A little dry, could water'
-  },{
-    threshold: 0,
-    text: 'Close to saturation, do not water'
-  },{
-    threshold: 0.25,
-    text: 'Pretty wet, definitely do not water'
-  },{
-    threshold: 0.5,
-    text: 'Very wet, absolutely do not water'
-  },{
-    threshold: 100,
-    text: 'Currently flooding...why do you want to water?'
-  }];
-  const thresholdIdx = THRESHOLDS.findIndex(({threshold}) => value <= threshold);
-  return THRESHOLDS[thresholdIdx].text;
+const valueToText = (value: number, thresholds: [number, string][]) => {
+  let text = 'There was a problem calculating your recommendation, please try again later.';
+  for (const [thresh, txt] of thresholds) {
+    if (value > thresh) {
+      text = txt;
+      break;
+    }
+  }
+  return text;
 };
 
+
 export default function LawnWateringConditionalText(props: LWCTProps) {
-  console.log(props.today);
   return (
     <Box sx={{
       display: 'flex',
@@ -62,7 +45,7 @@ export default function LawnWateringConditionalText(props: LWCTProps) {
             sx={{
               lineHeight: '1.2'
             }}
-          >{valueToText(props.today)}</Typography>
+          >{valueToText(props.today, SOIL_DATA.soilRecommendations[props.soilcap] as [number, string][])}</Typography>
         </Box>
       </Box>
     </Box>

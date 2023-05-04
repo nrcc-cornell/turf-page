@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Typography, MenuItem } from '@mui/material';
-import { format, isBefore, isAfter } from 'date-fns';
+import { format, isBefore, isAfter, parse, addDays } from 'date-fns';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
@@ -83,7 +83,7 @@ const renderTools = (
   isNY: boolean,
   lastWater: string,
   setLastWater: React.Dispatch<React.SetStateAction<string>>,
-  soilCap: string,
+  soilCap: SoilMoistureOptionLevel,
   setSoilCap: React.Dispatch<React.SetStateAction<SoilMoistureOptionLevel>>
 ) => {
   if (!isNY) {
@@ -111,6 +111,17 @@ const renderTools = (
     return (<>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
         <TextField
+          select
+          label='Soil Water Capacity'
+          value={soilCap}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSoilCap(e.target.value as SoilMoistureOptionLevel)}
+        >
+          <MenuItem value={SoilMoistureOptionLevel.HIGH}>High (Clay, fine texture)</MenuItem>
+          <MenuItem value={SoilMoistureOptionLevel.MEDIUM}>Medium (Loam, med texture)</MenuItem>
+          <MenuItem value={SoilMoistureOptionLevel.LOW}>Low (Sand, coarse texture)</MenuItem>
+        </TextField>
+        
+        <TextField
           type='date'
           label='Last Water Date'
           value={lastWater}
@@ -124,17 +135,6 @@ const renderTools = (
             }
           }}
         />
-
-        <TextField
-          select
-          label='Soil Water Capacity'
-          value={soilCap}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSoilCap(e.target.value as SoilMoistureOptionLevel)}
-        >
-          <MenuItem value={SoilMoistureOptionLevel.HIGH}>High (Clay, fine texture)</MenuItem>
-          <MenuItem value={SoilMoistureOptionLevel.MEDIUM}>Medium (Loam, med texture)</MenuItem>
-          <MenuItem value={SoilMoistureOptionLevel.LOW}>Low (Sand, coarse texture)</MenuItem>
-        </TextField>
       </Box>
 
       <DailyChart
@@ -146,7 +146,7 @@ const renderTools = (
       
       <StyledDivider />
       
-      <LawnWateringConditionalText today={modelResults.values[todayIdx]} />
+      <LawnWateringConditionalText soilcap={soilCap} today={modelResults.values[todayIdx]} />
 
       <StyledDivider />
 
@@ -201,7 +201,7 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
       setCoordArrs(results);
     })();
   }, []);
-  
+
   useEffect(() => {
     (async () => {
       if (coordArrs){
@@ -221,15 +221,17 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
             fetchPrecip(props.currentLocation.lngLat, format(today, 'yyyy-MM-dd'))
           ]);
 
+          console.log(forecast, rawEtData, pastPrecip);
+
           if (forecast && rawEtData) {
             const aligned = alignAndExtract(rawEtData, pastPrecip, today.getFullYear());
-            
+
             const numFcstDays = rawEtData.dates_pet_fcst.length;
             aligned.et = aligned.et.concat(rawEtData.pet_fcst);
             aligned.etDates = aligned.etDates.concat(rawEtData.dates_pet_fcst);
-            
-            const nextDate = String(parseInt(aligned.precipDates[aligned.precipDates.length - 1].slice(-2)) + 1);
-            const nextDateIdx = forecast.dates.findIndex(dateStr => String(dateStr).slice(-2) === nextDate);
+
+            const nextDate = format(addDays(parse(aligned.precipDates[aligned.precipDates.length - 1], 'yyyy-MM-dd', new Date()), 1), 'yyyyMMdd');
+            const nextDateIdx = forecast.dates.findIndex(dateStr => String(dateStr) === nextDate);
             aligned.precip = aligned.precip.concat(forecast.precipChart.raim.slice(nextDateIdx, nextDateIdx + numFcstDays));
             aligned.precipDates = aligned.precipDates.concat(forecast.dates.slice(nextDateIdx, nextDateIdx + numFcstDays).map(val => `${String(val).slice(0,4)}-${String(val).slice(4,6)}-${String(val).slice(6)}`));
             aligned.precipDates = aligned.precipDates.map(date => date.slice(5));
@@ -259,7 +261,6 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
   useEffect(() => {
     if (modelData) {
       setLoading(true);
-      console.log(modelData.dates.findIndex(date => date === lastWater.slice(5)), lastWater.slice(5));
       const waterDeficitDaily = runWaterDeficitModel(modelData.precip, modelData.et, soilCap, modelData.dates.findIndex(date => date === lastWater.slice(5)));
       const newModelResults = waterDeficitDaily.reduce((acc, val, i) => {
         acc.dates.push(modelData.dates[i]);
@@ -294,7 +295,7 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
         props.pageInfo,
         props.todayFromAcis,
         loading,
-        props.currentLocation.address.split(', ').slice(-1)[0] === 'New York',
+        props.currentLocation.address.includes('New York'),
         lastWater,
         setLastWater,
         soilCap,
