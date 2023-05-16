@@ -43,21 +43,7 @@ export default function MapPage(props: MapPageProps) {
         <CircularProgress color='inherit' />
       </CardMedia>}
 
-      {props.title === 'Moisture Deficit Forecast' ? <CardMedia
-              component={Box}
-              sx={{
-                height: 200,
-                backgroundColor: 'rgb(240,240,240)',
-                fontSize: '10px',
-                fontStyle: 'italic',
-                minHeight: 70,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                textAlign: 'center',
-                border: '2px solid rgb(70,70,70)'
-              }}
-            ><span>This Map is Temporarily Unavailable</span></CardMedia> : (error ?
+      {error ?
         <CardMedia
           component={Box}
           sx={{
@@ -85,7 +71,7 @@ export default function MapPage(props: MapPageProps) {
             }
           }}
         />
-      )}
+      }
 
       {props.description.length === 0 && 
         <Box sx={{
