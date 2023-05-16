@@ -36,7 +36,7 @@ export default function RSWMaps(props: RSWMapsProps) {
                 width: '100%',
                 '@media (min-width: 1000px)': {
                   margin: '0px 8px',
-                  width: '50%',
+                  width: props.maps.length === 1 ? '100%' : '50%',
                 }
               }}>
                 <WeekMaps {...thumbGroup} />

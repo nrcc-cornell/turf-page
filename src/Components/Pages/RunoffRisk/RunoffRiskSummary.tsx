@@ -5,7 +5,6 @@ import HelpIcon from '@mui/icons-material/Help';
 
 import { convertDate, convertRiskPercToRiskText, descriptionFromRiskText } from './rrPageUtils';
 
-import StyledButton from '../../StyledBtn';
 import roundXDigits from '../../../Scripts/Rounding';
 import { RRData } from './RunoffRiskPage';
 
@@ -14,7 +13,6 @@ type RRSummary = {
 };
 
 export default function RunoffRiskSummary(props: RRSummary) {
-  const [assumptionsOpen, setAssumptionsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | SVGSVGElement>(null);
   const [description, setDescription] = useState({ desc: '', warning: '' });
 
@@ -60,32 +58,31 @@ export default function RunoffRiskSummary(props: RRSummary) {
       {boxes}
     </Box>
 
-    <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <Box sx={{ textAlign: 'center' }}>
       <Typography variant='underChart'>*NOTE: Forecasts are updated ~6:30am ET daily</Typography>
-      <StyledButton onClick={() => setAssumptionsOpen(!assumptionsOpen)} sx={{ width: 'fit-content', margin: '12px auto 8px' }}>{assumptionsOpen ? 'Hide Assumptions' : 'Show Assumptions'}</StyledButton>
     </Box>
 
-    {assumptionsOpen && <Box sx={{ maxWidth: '400px', margin: '0 auto' }}>
+    <Box sx={{ maxWidth: '400px', margin: '24px auto 0px auto' }}>
       <Box sx={{ fontSize: '17px', fontWeight: 'bold', textAlign: 'center', margin: '20px auto' }}>
         <Box>Last 24hrs Precipitation: {roundXDigits(props.data.past24Pcpn, 2).toFixed(2)} inches</Box>
         <Box>Next 24hrs Precipitation: {roundXDigits(props.data.next24Pcpn, 2).toFixed(2)} inches</Box>
       </Box>
       <Box sx={{ fontSize: '14px', textAlign: 'center' }}>
         <Box>These estimates are determined from observations in your area. However, local conditions can vary at field level.</Box>
-         <Box sx={{ marginTop: '6px', color: 'red', fontWeight: 'bold' }}> If you are currently observing different conditions than those listed above,
-         these forecasts should have limited influence on your decision making today.</Box>
+        <Box sx={{ marginTop: '6px', color: 'red', fontWeight: 'bold' }}> If you are currently observing different conditions than those listed above,
+        these forecasts should have limited influence on your decision making today.</Box>
       </Box>
-      </Box>}
+    </Box>
 
-      <Popper open={Boolean(anchorEl)} anchorEl={anchorEl} transition>
-        {({ TransitionProps }) => (
-          <Fade {...TransitionProps} timeout={350}>
-            <Box sx={{ border: 1, borderRadius: 2, p: 1, bgcolor: 'white', maxWidth: 275, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <Typography sx={{ lineHeight: '15px', fontSize: '15px' }}>{description.desc}</Typography>
-              {description.warning && <Typography sx={{ lineHeight: '15px', fontSize: '15px', color: 'red' }}>{description.warning}</Typography>}
-            </Box>
-          </Fade>
-        )}
-      </Popper>
+    <Popper open={Boolean(anchorEl)} anchorEl={anchorEl} transition>
+      {({ TransitionProps }) => (
+        <Fade {...TransitionProps} timeout={350}>
+          <Box sx={{ border: 1, borderRadius: 2, p: 1, bgcolor: 'white', maxWidth: 275, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <Typography sx={{ lineHeight: '15px', fontSize: '15px' }}>{description.desc}</Typography>
+            {description.warning && <Typography sx={{ lineHeight: '15px', fontSize: '15px', color: 'red' }}>{description.warning}</Typography>}
+          </Box>
+        </Fade>
+      )}
+    </Popper>
   </Box>;
 }
