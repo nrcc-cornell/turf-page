@@ -55,12 +55,12 @@ const menuGroups: MenuObj[] = [
       },
     ],
   },
-  // {
-  //   base: 'pollinator-risk',
-  //   name: 'Pollinator Risk',
-  //   icon: <EmojiNature />,
-  //   items: [{ pathname: '/pollinator-risk', label: '' }],
-  // },
+  {
+    base: 'pollinator-risk',
+    name: 'Pollinator Risk',
+    icon: <EmojiNature />,
+    items: [{ pathname: '/pollinator-risk', label: '' }],
+  },
   {
     base: 'season',
     name: 'Season Progress',
@@ -89,7 +89,7 @@ const menuGroups: MenuObj[] = [
     icon: <Water />,
     items: [
       { pathname: '/irrigation/rainfall', label: `Last Week's Rainfall` },
-      // { pathname: '/irrigation/lawn-watering-tool', label: `Lawn Watering Tool` },
+      { pathname: '/irrigation/lawn-watering-tool', label: `Lawn Watering Tool` },
       {
         pathname: '/irrigation/evapotranspiration',
         label: 'Evapotranspiration',
@@ -99,22 +99,22 @@ const menuGroups: MenuObj[] = [
         pathname: '/irrigation/topsoil-moisture/forecast/',
         label: 'Topsoil Moisture - Forecast',
       },
-      // {
-      //   pathname: '/irrigation/topsoil-moisture/current/',
-      //   label: 'USDA Topsoil Moisture - Current',
-      // },
+      {
+        pathname: '/irrigation/topsoil-moisture/current/',
+        label: 'USDA Topsoil Moisture - Current',
+      },
       {
         pathname: '/irrigation/topsoil-moisture/current-vs-10-year-mean',
         label: 'USDA Topsoil Moisture - Current vs. 10-year Mean',
       },
     ],
   },
-  // {
-  //   base: 'growth-potential',
-  //   name: 'Growth Potential',
-  //   icon: <Expand />,
-  //   items: [{ pathname: '/growth-potential', label: '' }],
-  // },
+  {
+    base: 'growth-potential',
+    name: 'Growth Potential',
+    icon: <Expand />,
+    items: [{ pathname: '/growth-potential', label: '' }],
+  },
   {
     base: 'runoff-risk',
     name: 'Runoff Risk',
