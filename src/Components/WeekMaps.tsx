@@ -42,8 +42,6 @@ export default function WeekMaps(props: WeekMapsProps) {
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState(new Date());
 
-  console.log(props);
-  
   useEffect(() => {
     (async () => {
       return fetch(`maps/f1_${props.thumbs[0].name}_map_thumb.png`)

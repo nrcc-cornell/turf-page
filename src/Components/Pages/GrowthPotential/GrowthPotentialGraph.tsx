@@ -12,24 +12,24 @@ Highcharts.Chart.prototype.showResetZoom = function () {
   return;
 };
 
-import { ModelOutput } from './GrowthPotentialPage';
+import { GrowthPotentialModelOutput } from './GrowthPotentialPage';
 
 const thresholdTexts = ['Low Growth', 'Moderate', 'High'];
 const thresholdColors = [
-  'rgba(104, 227, 82, 0.13)',
-  'rgba(222, 227, 82, 0.13)',
   'rgba(228, 111, 82, 0.13)',
+  'rgba(222, 227, 82, 0.13)',
+  'rgba(104, 227, 82, 0.13)',
 ];
 
 export default function GrowthPotentialGraph(props: {
-  modelResults: ModelOutput | null;
+  modelResults: GrowthPotentialModelOutput | null;
   thresholds: number[];
+  numDays: number;
 }) {
-  const todayIdx = 5;
+  const todayIdx = props.numDays - 7;
   let series;
   let datesConverted: string[] = [];
   if (props.modelResults !== null) {
-    const nullArray = Array(6).fill(null);
     datesConverted = props.modelResults.dates.map(
       (date: string) => date.slice(4, 6) + '-' + date.slice(6)
     );
@@ -38,16 +38,15 @@ export default function GrowthPotentialGraph(props: {
     series = [
       // { data: modelValues },
       {
-        data: modelValues.slice(0, todayIdx).concat(nullArray),
+        data: modelValues.slice(0, todayIdx),
         name: 'Observed',
         color: 'rgb(163,41,41)',
         id: 'Observed',
       },
       {
-        data: nullArray
-          .slice(1)
+        data: Array(todayIdx).fill(null)
           .concat(modelValues[todayIdx])
-          .concat(nullArray.slice(1)),
+          .concat(Array(props.numDays - 5 - todayIdx).fill(null)),
         name: 'Today',
         color: 'rgb(163,41,41)',
         id: 'Today',
@@ -58,7 +57,7 @@ export default function GrowthPotentialGraph(props: {
         },
       },
       {
-        data: nullArray.concat(modelValues.slice(todayIdx + 1)),
+        data: Array(todayIdx + 1).fill(null).concat(modelValues.slice(todayIdx + 1)),
         name: 'Forecast',
         color: 'rgb(163,41,41)',
         dashStyle: 'Dash',

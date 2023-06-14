@@ -74,4 +74,9 @@ async function getFromProxy<T>(body: ProxyBody, endpoint: string) {
   return results;
 }
 
+export type RunoffCoords = {
+  lats: number[];
+  lons: number[];
+};
+
 export { updateStateFromProxy, getFromProxy };

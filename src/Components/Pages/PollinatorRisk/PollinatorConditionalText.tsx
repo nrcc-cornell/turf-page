@@ -43,7 +43,7 @@ export default function PollinatorConditionalText(props: PCTProps) {
             width: '100%',
           }
         }}>
-          <Typography variant='h5'>{name} Recommendation</Typography>
+          <Typography variant='h5'>Pollinator Protection - {name}</Typography>
           <Box sx={{ paddingLeft: '20px' }}>
             <Typography
               variant='mapPage'

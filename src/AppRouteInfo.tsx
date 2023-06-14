@@ -406,17 +406,17 @@ const routeInfo: RouteInfo[] = [
     },
   },
   {
-    path: '/pollinator-risk',
+    path: '/pollinator-protection',
     props: {
       pageType: 'pollinator',
       maps: [
         {
-          title: 'Pollinator Risk from Dandelion Maps',
-          thumbs: constructThumbs('dandelion', 'Pollinator Risk from Dandelion'),
+          title: 'Dandelion Flower Status',
+          thumbs: constructThumbs('dandelion', 'Dandelion Flower Status maps'),
         },
         {
-          title: 'Pollinator Risk from White Clover Maps',
-          thumbs: constructThumbs('clover', 'Pollinator Risk from White Clover'),
+          title: 'White Clover Flower Status',
+          thumbs: constructThumbs('clover', 'White Clover Flower Status maps'),
         },
       ],
       chart: {
@@ -442,23 +442,23 @@ const routeInfo: RouteInfo[] = [
             colorizer: function (val: number) {
               let backgroundColor = 'rgb(170,170,170)';
               if (val < 1) {
-                backgroundColor = 'rgb(0,170,0)';
+                backgroundColor = 'rgb(255,0,0)';
               } else if (val < 2) {
                 backgroundColor = 'rgb(255,215,0)';
               } else if (val < 3) {
-                backgroundColor = 'rgb(255,0,0)';
+                backgroundColor = 'rgb(0,170,0)';
               }
               return backgroundColor;
             },
           },
         ],
         legend: [
-          ['Not yet flowering', 'rgb(0,170,0)'],
+          ['Not yet flowering', 'rgb(255,0,0)'],
           ['Beginning to flower', 'rgb(255,215,0)'],
-          ['Flowering', 'rgb(255,0,0)'],
+          ['Flowering', 'rgb(0,170,0)'],
           ['No longer flowering', 'rgb(170,170,170)'],
         ],
-        title: 'Pollinator Risk Recommendations',
+        title: 'Pollinator Plants in the Lawn',
       },
     },
   },

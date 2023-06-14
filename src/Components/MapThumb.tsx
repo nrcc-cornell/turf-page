@@ -15,8 +15,6 @@ type MapThumbProps = {
 export default function MapThumb(props: MapThumbProps) {
   const [error, setError] = useState(false);
 
-  console.log(props);
-
   return (
     <Card
       variant='outlined'

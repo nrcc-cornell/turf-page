@@ -8,7 +8,7 @@ import OverlayMap from './Map';
 import Legend from './Legend';
 
 import convertCoordsToIdxs from '../../Scripts/convertCoordsToIdxs';
-import { updateStateFromProxy } from '../../Scripts/proxy';
+import { updateStateFromProxy, RunoffCoords } from '../../Scripts/proxy';
 import { VariableOptions } from './Options';
 
 type RRMap<T> = DisplayProps & {
@@ -16,11 +16,6 @@ type RRMap<T> = DisplayProps & {
   proxyEndpointName: string;
   modelData: T;
   setModelData?: (a: T) => void;
-};
-
-type RunoffCoords = {
-  lats: number[];
-  lons: number[];
 };
 
 type Data = { dates: string[] };
@@ -39,8 +34,6 @@ export default function MapWithOptions<T extends Data>(
   const [legendInfo, setLegendInfo] = useState({ label: initKey, ...props.dropdownOptions[initKey]});
   const [forecastDateIdx, setForecastDateIdx] = useState(0);
   const [overlay, setOverlay] = useState('');
-
-  console.log(props);
 
   useEffect(() => {
     updateStateFromProxy<RunoffCoords>(

@@ -4,30 +4,67 @@ export enum SoilMoistureOptionLevel {
   HIGH = 'high',
 }
 
+type SoilCharacteristics = {
+  wiltingpoint: number,
+  prewiltingpoint: number,
+  stressthreshold: number,
+  fieldcapacity: number,
+  saturation: number
+}
+
 // soildata:
 // soil moisture and drainage characteristics for different levels of soil water capacity
 export const SOIL_DATA = {
   soilmoistureoptions: {
-    low: {
-      wiltingpoint: 1.0,
-      prewiltingpoint: 1.15,
-      stressthreshold: 1.5,
-      fieldcapacity: 2.0,
-      saturation: 5.0,
+    gp: {
+      low: {
+        wiltingpoint: 1.0,
+        prewiltingpoint: 1.15,
+        stressthreshold: 1.5,
+        fieldcapacity: 2.1,
+        saturation: 5.2,
+      },
+      medium: {
+        wiltingpoint: 1.0,
+        prewiltingpoint: 2.225,
+        stressthreshold: 2.8,
+        fieldcapacity: 4.2,
+        saturation: 5.8,
+      },
+      high: {
+        wiltingpoint: 1.0,
+        prewiltingpoint: 3.3,
+        stressthreshold: 4.0,
+        fieldcapacity: 5.0,
+        saturation: 6.5,
+      },
+      kc: 1.2,
+      p: 0.7
     },
-    medium: {
-      wiltingpoint: 2.0,
-      prewiltingpoint: 2.225,
-      stressthreshold: 2.8,
-      fieldcapacity: 3.5,
-      saturation: 5.5,
-    },
-    high: {
-      wiltingpoint: 3.0,
-      prewiltingpoint: 3.3,
-      stressthreshold: 4.0,
-      fieldcapacity: 5.0,
-      saturation: 6.5,
+    lawn: {
+      low: {
+        wiltingpoint: 1.0,
+        prewiltingpoint: 1.15,
+        stressthreshold: 1.5,
+        fieldcapacity: 2.0,
+        saturation: 5.0,
+      },
+      medium: {
+        wiltingpoint: 2.0,
+        prewiltingpoint: 2.225,
+        stressthreshold: 2.8,
+        fieldcapacity: 3.5,
+        saturation: 5.5,
+      },
+      high: {
+        wiltingpoint: 3.0,
+        prewiltingpoint: 3.3,
+        stressthreshold: 4.0,
+        fieldcapacity: 5.0,
+        saturation: 6.5,
+      },
+      kc: 1.0,
+      p: 0.5
     },
   },
   soildrainageoptions: {
@@ -43,35 +80,26 @@ export const SOIL_DATA = {
 };
 
 // Derived from Brian's csf-waterdef code
-function getPotentialDailyDrainage(soilcap: SoilMoistureOptionLevel): number {
+function getPotentialDailyDrainage(soilCharacteristics: SoilCharacteristics, drainagecap: number): number {
   // -----------------------------------------------------------------------------------------
   // Calculate potential daily drainage of soil
-  //
-  // soilcap : soil water capacity : string ('high', 'medium', 'low')
   // -----------------------------------------------------------------------------------------
-  const { soilmoistureoptions, soildrainageoptions } = SOIL_DATA;
   return (
-    (soilmoistureoptions[soilcap].saturation -
-      soilmoistureoptions[soilcap].fieldcapacity) /
-    soildrainageoptions[soilcap].daysToDrainToFcFromSat
+    (soilCharacteristics.saturation -
+      soilCharacteristics.fieldcapacity) /
+    drainagecap
   );
 }
 
-function getTawForPlant(soilcap: SoilMoistureOptionLevel): number {
+function getTawForPlant(soilCharacteristics: SoilCharacteristics): number {
   // -----------------------------------------------------------------------------------------
   // Calculate total available water (TAW) for plant, defined here as:
   // soil moisture at field capacity minus soil moisture at wilting point
-  //
-  // soilcap : soil water capacity : string ('high', 'medium', 'low')
   // -----------------------------------------------------------------------------------------
-  const { soilmoistureoptions } = SOIL_DATA;
-  return (
-    soilmoistureoptions[soilcap].fieldcapacity -
-    soilmoistureoptions[soilcap].wiltingpoint
-  );
+  return soilCharacteristics.fieldcapacity - soilCharacteristics.wiltingpoint;
 }
 
-function getWaterStressCoeff(Dr: number, TAW: number): number {
+function getWaterStressCoeff(Dr: number, TAW: number, p: number): number {
   // -----------------------------------------------------------------------------------------
   // Calculate coefficient for adjusting ET when accounting for decreased ET during water stress conditions.
   // Refer to FAO-56 eq 84, pg 169
@@ -81,7 +109,6 @@ function getWaterStressCoeff(Dr: number, TAW: number): number {
   // Ks  : water stress coefficient
   // -----------------------------------------------------------------------------------------
   let Ks: number | null = null;
-  const p = 0.5;
   Dr = -1 * Dr;
   Ks = Dr <= p * TAW ? 1 : (TAW - Dr) / ((1 - p) * TAW);
   Ks = Math.max(Ks, 0);
@@ -93,7 +120,8 @@ export function runWaterDeficitModel(
   pet: number[],
   soilcap: SoilMoistureOptionLevel,
   idxOfLastWater: number,
-  initDeficit = 0
+  initDeficit: number,
+  returnType: ('gp' | 'lawn')
 ) {
   // -----------------------------------------------------------------------------------------
   // Calculate daily water deficit (inches) from daily precipitation, evapotranspiration, soil drainage and runoff.
@@ -113,12 +141,12 @@ export function runWaterDeficitModel(
   //
   // -----------------------------------------------------------------------------------------
 
+  const soil_options = SOIL_DATA.soilmoistureoptions[returnType];
+
   // Total water available to plant
   let TAW: number | null = null;
   // water stress coefficient
   let Ks: number | null = null;
-  // crop coefficient, always 1 for grass
-  const Kc = 1;
 
   // values of model components for a single day
   let totalDailyPrecip: number | null = null;
@@ -136,6 +164,7 @@ export function runWaterDeficitModel(
   // deficitDaily is water deficit calculation we are looking for.
   // Other variables are just for potential water balance verification, etc, if the user chooses.
   const deficitDaily: number[] = [];
+  const saturationDaily: number[] = [];
 
   // a running tally of the deficit
   // Initialize deficit
@@ -145,9 +174,10 @@ export function runWaterDeficitModel(
 
   // the first elements in our output arrays. It include the water deficit initialization. Others will populate starting Day 2.
   deficitDaily.push(deficit);
+  saturationDaily.push((soil_options[soilcap].fieldcapacity + deficit) / soil_options[soilcap].saturation);
 
   // Calculate daily drainage rate that occurs when soil water content is between saturation and field capacity
-  dailyPotentialDrainageRate = getPotentialDailyDrainage(soilcap);
+  dailyPotentialDrainageRate = getPotentialDailyDrainage(soil_options[soilcap], SOIL_DATA.soildrainageoptions[soilcap].daysToDrainToFcFromSat);
 
   // Loop through all days, starting with the second day (we already have the deficit for the initial day from model initialization)
   for (let idx = 1; idx < pet.length; idx++) {
@@ -155,11 +185,11 @@ export function runWaterDeficitModel(
       deficit = 0.00;
     } else {
       // Calculate Ks, the water stress coefficient, using antecedent deficit
-      TAW = getTawForPlant(soilcap);
-      Ks = getWaterStressCoeff(deficitDaily[idx - 1], TAW);
+      TAW = getTawForPlant(soil_options[soilcap]);
+      Ks = getWaterStressCoeff(deficitDaily[idx - 1], TAW, soil_options.p);
   
       // We already know what the daily total is for Precip and ET
-      totalDailyPET = -1 * pet[idx] * Kc * Ks;
+      totalDailyPET = -1 * pet[idx] * soil_options.kc * Ks;
       totalDailyPrecip = precip[idx];
 
       // Convert daily rates to hourly rates. For this simple model, rates are constant throughout the day.
@@ -184,8 +214,8 @@ export function runWaterDeficitModel(
         // deficit is bound by saturation (soil can't be super-saturated). This effectively reduces deficit by hourly runoff as well.
         deficit = Math.min(
           deficit + hourlyPrecip - hourlyPET - hourlyDrainage,
-          SOIL_DATA.soilmoistureoptions[soilcap].saturation -
-            SOIL_DATA.soilmoistureoptions[soilcap].fieldcapacity
+          soil_options[soilcap].saturation -
+            soil_options[soilcap].fieldcapacity
         );
   
         // deficit is bound by wilting point, but calculations should never reach wilting point based on this model. We bound it below for completeness.
@@ -194,14 +224,15 @@ export function runWaterDeficitModel(
         deficit = Math.max(
           deficit,
           -1 *
-            (SOIL_DATA.soilmoistureoptions[soilcap].fieldcapacity -
-              SOIL_DATA.soilmoistureoptions[soilcap].wiltingpoint)
+            (soil_options[soilcap].fieldcapacity -
+              soil_options[soilcap].wiltingpoint)
         );
       }
     }
 
     deficitDaily.push(deficit);
+    saturationDaily.push((soil_options[soilcap].fieldcapacity + deficit) / soil_options[soilcap].saturation);
   }
 
-  return deficitDaily;
+  return returnType === 'gp' ? saturationDaily : deficitDaily;
 }

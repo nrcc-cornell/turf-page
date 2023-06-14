@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, Typography, MenuItem } from '@mui/material';
-import { format, isBefore, isAfter, parse, addDays } from 'date-fns';
+import { format } from 'date-fns';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
@@ -9,13 +9,11 @@ import Loading from '../../Loading';
 import DailyChart, { NumberRow, StringRow } from '../../DailyChart';
 import { TablePageInfo } from '../TablePage/TablePage';
 
-import { getFromProxy } from '../../../Scripts/proxy';
-import convertCoordsToIdxs from '../../../Scripts/convertCoordsToIdxs';
-import { fetchETData } from '../../../Scripts/calcPastSoilSaturation';
+import { getFromProxy, RunoffCoords } from '../../../Scripts/proxy';
 import { runWaterDeficitModel, SoilMoistureOptionLevel } from '../../../Scripts/waterDeficitModel';
-import { getDateAdjustment, EtReturn } from '../../../Scripts/calcPastSoilSaturation';
 import roundXDigits from '../../../Scripts/Rounding';
 import LawnWateringConditionalText from './LawnWateringConditionalText';
+import { getWaterDeficitData, WaterDeficitModelData } from '../../../Scripts/getWaterDefData';
 
 type LawnWateringPageProps = {
   currentLocation: UserLocation;
@@ -23,57 +21,9 @@ type LawnWateringPageProps = {
   todayFromAcis: boolean;
 }
 
-type ForecastData = {
-  dates: number[];
-  riskWinter: number[];
-  riskWinter72hr: number[];
-  past24Pcpn: number,
-  next24Pcpn: number,
-  tempChart: {
-    mint: number[];
-    maxt: number[];
-    soil: number[];
-  },
-  precipChart: {
-    swe: number[]
-    raim: number[]
-  }
-}
-
-type RunoffCoords = {
-  lats: number[];
-  lons: number[];
-};
-
 type ModelOutput = {
   dates: string[];
   values: number[];
-};
-
-type LWModelData = {
-  precip: number[];
-  et: number[];
-  dates: string[];
-};
-
-const fetchPrecip = async (loc: [number, number], eDate: string) => {
-  const response = await fetch('https://grid2.rcc-acis.org/GridData', {
-    method: 'POST',
-    body: JSON.stringify({
-      loc: loc.join(','),
-      grid: 'nrcc-model',
-      sDate: `${eDate.slice(0,4)}-03-01`,
-      eDate,
-      elems: [{ name: 'pcpn' }]
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(response.statusText);
-  }
-
-  const results = await response.json();
-  return results.data;
 };
 
 const renderTools = (
@@ -156,38 +106,13 @@ const renderTools = (
   }
 };
 
-const alignAndExtract = (rawEtData: EtReturn, prcpData: [string, number][], year: number) => {
-  let etData, etDates;
-  const DA = getDateAdjustment(rawEtData, prcpData, year);
-  if (DA > 0) {
-    const currentDateIdx = prcpData.findIndex(
-      (arr: [string, number]) => arr[1] === -999
-    );
-    prcpData = prcpData.slice(
-      DA,
-      currentDateIdx >= 0 ? currentDateIdx : prcpData.length
-    );
-    etData = rawEtData.pet;
-    etDates = rawEtData.dates_pet;
-  } else if (DA < 0) {
-    etData = rawEtData.pet.slice(Math.abs(DA));
-    etDates = rawEtData.dates_pet.slice(Math.abs(DA));
-  } else {
-    etData = rawEtData.pet;
-    etDates = rawEtData.dates_pet;
-  }
 
-  const startIdx = 0;
-  const endIdx = Math.min(etData.length, prcpData.length);
-
-  return { et: etData.slice(startIdx,endIdx), etDates: etDates.slice(startIdx,endIdx), precip: prcpData.slice(startIdx,endIdx).map(arr => arr[1]), precipDates: prcpData.slice(startIdx,endIdx).map(arr => arr[0]) };
-};
 
 export default function LawnWateringPage(props: LawnWateringPageProps) {
   const today = new Date();
   const todayStr = format(today, 'yyyyMMdd');
   const [coordArrs, setCoordArrs] = useState<RunoffCoords | null>(null);
-  const [modelData, setModelData] = useState<LWModelData | null>(null);
+  const [modelData, setModelData] = useState<WaterDeficitModelData | null>(null);
   const [modelResults, setModelResults] = useState<ModelOutput | null>(null);
   const [lastWater, setLastWater] = useState('');
   const [soilCap, setSoilCap] = useState(SoilMoistureOptionLevel.MEDIUM);
@@ -205,55 +130,23 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
 
   useEffect(() => {
     (async () => {
-      if (coordArrs){
-        let newModelResults = null;
-        let newModelData: LWModelData | null = null;
-        if (isAfter(today, new Date(today.getFullYear(), 2, 9)) && isBefore(today, new Date(today.getFullYear(), 10, 1))) {
-          setLoading(true);
-          const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
-            convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
+      if (coordArrs) {
+        setLoading(true);
 
-          const [ forecast, rawEtData, pastPrecip ] = await Promise.all([
-            getFromProxy<ForecastData>(
-              { dateStr: todayStr, idxLat, idxLng },
-              'runoff-risk'
-            ),
-            fetchETData(props.currentLocation.lngLat, today.getFullYear()),
-            fetchPrecip(props.currentLocation.lngLat, format(today, 'yyyy-MM-dd'))
-          ]);
+        const newModelData = await getWaterDeficitData(today, todayStr, props.currentLocation.lngLat, coordArrs);
 
-          console.log(forecast, rawEtData, pastPrecip);
-
-          if (forecast && rawEtData) {
-            const aligned = alignAndExtract(rawEtData, pastPrecip, today.getFullYear());
-
-            const numFcstDays = rawEtData.dates_pet_fcst.length;
-            aligned.et = aligned.et.concat(rawEtData.pet_fcst);
-            aligned.etDates = aligned.etDates.concat(rawEtData.dates_pet_fcst);
-
-            const nextDate = format(addDays(parse(aligned.precipDates[aligned.precipDates.length - 1], 'yyyy-MM-dd', new Date()), 1), 'yyyyMMdd');
-            const nextDateIdx = forecast.dates.findIndex(dateStr => String(dateStr) === nextDate);
-            aligned.precip = aligned.precip.concat(forecast.precipChart.raim.slice(nextDateIdx, nextDateIdx + numFcstDays));
-            aligned.precipDates = aligned.precipDates.concat(forecast.dates.slice(nextDateIdx, nextDateIdx + numFcstDays).map(val => `${String(val).slice(0,4)}-${String(val).slice(4,6)}-${String(val).slice(6)}`));
-            aligned.precipDates = aligned.precipDates.map(date => date.slice(5));
-
-            newModelData = {
-              dates: aligned.precipDates,
-              precip: aligned.precip,
-              et: aligned.et
-            };
-
-            const waterDeficitDaily = runWaterDeficitModel(aligned.precip, aligned.et, soilCap, newModelData.dates.findIndex(date => date === lastWater.slice(5)));
-            newModelResults = waterDeficitDaily.reduce((acc, val, i) => {
-              acc.dates.push(aligned.precipDates[i]);
-              acc.values.push(roundXDigits(val, 2));
-              return acc;
-            }, { dates: [], values: [] } as ModelOutput);
-          }
+        if (newModelData !== null) {
+          const waterDeficitDaily = runWaterDeficitModel(newModelData.precip, newModelData.et, soilCap, newModelData.dates.findIndex(date => date === lastWater.slice(5)), 0, 'lawn');
+          const newModelResults = waterDeficitDaily.reduce((acc, val, i) => {
+            acc.dates.push(newModelData.dates[i]);
+            acc.values.push(roundXDigits(val, 2));
+            return acc;
+          }, { dates: [], values: [] } as ModelOutput);
+  
+          setModelData(newModelData);
+          setModelResults(newModelResults);
         }
 
-        setModelData(newModelData);
-        setModelResults(newModelResults);
         setLoading(false);
       }
     })();
@@ -262,7 +155,7 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
   useEffect(() => {
     if (modelData) {
       setLoading(true);
-      const waterDeficitDaily = runWaterDeficitModel(modelData.precip, modelData.et, soilCap, modelData.dates.findIndex(date => date === lastWater.slice(5)));
+      const waterDeficitDaily = runWaterDeficitModel(modelData.precip, modelData.et, soilCap, modelData.dates.findIndex(date => date === lastWater.slice(5)), 0, 'lawn');
       const newModelResults = waterDeficitDaily.reduce((acc, val, i) => {
         acc.dates.push(modelData.dates[i]);
         acc.values.push(roundXDigits(val, 2));
