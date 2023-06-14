@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { isBefore, isAfter, addDays } from 'date-fns';
+import { addDays } from 'date-fns';
 
 import { Box, Typography, MenuItem, TextField } from '@mui/material';
 
@@ -16,8 +16,6 @@ import MapWithOptions from '../../OverlayMap/MapWithOptions';
 
 import { gpVariableOptions } from '../../OverlayMap/Options';
 import { runWaterDeficitModel, SoilMoistureOptionLevel } from '../../../Scripts/waterDeficitModel';
-import { addObservedData } from '../../../Scripts/calcPastSoilSaturation';
-import convertCoordsToIdxs from '../../../Scripts/convertCoordsToIdxs';
 import roundXDigits from '../../../Scripts/Rounding';
 import { getFromProxy, RunoffCoords } from '../../../Scripts/proxy';
 import { getWaterDeficitData, WaterDeficitModelData } from '../../../Scripts/getWaterDefData';
