@@ -1,50 +1,49 @@
-const SOIL_TYPES = {
-  low: {
-    wiltingpoint: 1.0,
-    prewiltingpoint: 1.15,
-    stressthreshold: 1.5,
-    fieldcapacity: 2.0,
-    saturation: 5.0
-  },
-  medium: {
-    wiltingpoint: 2.0,
-    // wiltingpoint: 1.0,
-    prewiltingpoint: 2.225,
-    stressthreshold: 2.8,
-    // fieldcapacity: 4.8,
-    fieldcapacity: 3.5,
-    saturation: 5.5
-  },
-  high: {
-    wiltingpoint: 3.0,
-    prewiltingpoint: 3.3,
-    stressthreshold: 4.0,
-    fieldcapacity: 5.0,
-    saturation: 6.5
-  }
-};
+type SoilHorizonData = number[];
+
+type SoilTypeData = {
+  percent: number;
+  horizons: (number | null)[][];
+}
+
+type SoilHorizonWeightsReduce = {
+  depthAccountedFor: number;
+  depths: number[];
+}
+
+type SoilTypeReduce = {
+  [key: string]: SoilTypeData;
+}
+
+type SDMReturn = AsyncReturnType<typeof fetchSoilColumnDataViaPostRest>;
+
+function noNulls<TValue>(value: (TValue | null)[]): value is TValue[] {
+  return !(value.includes(null));
+}
 
 class SoilType {
   columnDepthCm = 50;
+  name: string;
+  areaWeight: number;
+  horizons: SoilHorizonData[];
 
-  constructor(name, typeData) {
+  constructor(name: string, typeData: SoilTypeData) {
     this.name = name;
     this.areaWeight = typeData.percent / 100;
-    this.horizons = typeData.horizons.filter(horizon => !(horizon.includes(null)));
+    this.horizons = typeData.horizons.filter(noNulls);
   }
 
-  calcHorizonDepth(horizon) {
+  calcHorizonDepth(horizon: SoilHorizonData) {
     const top = horizon[3];
     const bottom = horizon[4] > this.columnDepthCm ? this.columnDepthCm : horizon[4];
     return top >= this.columnDepthCm ? 0 : bottom - top;
   }
 
-  calcHorizonWeightedValues(horizon, weight) {
+  calcHorizonWeightedValues(horizon: SoilHorizonData, weight: number) {
     return horizon.slice(0,3).map(val => val * weight);
   }
 
   calcHorizonWeights() {
-    const { depthAccountedFor, depths } = this.horizons.reduce((acc, horizon) => {
+    const { depthAccountedFor, depths } = this.horizons.reduce<SoilHorizonWeightsReduce>((acc, horizon) => {
       const thisHorizonDepth = this.calcHorizonDepth(horizon);
       acc.depthAccountedFor += thisHorizonDepth;
       acc.depths.push(thisHorizonDepth);
@@ -66,7 +65,7 @@ class SoilType {
 }
 
 
-const fetchSoilColumnDataViaPostRest = (lat, lon) => {
+const fetchSoilColumnDataViaPostRest = (lat: number, lon: number) => {
   const query = `SELECT claytotal_r, sandtotal_r, silttotal_r, hzdept_r, hzdepb_r, comppct_r, compname
     FROM mapunit AS mu
     LEFT OUTER JOIN component AS c ON mu.mukey = c.mukey
@@ -98,8 +97,8 @@ const fetchSoilColumnDataViaPostRest = (lat, lon) => {
     });
 };
 
-const convertIntoSoilTypes = (soilColumnData) => {
-  const sortedByName = soilColumnData.reduce((acc, horizon) => {
+const convertIntoSoilTypes = (soilColumnData: SDMReturn) => {
+  const sortedByName = soilColumnData.reduce((acc: SoilTypeReduce, horizon: string[]) => {
     if (!(horizon[6] in acc)) acc[horizon[6]] = { percent: parseInt(horizon[5]), horizons: [] };
     acc[horizon[6]].horizons.push(horizon.slice(0,5).map(val => val === null ? null : parseInt(val)));
     return acc;
@@ -115,7 +114,7 @@ const convertIntoSoilTypes = (soilColumnData) => {
   return Object.keys(sortedByName).map(name => new SoilType(name, sortedByName[name]));
 };
 
-const calcAvgSoilComp = (soilTypes) => {
+const calcAvgSoilComp = (soilTypes: SoilType[]) => {
   return soilTypes.reduce((acc, soilType) => {
     const typeComposition = soilType.calcWeightedAvgs();
     for (let i = 0; i < typeComposition.length; i++) {
@@ -125,19 +124,20 @@ const calcAvgSoilComp = (soilTypes) => {
   }, [0,0,0]);
 };
 
-const categorizeTexture = (clay, sand, silt) => {
-  let type = 'medium';
+type CategoryOptions = ('LOW'|'MEDIUM'|'HIGH');
+const categorizeTexture = (clay: number, sand: number, silt: number): CategoryOptions => {
+  let type: CategoryOptions = 'MEDIUM';
   
   if (sand >= 75) {
-    type = 'low';
-  } else if (clay >= 40) {
-    type = 'high';
+    type = 'LOW';
+  } else if (clay >= 30) {
+    type = 'HIGH';
   }
 
-  return SOIL_TYPES[type];
+  return type;
 };
 
-export default async function fetchSoilConstants(lat, lon) {
+export async function fetchSoilCapacity(lat: number, lon: number) {
   const soilColumnData = await fetchSoilColumnDataViaPostRest(lat, lon);
   console.log(soilColumnData);
   const soilTypes = convertIntoSoilTypes(soilColumnData);

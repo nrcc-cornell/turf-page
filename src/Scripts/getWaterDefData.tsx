@@ -28,12 +28,6 @@ type ForecastData = {
   }
 }
 
-type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (
-  ...args: any
-) => Promise<infer R>
-  ? R
-  : any;
-
 type tempPrcpReturn = AsyncReturnType<typeof fetchTempPrcpData>;
 type EtReturn = AsyncReturnType<typeof fetchETData>;
 

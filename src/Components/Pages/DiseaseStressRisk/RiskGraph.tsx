@@ -16,7 +16,7 @@ Highcharts.Chart.prototype.showResetZoom = function () {
 
 import StyledButton from '../../StyledBtn';
 import roundXDigits from '../../../Scripts/Rounding';
-import { RiskDataObj } from '../../../Scripts/Data';
+import { RiskDataObj } from '../../../Scripts/getRiskIndices';
 
 type SeriesObj = {
   data: (string | number)[][];

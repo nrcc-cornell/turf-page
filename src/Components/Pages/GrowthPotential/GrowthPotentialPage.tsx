@@ -19,6 +19,7 @@ import { runWaterDeficitModel, SoilMoistureOptionLevel } from '../../../Scripts/
 import roundXDigits from '../../../Scripts/Rounding';
 import { getFromProxy, RunoffCoords } from '../../../Scripts/proxy';
 import { getWaterDeficitData, WaterDeficitModelData } from '../../../Scripts/getWaterDefData';
+import { fetchSoilCapacity } from '../../../Scripts/soilCharacteristics';
 
 type GrowthPotentialPageProps = DisplayProps & { sx: { [key: string]: string }; };
 
@@ -127,7 +128,8 @@ const renderTools = (
   isNY: boolean,
   soilCap: SoilMoistureOptionLevel,
   setSoilCap: React.Dispatch<React.SetStateAction<SoilMoistureOptionLevel>>,
-  numDays: number
+  numDays: number,
+  calcedSoilCap: string
 ) => {
   console.log(modelResults);
   if (!isNY) {
@@ -160,6 +162,7 @@ const renderTools = (
           label='Soil Water Capacity'
           value={soilCap}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSoilCap(e.target.value as SoilMoistureOptionLevel)}
+          helperText={`'${calcedSoilCap.slice(0,1).toUpperCase() + calcedSoilCap.slice(1)}' is recommended for your location`}
         >
           <MenuItem value={SoilMoistureOptionLevel.HIGH}>High (Clay, fine texture)</MenuItem>
           <MenuItem value={SoilMoistureOptionLevel.MEDIUM}>Medium (Loam, med texture)</MenuItem>
@@ -205,6 +208,7 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
   const [isIrrigation, setIsIrrigation] = useState(false);
   const [loading, setLoading] = useState(true);
   const [soilMoistureCapacity, setSoilMoistureCapacity] = useState(SoilMoistureOptionLevel.MEDIUM);
+  const [calculatedSoilMoistureCapacity, setCalculatedSoilMoistureCapacity] = useState(SoilMoistureOptionLevel.MEDIUM);
 
   useEffect(() => {
     (async () => {
@@ -216,13 +220,13 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
     })();
   }, []);
 
-  
-
-
-// Get waterdeficitdata, get avgts       (needs to happen when loc, coordarrs change)
-// calc water deficit data   (needs to happen when raw data, soilcap, change)
-// calc gp 
-
+  useEffect(() => {
+    (async () => {
+      const newSC = await fetchSoilCapacity(props.currentLocation.lngLat[1], props.currentLocation.lngLat[0]);
+      setCalculatedSoilMoistureCapacity(SoilMoistureOptionLevel[newSC]);
+      setSoilMoistureCapacity(SoilMoistureOptionLevel[newSC]);
+    })();
+  }, [props.currentLocation]);
 
   useEffect(() => {
     (async () => {
@@ -238,8 +242,6 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
           const slicedSats = soilSaturations.slice(sliceIdx);
           const slicedAvgts = wdmData.avgt.slice(sliceIdx);
           const slicedDates = wdmData.dates.slice(sliceIdx);
-
-          console.log(slicedSats);
 
           setGrowthPotentialModelResults(calcGrowthPotential(slicedSats, slicedAvgts, slicedDates, isIrrigation, props.currentLocation, numDaysToProcess));
         }
@@ -262,63 +264,10 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
       const slicedAvgts = waterDeficitModelData.avgt.slice(sliceIdx);
       const slicedDates = waterDeficitModelData.dates.slice(sliceIdx);
 
-      console.log(soilSaturations, waterDeficitModelData.dates);
-
       setGrowthPotentialModelResults(calcGrowthPotential(slicedSats, slicedAvgts, slicedDates, isIrrigation, props.currentLocation, numDaysToProcess));
       setLoading(false);
     }
   }, [soilMoistureCapacity, isIrrigation]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // useEffect(() => {
-  //   (async () => {
-  //     if (coordArrs) {
-  //       let newData: GPModelData | null = null;
-  //       if (isAfter(today, new Date(today.getFullYear(), 2, 9)) && isBefore(today, new Date(today.getFullYear(), 10, 1))) {
-  //         setLoading(true);
-  //         const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
-  //           convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
-    
-  //         const forecastSoilSats = await getFromProxy<ForecastSS>(
-  //           { dateStr: overlayDates[0], idxLat, idxLng },
-  //           'soil-saturation'
-  //         );
-    
-  //         if (forecastSoilSats) {
-  //           newData = await addObservedData(
-  //             forecastSoilSats,
-  //             today,
-  //             props.currentLocation.lngLat
-  //           );
-  //           if (!newData) newData = { soilSats: [], avgt: [], dates: []} as GPModelData;
-  //         }
-  //       }
-
-  //       setModelResults(calcModelResults(newData, isIrrigation, props.currentLocation));
-  //       setModelData(newData);
-  //       setLoading(false);
-  //     }
-  //   })();
-  // }, [props.currentLocation, coordArrs]);
-
-  // useEffect(() => {
-  //   setModelResults(calcModelResults(modelData, isIrrigation, props.currentLocation));
-  // }, [isIrrigation]);
 
   return (
     <StyledCard
@@ -346,7 +295,8 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
           props.currentLocation.address.includes('New York'),
           soilMoistureCapacity,
           setSoilMoistureCapacity,
-          numDaysToProcess
+          numDaysToProcess,
+          calculatedSoilMoistureCapacity
         )}
         
         <StyledDivider />

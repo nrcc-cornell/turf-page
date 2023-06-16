@@ -4,7 +4,7 @@ import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
 import RiskGraph from './RiskGraph';
 import RSWMaps from '../../RSWMaps';
-import { RiskDataObj } from '../../../Scripts/Data';
+import { RiskDataObj } from '../../../Scripts/getRiskIndices';
 
 export type DiseaseStressRiskPageInfo = {
   maps: {
