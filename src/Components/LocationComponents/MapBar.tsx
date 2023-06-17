@@ -28,6 +28,7 @@ export default function MapBar(props: MapBarProps ) {
   const [address, setAddress] = useState('');
 
   const handleSearch = (): void => {
+    console.log('fetching in mapbar');
     fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${address.split(' ').join('%20')}.json?proximity=-75.37,43.21&country=US&types=postcode,place,address&access_token=${props.token}`, { method: 'GET' })
       .then(response => response.json())
       .then(jData => {
@@ -67,6 +68,7 @@ export default function MapBar(props: MapBarProps ) {
       })
       .catch(e => {
         console.log(e);
+        console.log('failed mapbar search');
         return false;
       });
   };

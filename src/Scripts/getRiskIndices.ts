@@ -1,6 +1,6 @@
 import { isWithinInterval, format, isAfter } from 'date-fns';
 
-import { DayHourly } from './getRaw';
+import { DayHourly } from './dayHourlyClass';
 
 type DayValues = {
   anthracnose: [string, number][];

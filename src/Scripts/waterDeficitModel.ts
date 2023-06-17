@@ -119,7 +119,7 @@ export function runWaterDeficitModel(
   precip: number[],
   pet: number[],
   soilcap: SoilMoistureOptionLevel,
-  idxOfLastWater: number,
+  irrigationIdxs: number[],
   initDeficit: number,
   returnType: ('gp' | 'lawn')
 ) {
@@ -181,58 +181,54 @@ export function runWaterDeficitModel(
 
   // Loop through all days, starting with the second day (we already have the deficit for the initial day from model initialization)
   for (let idx = 1; idx < pet.length; idx++) {
-    if (idx === idxOfLastWater) {
-      deficit = 0.00;
-    } else {
-      // Calculate Ks, the water stress coefficient, using antecedent deficit
-      TAW = getTawForPlant(soil_options[soilcap]);
-      Ks = getWaterStressCoeff(deficitDaily[idx - 1], TAW, soil_options.p);
-  
-      // We already know what the daily total is for Precip and ET
-      totalDailyPET = -1 * pet[idx] * soil_options.kc * Ks;
-      totalDailyPrecip = precip[idx];
+    // Calculate Ks, the water stress coefficient, using antecedent deficit
+    TAW = getTawForPlant(soil_options[soilcap]);
+    Ks = getWaterStressCoeff(deficitDaily[idx - 1], TAW, soil_options.p);
 
-      // Convert daily rates to hourly rates. For this simple model, rates are constant throughout the day.
-      // For precip   : this assumption is about all we can do without hourly observations
-      // For PET      : this assumption isn't great. Something following diurnal cycle would be best.
-      // For drainage : this assumption is okay
-      // ALL HOURLY RATES POSITIVE
-      hourlyPrecip = totalDailyPrecip / 24;
-      hourlyPET = (-1 * totalDailyPET) / 24;
-      hourlyPotentialDrainage = dailyPotentialDrainageRate / 24;
+    // We already know what the daily total is for Precip and ET
+    totalDailyPET = -1 * pet[idx] * soil_options.kc * Ks;
+    totalDailyPrecip = precip[idx] + (irrigationIdxs.includes(idx) ? 0.50 : 0);
 
-      for (let hr = 1; hr <= 24; hr++) {
-        // Calculate hourly drainage estimate. It is bounded by the potential drainage rate and available
-        // water in excess of the field capacity. We assume drainage does not occur below field capacity.
-        if (deficit > 0) {
-          hourlyDrainage = Math.min(deficit, hourlyPotentialDrainage);
-        } else {
-          hourlyDrainage = 0;
-        }
-  
-        // Adjust deficit based on hourly water budget.
-        // deficit is bound by saturation (soil can't be super-saturated). This effectively reduces deficit by hourly runoff as well.
-        deficit = Math.min(
-          deficit + hourlyPrecip - hourlyPET - hourlyDrainage,
-          soil_options[soilcap].saturation -
-            soil_options[soilcap].fieldcapacity
-        );
-  
-        // deficit is bound by wilting point, but calculations should never reach wilting point based on this model. We bound it below for completeness.
-        // In the real world, deficit is able to reach wilting point. The user should note that deficit values NEAR the wilting point
-        // from this model should be interpreted as 'danger of wilting exists'.
-        deficit = Math.max(
-          deficit,
-          -1 *
-            (soil_options[soilcap].fieldcapacity -
-              soil_options[soilcap].wiltingpoint)
-        );
+    // Convert daily rates to hourly rates. For this simple model, rates are constant throughout the day.
+    // For precip   : this assumption is about all we can do without hourly observations
+    // For PET      : this assumption isn't great. Something following diurnal cycle would be best.
+    // For drainage : this assumption is okay
+    // ALL HOURLY RATES POSITIVE
+    hourlyPrecip = totalDailyPrecip / 24;
+    hourlyPET = (-1 * totalDailyPET) / 24;
+    hourlyPotentialDrainage = dailyPotentialDrainageRate / 24;
+
+    for (let hr = 1; hr <= 24; hr++) {
+      // Calculate hourly drainage estimate. It is bounded by the potential drainage rate and available
+      // water in excess of the field capacity. We assume drainage does not occur below field capacity.
+      if (deficit > 0) {
+        hourlyDrainage = Math.min(deficit, hourlyPotentialDrainage);
+      } else {
+        hourlyDrainage = 0;
       }
+
+      // Adjust deficit based on hourly water budget.
+      // deficit is bound by saturation (soil can't be super-saturated). This effectively reduces deficit by hourly runoff as well.
+      deficit = Math.min(
+        deficit + hourlyPrecip - hourlyPET - hourlyDrainage,
+        soil_options[soilcap].saturation -
+          soil_options[soilcap].fieldcapacity
+      );
+
+      // deficit is bound by wilting point, but calculations should never reach wilting point based on this model. We bound it below for completeness.
+      // In the real world, deficit is able to reach wilting point. The user should note that deficit values NEAR the wilting point
+      // from this model should be interpreted as 'danger of wilting exists'.
+      deficit = Math.max(
+        deficit,
+        -1 *
+          (soil_options[soilcap].fieldcapacity -
+            soil_options[soilcap].wiltingpoint)
+      );
     }
 
     deficitDaily.push(deficit);
     saturationDaily.push((soil_options[soilcap].fieldcapacity + deficit) / soil_options[soilcap].saturation);
   }
 
-  return returnType === 'gp' ? saturationDaily : deficitDaily;
+  return { saturationPercents: saturationDaily, deficitsInches: deficitDaily };
 }

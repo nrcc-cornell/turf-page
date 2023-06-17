@@ -7,15 +7,16 @@ import MapSlider from './Slider';
 import OverlayMap from './Map';
 import Legend from './Legend';
 
-import convertCoordsToIdxs from '../../Scripts/convertCoordsToIdxs';
-import { updateStateFromProxy, RunoffCoords } from '../../Scripts/proxy';
+import { updateStateFromProxy } from '../../Scripts/proxy';
 import { VariableOptions } from './Options';
+import { CoordsIdxObj } from '../../Hooks/useRunoffApi';
 
 type RRMap<T> = DisplayProps & {
   dropdownOptions: VariableOptions;
   proxyEndpointName: string;
   modelData: T;
   setModelData?: (a: T) => void;
+  coordsIdxs?: CoordsIdxObj | null
 };
 
 type Data = { dates: string[] };
@@ -25,10 +26,6 @@ export default function MapWithOptions<T extends Data>(
 ) {
   const today = new Date();
   const todayStr = format(today, 'yyyyMMdd');
-  const [coordArrs, setCoordArrs] = useState<RunoffCoords>({
-    lats: [],
-    lons: [],
-  });
   const initKey = Object.keys(props.dropdownOptions)[0];
   const [option, setOption] = useState(initKey);
   const [legendInfo, setLegendInfo] = useState({ label: initKey, ...props.dropdownOptions[initKey]});
@@ -36,25 +33,14 @@ export default function MapWithOptions<T extends Data>(
   const [overlay, setOverlay] = useState('');
 
   useEffect(() => {
-    updateStateFromProxy<RunoffCoords>(
-      { dateStr: todayStr },
-      'coordinates',
-      setCoordArrs
-    );
-  }, []);
-
-  useEffect(() => {
-    if (props.setModelData && coordArrs.lats.length && coordArrs.lons.length) {
-      const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
-        convertCoordsToIdxs(props.currentLocation.lngLat, coordArrs);
-
+    if (props.setModelData && props.coordsIdxs) {
       updateStateFromProxy<T>(
-        { dateStr: todayStr, idxLat, idxLng },
+        { dateStr: todayStr, ...props.coordsIdxs },
         props.proxyEndpointName,
         props.setModelData
       );
     }
-  }, [props.currentLocation, coordArrs]);
+  }, [props.coordsIdxs]);
 
   useEffect(() => {
     let forecastDateStr = props.modelData.dates[forecastDateIdx] || format(new Date(), 'yyyyMMdd');

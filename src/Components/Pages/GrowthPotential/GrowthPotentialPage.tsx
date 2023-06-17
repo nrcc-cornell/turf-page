@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { format } from 'date-fns';
 import { addDays } from 'date-fns';
 
@@ -9,19 +9,24 @@ import { growthPotentialModel } from '../../../Scripts/GrowthPotentialModel';
 import StyledCard from '../../StyledCard';
 import GrowthPotentialGraph from './GrowthPotentialGraph';
 import Loading from '../../Loading';
-import IrrigationSwitch from '../../IrrigationSwitch';
+// import IrrigationSwitch from '../../IrrigationSwitch';
 import StyledDivider from '../../StyledDivider';
 import InvalidText from '../../InvalidText';
 import MapWithOptions from '../../OverlayMap/MapWithOptions';
+import SoilCapacitySelector, { SoilCapacitySelectorProps } from '../../SoilCapacitySelector';
+import LastIrrigationSelector, { LastIrrigationSelectorProps } from '../../LastIrrigationSelector';
 
 import { gpVariableOptions } from '../../OverlayMap/Options';
-import { runWaterDeficitModel, SoilMoistureOptionLevel } from '../../../Scripts/waterDeficitModel';
+// import { SoilMoistureOptionLevel } from '../../../Scripts/waterDeficitModel';
 import roundXDigits from '../../../Scripts/Rounding';
-import { getFromProxy, RunoffCoords } from '../../../Scripts/proxy';
-import { getWaterDeficitData, WaterDeficitModelData } from '../../../Scripts/getWaterDefData';
-import { fetchSoilCapacity } from '../../../Scripts/soilCharacteristics';
 
-type GrowthPotentialPageProps = DisplayProps & { sx: { [key: string]: string }; };
+type GrowthPotentialPageProps = DisplayProps& {
+  sx: { [key: string]: string };
+  soilSaturation:  number[];
+  soilSaturationDates: string[];
+  isLoading: boolean;
+  avgts: number[];
+} & LastIrrigationSelectorProps & SoilCapacitySelectorProps;
 
 export type ForecastSS = {
   two: number[];
@@ -43,31 +48,34 @@ export type GrowthPotentialModelOutput = {
   values: number[];
 };
 
-const calcGrowthPotential = (soilSats: number[], avgTemps: number[], dates: string[], isIrrigation: boolean, loc: UserLocation, numDaysToProcess: number) => {
+const calcGrowthPotential = (soilSats: number[], avgTemps: number[], dates: string[], loc: UserLocation, today: Date, numDaysToProcess: number) => {
   if (
-    soilSats && soilSats.length === numDaysToProcess &&
-    avgTemps && avgTemps.length === numDaysToProcess &&
-    dates && dates.length === numDaysToProcess
+    soilSats && soilSats.length >= numDaysToProcess &&
+    avgTemps && avgTemps.length >= numDaysToProcess &&
+    dates && dates.length >= numDaysToProcess
   ) {
     const modelOutput: GrowthPotentialModelOutput = {
       dates: [],
       values: [],
     };
 
-    const thisYear = new Date().getFullYear();
+    const firstIdx = dates.length - numDaysToProcess;
+    const thisYear = today.getFullYear();
+
     const tempValues: number[] = [];
-    for (let i = 0; i < numDaysToProcess; i++) {
+    for (let i = firstIdx; i < firstIdx + numDaysToProcess; i++) {
       const date = thisYear + dates[i].split('-').join('');
-      const ssValue = isIrrigation ? 0.75 : soilSats[i];
+      const ssValue = soilSats[i];
       const atValue = avgTemps[i];
 
+      
       const gp = growthPotentialModel(
         loc.lngLat[1],
         date,
         ssValue,
         atValue
       );
-
+        
       tempValues.push(gp);
       
       if (tempValues.length === 5) {
@@ -91,11 +99,12 @@ const calcGrowthPotential = (soilSats: number[], avgTemps: number[], dates: stri
 
 const generateRecommendation = (
   modelResults: GrowthPotentialModelOutput | null,
+  today: Date,
   thresholds: number[]
 ) => {
   let text = '';
   if (!modelResults) {
-    const thisMonth = new Date().getMonth() + 1;
+    const thisMonth = today.getMonth() + 1;
     if (thisMonth > 10 || thisMonth < 3) {
       text =
         'Data for this model is unavailable after November. Please check back in March.';
@@ -104,8 +113,8 @@ const generateRecommendation = (
         'There was a problem getting data for this model. Please refresh to try again.';
     }
   } else {
-    const today = format(new Date(), 'yyyyMMdd');
-    const iOfToday = modelResults.dates.findIndex((date) => date === today);
+    const todayStr = format(today, 'yyyyMMdd');
+    const iOfToday = modelResults.dates.findIndex((date) => date === todayStr);
     const value = modelResults.values[iOfToday];
 
     if (value < thresholds[1]) {
@@ -120,30 +129,18 @@ const generateRecommendation = (
   return text;
 };
 
-const renderTools = (
-  modelResults: GrowthPotentialModelOutput | null,
-  isIrrigation: boolean,
-  setIsIrrigation: React.Dispatch<React.SetStateAction<boolean>>,
-  isLoading: boolean,
-  isNY: boolean,
-  soilCap: SoilMoistureOptionLevel,
-  setSoilCap: React.Dispatch<React.SetStateAction<SoilMoistureOptionLevel>>,
-  numDays: number,
-  calcedSoilCap: string
-) => {
-  console.log(modelResults);
-  if (!isNY) {
+const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: number) => {
+  if (!toolProps.currentLocation.address.includes('New York')) {
     return <InvalidText type='notNY' />;
-  } else if (isLoading) {
+  } else if (toolProps.isLoading) {
     return <Loading />;
-  } else if (!modelResults) {
+  } else if (!toolProps.soilSaturation) {
     return <InvalidText type='outOfSeason' />;
-  } else if (modelResults && modelResults.dates.length === 0) {
+  } else if (toolProps.soilSaturation && toolProps.soilSaturationDates.length === 0) {
     return <InvalidText type='noSoilData' />;
   } else {
     const THRESHOLDS = [0, 25, 66];
-
-    console.log(modelResults);
+    const growthPotentialOutput = calcGrowthPotential(toolProps.soilSaturation, toolProps.avgts, toolProps.soilSaturationDates, toolProps.currentLocation, toolProps.today, numDaysToProcess);
 
     return (<>
       <Box sx={{ maxWidth: '700px', margin: '40px auto 0px' }}>
@@ -157,27 +154,14 @@ const renderTools = (
         alignItems: 'center',
         marginTop: '10px'
       }}>
-        <TextField
-          select
-          label='Soil Water Capacity'
-          value={soilCap}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSoilCap(e.target.value as SoilMoistureOptionLevel)}
-          helperText={`'${calcedSoilCap.slice(0,1).toUpperCase() + calcedSoilCap.slice(1)}' is recommended for your location`}
-        >
-          <MenuItem value={SoilMoistureOptionLevel.HIGH}>High (Clay, fine texture)</MenuItem>
-          <MenuItem value={SoilMoistureOptionLevel.MEDIUM}>Medium (Loam, med texture)</MenuItem>
-          <MenuItem value={SoilMoistureOptionLevel.LOW}>Low (Sand, coarse texture)</MenuItem>
-        </TextField>
-        <IrrigationSwitch
-          checked={isIrrigation}
-          setFunction={setIsIrrigation}
-        />
+        <SoilCapacitySelector recommendedSoilCap={toolProps.recommendedSoilCap} soilCap={toolProps.soilCap} setSoilCap={toolProps.setSoilCap} />
+        <LastIrrigationSelector today={toolProps.today} lastIrrigation={toolProps.lastIrrigation} setLastIrrigation={toolProps.setLastIrrigation} />
       </Box>
 
       <GrowthPotentialGraph
-        modelResults={modelResults}
+        modelResults={growthPotentialOutput}
         thresholds={THRESHOLDS}
-        numDays={numDays}
+        numDays={numDaysToProcess}
       />
 
       <StyledDivider />
@@ -190,7 +174,7 @@ const renderTools = (
             sx={{
               lineHeight: '1.2',
             }}
-          >{generateRecommendation(modelResults, THRESHOLDS)}</Typography>
+          >{generateRecommendation(growthPotentialOutput, toolProps.today, THRESHOLDS)}</Typography>
         </Box>
       </Box>
     </>);
@@ -199,75 +183,8 @@ const renderTools = (
 
 
 export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
-  const today = new Date();
   const numDaysToProcess = 11;
-  const overlayDates = Array.from({length: 5}, (v, i) => format(addDays(today, i), 'yyyyMMdd'));
-  const [coordArrs, setCoordArrs] = useState<RunoffCoords | null>(null);
-  const [waterDeficitModelData, setWaterDeficitModelData] = useState<WaterDeficitModelData | null>(null);
-  const [growthPotentialModelResults, setGrowthPotentialModelResults] = useState<GrowthPotentialModelOutput | null>(null);
-  const [isIrrigation, setIsIrrigation] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [soilMoistureCapacity, setSoilMoistureCapacity] = useState(SoilMoistureOptionLevel.MEDIUM);
-  const [calculatedSoilMoistureCapacity, setCalculatedSoilMoistureCapacity] = useState(SoilMoistureOptionLevel.MEDIUM);
-
-  useEffect(() => {
-    (async () => {
-      const results = await getFromProxy<RunoffCoords>(
-        { dateStr: overlayDates[0] },
-        'coordinates'
-      );
-      setCoordArrs(results);
-    })();
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      const newSC = await fetchSoilCapacity(props.currentLocation.lngLat[1], props.currentLocation.lngLat[0]);
-      setCalculatedSoilMoistureCapacity(SoilMoistureOptionLevel[newSC]);
-      setSoilMoistureCapacity(SoilMoistureOptionLevel[newSC]);
-    })();
-  }, [props.currentLocation]);
-
-  useEffect(() => {
-    (async () => {
-      if (coordArrs) {
-        setLoading(true);
-        
-        const wdmData = await getWaterDeficitData(today, format(today, 'yyyyMMdd'), props.currentLocation.lngLat, coordArrs);
-
-        if (wdmData !== null) {
-          const soilSaturations = runWaterDeficitModel(wdmData.precip, wdmData.et, soilMoistureCapacity, -1, 0, 'gp');
-
-          const sliceIdx = wdmData.dates.length - numDaysToProcess;
-          const slicedSats = soilSaturations.slice(sliceIdx);
-          const slicedAvgts = wdmData.avgt.slice(sliceIdx);
-          const slicedDates = wdmData.dates.slice(sliceIdx);
-
-          setGrowthPotentialModelResults(calcGrowthPotential(slicedSats, slicedAvgts, slicedDates, isIrrigation, props.currentLocation, numDaysToProcess));
-        }
-
-        setWaterDeficitModelData(wdmData);
-
-        setLoading(false);
-      }
-    })();
-  }, [props.currentLocation, coordArrs]);
-
-  useEffect(() => {
-    if (waterDeficitModelData) {
-      setLoading(true);
-
-      const soilSaturations = runWaterDeficitModel(waterDeficitModelData.precip, waterDeficitModelData.et, soilMoistureCapacity, -1, 0, 'gp');
-
-      const sliceIdx = waterDeficitModelData.dates.length - numDaysToProcess;
-      const slicedSats = soilSaturations.slice(sliceIdx);
-      const slicedAvgts = waterDeficitModelData.avgt.slice(sliceIdx);
-      const slicedDates = waterDeficitModelData.dates.slice(sliceIdx);
-
-      setGrowthPotentialModelResults(calcGrowthPotential(slicedSats, slicedAvgts, slicedDates, isIrrigation, props.currentLocation, numDaysToProcess));
-      setLoading(false);
-    }
-  }, [soilMoistureCapacity, isIrrigation]);
+  const overlayDates = Array.from({length: 5}, (v, i) => format(addDays(props.today, i), 'yyyyMMdd'));
 
   return (
     <StyledCard
@@ -287,17 +204,7 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
         <Typography variant='h5'>Growth Potential Forecast for New York State</Typography>
         <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for managing turfgrass</Typography>
 
-        {renderTools(
-          growthPotentialModelResults,
-          isIrrigation,
-          setIsIrrigation,
-          loading,
-          props.currentLocation.address.includes('New York'),
-          soilMoistureCapacity,
-          setSoilMoistureCapacity,
-          numDaysToProcess,
-          calculatedSoilMoistureCapacity
-        )}
+        {renderTools(props, numDaysToProcess)}
         
         <StyledDivider />
 

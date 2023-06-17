@@ -10,6 +10,7 @@ import RunoffRiskMoreInfo from './RunoffRiskMoreInfo';
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
 import InvalidText from '../../InvalidText';
+import { CoordsIdxObj } from '../../../Hooks/useRunoffApi';
 
 export type RRProxyBody = {
   option: string;
@@ -62,7 +63,7 @@ const renderTools = (modelData: RRData) => {
   </>);
 };
 
-export default function RunoffRiskPage(props: DisplayProps) {
+export default function RunoffRiskPage(props: DisplayProps & { coordsIdxs: CoordsIdxObj | null }) {
   const [modelData, setModelData] = useState(emptyData);
 
   return (
@@ -93,6 +94,7 @@ export default function RunoffRiskPage(props: DisplayProps) {
         proxyEndpointName='runoff-risk'
         modelData={modelData}
         setModelData={setModelData}
+        coordsIdxs={props.coordsIdxs}
       />
       <RunoffRiskMoreInfo />
     </StyledCard>

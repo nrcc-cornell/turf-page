@@ -11,7 +11,7 @@ import ArrSummer from './ArrSummerClass';
 import roundXDigits from './Rounding';
 import { GraphData } from '../Components/Graph';
 import { TableData } from '../Components/Pages/TablePage/TablePage';
-import { DayHourly } from './getRaw';
+import { DayHourly } from './dayHourlyClass';
 
 type GridDatum = [string, number, number, number, number];
 
@@ -87,6 +87,7 @@ function getPast(
         { name: 'avgt', interval: [0, 0, 1] },
       ];
 
+  console.log('fetching past grid data');
   return fetch('https://grid2.rcc-acis.org/GridData', {
     method: 'POST',
     body: JSON.stringify({

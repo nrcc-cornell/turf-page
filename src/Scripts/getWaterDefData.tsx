@@ -1,8 +1,8 @@
 import { isAfter, isBefore, format, parse, addDays, differenceInCalendarDays } from 'date-fns';
 
-import { getFromProxy, RunoffCoords } from './proxy';
-import convertCoordsToIdxs from './convertCoordsToIdxs';
+import { getFromProxy } from './proxy';
 import roundXDigits from './Rounding';
+import { CoordsIdxObj } from '../Hooks/useRunoffApi';
 
 export type WaterDeficitModelData = {
   precip: number[];
@@ -76,6 +76,7 @@ const alignAndExtract = (rawEtData: EtReturn, prcpAndTempData: [string, number, 
 };
 
 const fetchTempPrcpData = async (loc: [number, number], eDate: string) => {
+  console.log('fetching temp prcp data from getWaterDefData');
   const response = await fetch('https://grid2.rcc-acis.org/GridData', {
     method: 'POST',
     body: JSON.stringify({
@@ -96,6 +97,7 @@ const fetchTempPrcpData = async (loc: [number, number], eDate: string) => {
 };
 
 const fetchETData = (coords: number[], year: number) => {
+  console.log('fetching et data from getWaterDefData');
   return fetch(
     `https://x6xfv2cdrl.execute-api.us-east-1.amazonaws.com/production/irrigation?lat=${coords[1]}&lon=${coords[0]}&year=${year}`
   )
@@ -103,15 +105,12 @@ const fetchETData = (coords: number[], year: number) => {
     .catch(() => null);
 };
 
-async function getWaterDeficitData(today: Date, todayStr: string, lngLat: [number, number], coordArrs: RunoffCoords) {
+async function getWaterDeficitData(today: Date, lngLat: [number, number], coordsIdxs: CoordsIdxObj) {
   let newModelData: WaterDeficitModelData | null = null;
   if (isAfter(today, new Date(today.getFullYear(), 2, 9)) && isBefore(today, new Date(today.getFullYear(), 10, 1))) {
-    const { idxLat, idxLng }: { idxLat: number; idxLng: number } =
-      convertCoordsToIdxs(lngLat, coordArrs);
-
     const [ forecast, rawEtData, pastPrecipAndTemp ] = await Promise.all([
       getFromProxy<ForecastData>(
-        { dateStr: todayStr, idxLat, idxLng },
+        { dateStr: format(new Date(), 'yyyyMMdd'), ...coordsIdxs },
         'runoff-risk'
       ),
       fetchETData(lngLat, today.getFullYear()),
@@ -126,9 +125,9 @@ async function getWaterDeficitData(today: Date, todayStr: string, lngLat: [numbe
       aligned.etDates = aligned.etDates.concat(rawEtData.dates_pet_fcst);
 
       const nextDate = format(addDays(parse(aligned.precipDates[aligned.precipDates.length - 1], 'yyyy-MM-dd', new Date()), 1), 'yyyyMMdd');
-      const nextDateIdx = forecast.dates.findIndex(dateStr => String(dateStr) === nextDate);
+      const nextDateIdx = forecast.dates.findIndex((dateStr: number) => String(dateStr) === nextDate);
       aligned.precip = aligned.precip.concat(forecast.precipChart.raim.slice(nextDateIdx, nextDateIdx + numFcstDays));
-      aligned.precipDates = aligned.precipDates.concat(forecast.dates.slice(nextDateIdx, nextDateIdx + numFcstDays).map(val => `${String(val).slice(0,4)}-${String(val).slice(4,6)}-${String(val).slice(6)}`));
+      aligned.precipDates = aligned.precipDates.concat(forecast.dates.slice(nextDateIdx, nextDateIdx + numFcstDays).map((val: number) => `${String(val).slice(0,4)}-${String(val).slice(4,6)}-${String(val).slice(6)}`));
       aligned.precipDates = aligned.precipDates.map(date => date.slice(5));
 
       for (let i = nextDateIdx; i < nextDateIdx + numFcstDays; i++) {

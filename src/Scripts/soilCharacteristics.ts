@@ -1,3 +1,5 @@
+import { SoilMoistureOptionLevel } from './waterDeficitModel';
+
 type SoilHorizonData = number[];
 
 type SoilTypeData = {
@@ -65,13 +67,14 @@ class SoilType {
 }
 
 
-const fetchSoilColumnDataViaPostRest = (lat: number, lon: number) => {
+const fetchSoilColumnDataViaPostRest = (lngLat: [number, number]) => {
   const query = `SELECT claytotal_r, sandtotal_r, silttotal_r, hzdept_r, hzdepb_r, comppct_r, compname
     FROM mapunit AS mu
     LEFT OUTER JOIN component AS c ON mu.mukey = c.mukey
     INNER JOIN chorizon AS ch ON c.cokey = ch.cokey
-    WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point (${lon} ${lat})')) AND hzdept_r <= 50`;
+    WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point (${lngLat.join(' ')})')) AND hzdept_r <= 50`;
 
+  console.log('fetching from SDM in soilCharacteristics');
   return fetch(
     'https://sdmdataaccess.sc.egov.usda.gov/tabular/post.rest',
     {
@@ -124,22 +127,20 @@ const calcAvgSoilComp = (soilTypes: SoilType[]) => {
   }, [0,0,0]);
 };
 
-type CategoryOptions = ('LOW'|'MEDIUM'|'HIGH');
-const categorizeTexture = (clay: number, sand: number, silt: number): CategoryOptions => {
-  let type: CategoryOptions = 'MEDIUM';
+const categorizeTexture = (clay: number, sand: number, silt: number): SoilMoistureOptionLevel => {
+  let type: SoilMoistureOptionLevel = SoilMoistureOptionLevel.MEDIUM;
   
   if (sand >= 75) {
-    type = 'LOW';
+    type = SoilMoistureOptionLevel.LOW;
   } else if (clay >= 30) {
-    type = 'HIGH';
+    type = SoilMoistureOptionLevel.HIGH;
   }
 
   return type;
 };
 
-export async function fetchSoilCapacity(lat: number, lon: number) {
-  const soilColumnData = await fetchSoilColumnDataViaPostRest(lat, lon);
-  console.log(soilColumnData);
+export async function getSoilCapacity(lngLat: [number, number]) {
+  const soilColumnData = await fetchSoilColumnDataViaPostRest(lngLat);
   const soilTypes = convertIntoSoilTypes(soilColumnData);
   const [ avgClay, avgSand, avgSilt ] = calcAvgSoilComp(soilTypes);
   return categorizeTexture(avgClay, avgSand, avgSilt);

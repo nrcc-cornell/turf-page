@@ -9,6 +9,7 @@ async function updateStateFromProxy<T>(
   endpoint: string,
   setFunction: (a: T) => void
 ) {
+  console.log('fetching from proxy as updateState');
   const response = await fetch(proxyUrl + endpoint, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -62,6 +63,7 @@ export type ProxyBody = CoordsBody | SoilSaturationBody | OverlayBody;
 
 
 async function getFromProxy<T>(body: ProxyBody, endpoint: string) {
+  console.log('fetching from proxy as getFrom');
   const response = await fetch(proxyUrl + endpoint, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -73,10 +75,5 @@ async function getFromProxy<T>(body: ProxyBody, endpoint: string) {
   }
   return results;
 }
-
-export type RunoffCoords = {
-  lats: number[];
-  lons: number[];
-};
 
 export { updateStateFromProxy, getFromProxy };

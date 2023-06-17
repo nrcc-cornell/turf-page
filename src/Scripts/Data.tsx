@@ -5,7 +5,7 @@ import {
   isSameDay,
 } from 'date-fns';
 
-import { getToolRawData, DayHourly } from './getRaw';
+import { getToolRawData } from './getRaw';
 import { calcRiskIndices, RiskDataResults, emptyRiskIndices } from './getRiskIndices';
 import { getGraphPagesData, emptyGraphData, GraphDataResults } from './getGraphData';
 
@@ -36,7 +36,7 @@ const getData = async (lngLat: number[]): Promise<ToolData> => {
   const sDate = format(subDays(today, 15), 'yyyy-MM-dd');
   const seasonStart = subDays(new Date(today.getFullYear(), 2, 1), 4);
 
-  const data: DayHourly[] | null = await getToolRawData(
+  const data = await getToolRawData(
     lngLat[0],
     lngLat[1],
     seasonStart,
@@ -92,6 +92,7 @@ function getLocation(
   lat: number,
   token: string
 ): Promise<false | UserLocation> {
+  console.log('getting location name');
   return fetch(
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?limit=1&access_token=${token}`,
     { method: 'GET' }

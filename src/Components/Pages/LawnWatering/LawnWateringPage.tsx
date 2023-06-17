@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Box, TextField, Typography, MenuItem } from '@mui/material';
-import { format } from 'date-fns';
+import React from 'react';
+import { Box, Typography } from '@mui/material';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
@@ -9,59 +8,43 @@ import Loading from '../../Loading';
 import DailyChart, { NumberRow, StringRow } from '../../DailyChart';
 import { TablePageInfo } from '../TablePage/TablePage';
 
-import { getFromProxy, RunoffCoords } from '../../../Scripts/proxy';
-import { runWaterDeficitModel, SoilMoistureOptionLevel } from '../../../Scripts/waterDeficitModel';
 import roundXDigits from '../../../Scripts/Rounding';
 import LawnWateringConditionalText from './LawnWateringConditionalText';
-import { getWaterDeficitData, WaterDeficitModelData } from '../../../Scripts/getWaterDefData';
+import SoilCapacitySelector, { SoilCapacitySelectorProps } from '../../SoilCapacitySelector';
+import LastIrrigationSelector, { LastIrrigationSelectorProps } from '../../LastIrrigationSelector';
 
 type LawnWateringPageProps = {
   currentLocation: UserLocation;
   pageInfo: TablePageInfo;
   todayFromAcis: boolean;
-}
+  soilSaturation:  number[];
+  soilSaturationDates: string[];
+  isLoading: boolean;
+} & LastIrrigationSelectorProps & SoilCapacitySelectorProps
 
-type ModelOutput = {
-  dates: string[];
-  values: number[];
-};
-
-const renderTools = (
-  modelResults: ModelOutput | null,
-  pageInfo: TablePageInfo,
-  todayFromAcis: boolean,
-  isLoading: boolean,
-  isNY: boolean,
-  lastWater: string,
-  setLastWater: React.Dispatch<React.SetStateAction<string>>,
-  soilCap: SoilMoistureOptionLevel,
-  setSoilCap: React.Dispatch<React.SetStateAction<SoilMoistureOptionLevel>>
-) => {
-  if (!isNY) {
+const renderTools = (toolProps: LawnWateringPageProps) => {
+  if (!toolProps.currentLocation.address.includes('New York')) {
     return <InvalidText type='notNY' />;
-  } else if (isLoading) {
+  } else if (toolProps.isLoading) {
     return <Loading />;
-  } else if (!modelResults) {
+  } else if (!toolProps.soilSaturation) {
     return <InvalidText type='outOfSeason' />;
   } else {
     const data = [{
       rowName: 'As of 8am On',
       type: 'dates',
-      data: modelResults.dates.slice(-6)
+      data: toolProps.soilSaturationDates.slice(-6)
     },{
-      rowName: pageInfo.chart.rowNames[0],
+      rowName: toolProps.pageInfo.chart.rowNames[0],
       type: 'numbers',
-      data: modelResults.values.slice(-6)
+      data: toolProps.soilSaturation.slice(-6).map(val => roundXDigits(val, 2))
     }] as (StringRow | NumberRow)[];
 
-    const year = String(new Date().getFullYear());
-    const march1 = year + '-' + modelResults.dates[0];
-    const todayIdx = modelResults.values.length - (todayFromAcis ? 3 : 4);
-    const today = year + '-' + modelResults.dates[todayIdx];
+    const todaysValue = toolProps.soilSaturation[toolProps.soilSaturation.length - (toolProps.todayFromAcis ? 3 : 4)];
 
     return (<>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
-        <TextField
+        {/* <TextField
           select
           label='Soil Water Capacity'
           value={soilCap}
@@ -70,9 +53,11 @@ const renderTools = (
           <MenuItem value={SoilMoistureOptionLevel.HIGH}>High (Clay, fine texture)</MenuItem>
           <MenuItem value={SoilMoistureOptionLevel.MEDIUM}>Medium (Loam, med texture)</MenuItem>
           <MenuItem value={SoilMoistureOptionLevel.LOW}>Low (Sand, coarse texture)</MenuItem>
-        </TextField>
+        </TextField> */}
+        <SoilCapacitySelector recommendedSoilCap={toolProps.recommendedSoilCap} soilCap={toolProps.soilCap} setSoilCap={toolProps.setSoilCap} />
         
-        <TextField
+        <LastIrrigationSelector today={toolProps.today} lastIrrigation={toolProps.lastIrrigation} setLastIrrigation={toolProps.setLastIrrigation} />
+        {/* <TextField
           type='date'
           label='Last Water Date'
           value={lastWater}
@@ -85,19 +70,19 @@ const renderTools = (
               textAlign: 'center'
             }
           }}
-        />
+        /> */}
       </Box>
 
       <DailyChart
-        {...pageInfo.chart}
+        {...toolProps.pageInfo.chart}
         data={data}
-        todayFromAcis={todayFromAcis}
+        todayFromAcis={toolProps.todayFromAcis}
         numRows={3}
       />
       
       <StyledDivider />
       
-      <LawnWateringConditionalText soilcap={soilCap} today={modelResults.values[todayIdx]} />
+      <LawnWateringConditionalText soilcap={toolProps.soilCap} today={todaysValue} />
 
       <StyledDivider />
 
@@ -109,64 +94,6 @@ const renderTools = (
 
 
 export default function LawnWateringPage(props: LawnWateringPageProps) {
-  const today = new Date();
-  const todayStr = format(today, 'yyyyMMdd');
-  const [coordArrs, setCoordArrs] = useState<RunoffCoords | null>(null);
-  const [modelData, setModelData] = useState<WaterDeficitModelData | null>(null);
-  const [modelResults, setModelResults] = useState<ModelOutput | null>(null);
-  const [lastWater, setLastWater] = useState('');
-  const [soilCap, setSoilCap] = useState(SoilMoistureOptionLevel.MEDIUM);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      const results = await getFromProxy<RunoffCoords>(
-        { dateStr: todayStr },
-        'coordinates'
-      );
-      setCoordArrs(results);
-    })();
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      if (coordArrs) {
-        setLoading(true);
-
-        const newModelData = await getWaterDeficitData(today, todayStr, props.currentLocation.lngLat, coordArrs);
-
-        if (newModelData !== null) {
-          const waterDeficitDaily = runWaterDeficitModel(newModelData.precip, newModelData.et, soilCap, newModelData.dates.findIndex(date => date === lastWater.slice(5)), 0, 'lawn');
-          const newModelResults = waterDeficitDaily.reduce((acc, val, i) => {
-            acc.dates.push(newModelData.dates[i]);
-            acc.values.push(roundXDigits(val, 2));
-            return acc;
-          }, { dates: [], values: [] } as ModelOutput);
-  
-          setModelData(newModelData);
-          setModelResults(newModelResults);
-        }
-
-        setLoading(false);
-      }
-    })();
-  }, [props.currentLocation, coordArrs]);
-
-  useEffect(() => {
-    if (modelData) {
-      setLoading(true);
-      const waterDeficitDaily = runWaterDeficitModel(modelData.precip, modelData.et, soilCap, modelData.dates.findIndex(date => date === lastWater.slice(5)), 0, 'lawn');
-      const newModelResults = waterDeficitDaily.reduce((acc, val, i) => {
-        acc.dates.push(modelData.dates[i]);
-        acc.values.push(roundXDigits(val, 2));
-        return acc;
-      }, { dates: [], values: [] } as ModelOutput);
-  
-      setModelResults(newModelResults);
-      setLoading(false);
-    }
-  }, [lastWater, soilCap]);
-  
   return (
     <StyledCard
       variant='outlined'
@@ -184,17 +111,7 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
       <Typography variant='h5' sx={{ marginLeft: '6px' }}>Lawn Watering Forecast for New York State</Typography>
       <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for reducing water usage when watering lawns</Typography>
 
-      {renderTools(
-        modelResults,
-        props.pageInfo,
-        props.todayFromAcis,
-        loading,
-        props.currentLocation.address.includes('New York'),
-        lastWater,
-        setLastWater,
-        soilCap,
-        setSoilCap
-      )}
+      {renderTools(props)}
     </StyledCard>
   );
 }

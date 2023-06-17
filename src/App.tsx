@@ -34,6 +34,11 @@ import TablePage from './Components/Pages/TablePage/TablePage';
 import GddDiffDaysPage from './Components/Pages/GddDiffDays/GddDiffDaysPage';
 import MapsOnlyPage from './Components/Pages/MapsOnlyPage/MapsOnlyPage';
 import LawnWateringPage from './Components/Pages/LawnWatering/LawnWateringPage';
+import useRunoffApi from './Hooks/useRunoffApi';
+import useSoilInfo from './Hooks/useSoilInfo';
+
+
+const today = new Date();
 
 function App() {
   const [toolData, setToolData] = useState<ToolData | null>(null);
@@ -65,6 +70,22 @@ function App() {
   const goTo = useNavigate();
   const reqPage = useLocation().pathname;
   usePageTracking();
+  const {
+    isLoadingCoords,
+    coordsIdxs
+  } = useRunoffApi(currentLocation.lngLat);
+  const {
+    isLoadingSoilInfo,
+    soilSaturation,
+    soilSaturationDates,
+    avgts,
+    recommendedSoilCap,
+    selectedSoilCap,
+    lastIrrigation,
+    changeSoilCapacity,
+    setLastIrrigation
+  } = useSoilInfo(today, currentLocation.lngLat, coordsIdxs);
+  const isLoading = isLoadingCoords || isLoadingSoilInfo;
 
   useEffect(() => {
     if (reqPage === '/') {
@@ -147,10 +168,20 @@ function App() {
       } else if (info.pageType === 'growthPotential') {
         return (
           <GrowthPotentialPage
+            today={today}
             currentLocation={currentLocation}
             pastLocations={pastLocations}
             handleChangeLocations={handleChangeLocations}
             sx={sx}
+            isLoading={isLoading}
+            setLastIrrigation={setLastIrrigation}
+            setSoilCap={changeSoilCapacity}
+            soilSaturation={soilSaturation ? soilSaturation.gp : []}
+            soilSaturationDates={soilSaturationDates || []}
+            avgts={avgts || []}
+            recommendedSoilCap={recommendedSoilCap}
+            soilCap={selectedSoilCap}
+            lastIrrigation={lastIrrigation}
           />
         );
       } else if (info.pageType === 'runoffRisk') {
@@ -159,6 +190,7 @@ function App() {
             currentLocation={currentLocation}
             pastLocations={pastLocations}
             handleChangeLocations={handleChangeLocations}
+            coordsIdxs={coordsIdxs}
           />
         );
       } else if (info.pageType === 'soilSat') {
@@ -181,9 +213,18 @@ function App() {
       } else if (info.pageType === 'lawn-watering') {
         return (
           <LawnWateringPage
+            today={today}
             currentLocation={currentLocation}
             pageInfo={info}
             todayFromAcis={toolData.todayFromAcis}
+            isLoading={isLoading}
+            setLastIrrigation={setLastIrrigation}
+            setSoilCap={changeSoilCapacity}
+            soilSaturation={soilSaturation ? soilSaturation.gp : []}
+            soilSaturationDates={soilSaturationDates || []}
+            recommendedSoilCap={recommendedSoilCap}
+            soilCap={selectedSoilCap}
+            lastIrrigation={lastIrrigation}
           />
         );
       }
