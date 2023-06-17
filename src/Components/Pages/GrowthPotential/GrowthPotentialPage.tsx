@@ -2,14 +2,13 @@ import React from 'react';
 import { format } from 'date-fns';
 import { addDays } from 'date-fns';
 
-import { Box, Typography, MenuItem, TextField } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 import { growthPotentialModel } from '../../../Scripts/GrowthPotentialModel';
 
 import StyledCard from '../../StyledCard';
 import GrowthPotentialGraph from './GrowthPotentialGraph';
 import Loading from '../../Loading';
-// import IrrigationSwitch from '../../IrrigationSwitch';
 import StyledDivider from '../../StyledDivider';
 import InvalidText from '../../InvalidText';
 import MapWithOptions from '../../OverlayMap/MapWithOptions';
@@ -17,7 +16,6 @@ import SoilCapacitySelector, { SoilCapacitySelectorProps } from '../../SoilCapac
 import LastIrrigationSelector, { LastIrrigationSelectorProps } from '../../LastIrrigationSelector';
 
 import { gpVariableOptions } from '../../OverlayMap/Options';
-// import { SoilMoistureOptionLevel } from '../../../Scripts/waterDeficitModel';
 import roundXDigits from '../../../Scripts/Rounding';
 
 type GrowthPotentialPageProps = DisplayProps& {
@@ -212,7 +210,7 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
           {...props}
           dropdownOptions={gpVariableOptions}
           proxyEndpointName='soil-saturation'
-          modelData={{ dates: overlayDates }}
+          dates={overlayDates}
         />
       </Box>
     </StyledCard>

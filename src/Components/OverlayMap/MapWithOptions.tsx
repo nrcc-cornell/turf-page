@@ -9,20 +9,15 @@ import Legend from './Legend';
 
 import { updateStateFromProxy } from '../../Scripts/proxy';
 import { VariableOptions } from './Options';
-import { CoordsIdxObj } from '../../Hooks/useRunoffApi';
 
-type RRMap<T> = DisplayProps & {
+type RRMap = DisplayProps & {
   dropdownOptions: VariableOptions;
   proxyEndpointName: string;
-  modelData: T;
-  setModelData?: (a: T) => void;
-  coordsIdxs?: CoordsIdxObj | null
+  dates: string[];
 };
 
-type Data = { dates: string[] };
-
-export default function MapWithOptions<T extends Data>(
-  props: RRMap<T>
+export default function MapWithOptions(
+  props: RRMap
 ) {
   const today = new Date();
   const todayStr = format(today, 'yyyyMMdd');
@@ -33,17 +28,7 @@ export default function MapWithOptions<T extends Data>(
   const [overlay, setOverlay] = useState('');
 
   useEffect(() => {
-    if (props.setModelData && props.coordsIdxs) {
-      updateStateFromProxy<T>(
-        { dateStr: todayStr, ...props.coordsIdxs },
-        props.proxyEndpointName,
-        props.setModelData
-      );
-    }
-  }, [props.coordsIdxs]);
-
-  useEffect(() => {
-    let forecastDateStr = props.modelData.dates[forecastDateIdx] || format(new Date(), 'yyyyMMdd');
+    let forecastDateStr = props.dates[forecastDateIdx] || format(new Date(), 'yyyyMMdd');
     forecastDateStr = forecastDateStr.slice(4) + forecastDateStr.slice(0, 4);
     
     updateStateFromProxy<string>(
@@ -108,7 +93,7 @@ export default function MapWithOptions<T extends Data>(
         <MapSlider
           label={`Forecast Date`}
           idx={forecastDateIdx}
-          marks={props.modelData.dates.slice(0, 5).map((date, i) => {
+          marks={props.dates.slice(0, 5).map((date, i) => {
             const d = parse(date, 'yyyyMMdd', new Date());
             let label = format(d, 'MM/dd');
             if (option.includes('72-hour')) {

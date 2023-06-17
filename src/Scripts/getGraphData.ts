@@ -87,7 +87,6 @@ function getPast(
         { name: 'avgt', interval: [0, 0, 1] },
       ];
 
-  console.log('fetching past grid data');
   return fetch('https://grid2.rcc-acis.org/GridData', {
     method: 'POST',
     body: JSON.stringify({

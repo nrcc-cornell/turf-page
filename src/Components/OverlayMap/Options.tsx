@@ -95,9 +95,9 @@ export const ssVariableOptions = {
 
 
 const growthPotentialLegendInfo = [
-  { color: '#209c05', label: 'Low Growth' },
+  { color: '#ff0a0a', label: 'Low Growth' },
   { color: '#e6df1e', label: 'Moderate' },
-  { color: '#ff0a0a', label: 'High' }
+  { color: '#209c05', label: 'High' }
 ];
 
 export const gpVariableOptions = {

@@ -1,15 +1,24 @@
-import { SSProxyBody } from '../Components/Pages/SoilSaturation/SoilSaturationPage';
-import { RRProxyBody } from '../Components/Pages/RunoffRisk/RunoffRiskPage';
+type StateDataBody = {
+  dateStr: string;
+  idxLng: number;
+  idxLat: number;
+};
+
+type StateOverlayBody = {
+  option: string;
+  dateStr: string;
+  forecastDateStr: string;
+};
+
 
 // const proxyUrl = 'http://192.168.0.149:8787/';
 const proxyUrl = 'https://cors-proxy.benlinux915.workers.dev/';
 
 async function updateStateFromProxy<T>(
-  body: SSProxyBody | RRProxyBody,
+  body: StateOverlayBody | StateDataBody,
   endpoint: string,
   setFunction: (a: T) => void
 ) {
-  console.log('fetching from proxy as updateState');
   const response = await fetch(proxyUrl + endpoint, {
     method: 'POST',
     body: JSON.stringify(body),
@@ -63,7 +72,6 @@ export type ProxyBody = CoordsBody | SoilSaturationBody | OverlayBody;
 
 
 async function getFromProxy<T>(body: ProxyBody, endpoint: string) {
-  console.log('fetching from proxy as getFrom');
   const response = await fetch(proxyUrl + endpoint, {
     method: 'POST',
     body: JSON.stringify(body),

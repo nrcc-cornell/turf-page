@@ -40,7 +40,6 @@ export function getToolRawData(
   seasonStart: Date,
   seasonEnd: string
 ): Promise<DayHourly[] | null> {
-  console.log('fetching raw tool data from lochrly');
   return fetch('https://hrly.nrcc.cornell.edu/locHrly', {
     method: 'POST',
     body: JSON.stringify({

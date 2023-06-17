@@ -92,7 +92,6 @@ function getLocation(
   lat: number,
   token: string
 ): Promise<false | UserLocation> {
-  console.log('getting location name');
   return fetch(
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?limit=1&access_token=${token}`,
     { method: 'GET' }

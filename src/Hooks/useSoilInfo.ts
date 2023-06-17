@@ -18,7 +18,6 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log('something updated');
     (async () => {
       if (coordsIdxs) {
         setLoading(true);
@@ -47,7 +46,8 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
 
       setSoilSaturation({
         gp: newGrowthPotential.saturationPercents,
-        lawn: newLawnWatering.deficitsInches
+        lawn: newLawnWatering.deficitsInches,
+        soilSat: newLawnWatering.saturationPercents
       });
     }
     setLoading(false);

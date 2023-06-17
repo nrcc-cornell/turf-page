@@ -13,7 +13,7 @@ export type MapsOnlyPageInfo = {
       [key: string]: string | number;
     };
   }[];
-  pageType: 'mapsOnly' | 'soilSat' | 'runoffRisk' | 'growthPotential';
+  pageType: 'mapsOnly' | 'runoffRisk' | 'growthPotential';
 };
 
 type MapsOnlyPageProps = {

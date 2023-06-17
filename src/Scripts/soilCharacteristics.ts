@@ -74,7 +74,6 @@ const fetchSoilColumnDataViaPostRest = (lngLat: [number, number]) => {
     INNER JOIN chorizon AS ch ON c.cokey = ch.cokey
     WHERE mu.mukey IN (SELECT * from SDA_Get_Mukey_from_intersection_with_WktWgs84('point (${lngLat.join(' ')})')) AND hzdept_r <= 50`;
 
-  console.log('fetching from SDM in soilCharacteristics');
   return fetch(
     'https://sdmdataaccess.sc.egov.usda.gov/tabular/post.rest',
     {

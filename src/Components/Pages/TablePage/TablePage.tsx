@@ -15,7 +15,7 @@ export type TablePageInfo = {
       [key: string]: string | number;
     };
   }[];
-  pageType: 'table' | 'lawn-watering';
+  pageType: 'table' | 'lawn-watering' | 'soilSat';
   chart: {
     data: 'gdd50DiffGdds' | 'temp';
     title: string;

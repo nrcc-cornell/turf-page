@@ -52,7 +52,6 @@ export default function useRunoffApi(coords: LngLatArr) {
   const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
-    console.log('fetching coordsArrs');
     (async () => {
       setIsLoading(true);
       const results = await getFromProxy<RunoffCoords>(
@@ -65,7 +64,6 @@ export default function useRunoffApi(coords: LngLatArr) {
 
   useEffect(() => {
     if (coordArrs) {
-      console.log('converting coords to idxs');
       setIsLoading(true);
       let newCoordsIdxs;
       try {

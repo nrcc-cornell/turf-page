@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Typography } from '@mui/material';
+import { format } from 'date-fns';
 
 import { rrVariableOptions } from '../../OverlayMap/Options';
 
@@ -11,12 +12,7 @@ import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
 import InvalidText from '../../InvalidText';
 import { CoordsIdxObj } from '../../../Hooks/useRunoffApi';
-
-export type RRProxyBody = {
-  option: string;
-  dateStr: string;
-  forecastDateStr: string;
-};
+import { updateStateFromProxy } from '../../../Scripts/proxy';
 
 export type RRData = {
   dates: string[];
@@ -63,8 +59,19 @@ const renderTools = (modelData: RRData) => {
   </>);
 };
 
-export default function RunoffRiskPage(props: DisplayProps & { coordsIdxs: CoordsIdxObj | null }) {
+const PROXY_EP_NAME = 'runoff-risk';
+export default function RunoffRiskPage(props: DisplayProps & { today:Date, coordsIdxs: CoordsIdxObj | null }) {
   const [modelData, setModelData] = useState(emptyData);
+
+  useEffect(() => {
+    if (props.coordsIdxs) {
+      updateStateFromProxy(
+        { dateStr: format(props.today, 'yyyyMMdd'), ...props.coordsIdxs },
+        PROXY_EP_NAME,
+        setModelData
+      );
+    }
+  }, [props.coordsIdxs]);
 
   return (
     <StyledCard
@@ -91,10 +98,8 @@ export default function RunoffRiskPage(props: DisplayProps & { coordsIdxs: Coord
       <MapWithOptions
         {...props}
         dropdownOptions={rrVariableOptions}
-        proxyEndpointName='runoff-risk'
-        modelData={modelData}
-        setModelData={setModelData}
-        coordsIdxs={props.coordsIdxs}
+        proxyEndpointName={PROXY_EP_NAME}
+        dates={modelData.dates}
       />
       <RunoffRiskMoreInfo />
     </StyledCard>

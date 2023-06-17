@@ -27,9 +27,7 @@ export default function LastIrrigationSelector(props: LastIrrigationSelectorProp
           textAlign: 'center',
         }
       }}
-      sx={{
-        marginBottom: '21px'
-      }}
+      helperText='Assumes 0.5" added to lawn'
     />
   );
 }

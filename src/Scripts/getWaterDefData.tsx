@@ -76,7 +76,6 @@ const alignAndExtract = (rawEtData: EtReturn, prcpAndTempData: [string, number, 
 };
 
 const fetchTempPrcpData = async (loc: [number, number], eDate: string) => {
-  console.log('fetching temp prcp data from getWaterDefData');
   const response = await fetch('https://grid2.rcc-acis.org/GridData', {
     method: 'POST',
     body: JSON.stringify({
@@ -97,7 +96,6 @@ const fetchTempPrcpData = async (loc: [number, number], eDate: string) => {
 };
 
 const fetchETData = (coords: number[], year: number) => {
-  console.log('fetching et data from getWaterDefData');
   return fetch(
     `https://x6xfv2cdrl.execute-api.us-east-1.amazonaws.com/production/irrigation?lat=${coords[1]}&lon=${coords[0]}&year=${year}`
   )

@@ -187,6 +187,7 @@ function App() {
       } else if (info.pageType === 'runoffRisk') {
         return (
           <RunoffRiskPage
+            today={today}
             currentLocation={currentLocation}
             pastLocations={pastLocations}
             handleChangeLocations={handleChangeLocations}
@@ -199,6 +200,17 @@ function App() {
             currentLocation={currentLocation}
             pastLocations={pastLocations}
             handleChangeLocations={handleChangeLocations}
+            today={today}
+            pageInfo={info}
+            todayFromAcis={toolData.todayFromAcis}
+            isLoading={isLoading}
+            setLastIrrigation={setLastIrrigation}
+            setSoilCap={changeSoilCapacity}
+            soilSaturation={soilSaturation ? soilSaturation.soilSat : []}
+            soilSaturationDates={soilSaturationDates || []}
+            recommendedSoilCap={recommendedSoilCap}
+            soilCap={selectedSoilCap}
+            lastIrrigation={lastIrrigation}
           />
         );
       } else if (info.pageType === 'pollinator') {
@@ -220,7 +232,7 @@ function App() {
             isLoading={isLoading}
             setLastIrrigation={setLastIrrigation}
             setSoilCap={changeSoilCapacity}
-            soilSaturation={soilSaturation ? soilSaturation.gp : []}
+            soilSaturation={soilSaturation ? soilSaturation.lawn : []}
             soilSaturationDates={soilSaturationDates || []}
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}

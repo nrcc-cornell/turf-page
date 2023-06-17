@@ -44,33 +44,8 @@ const renderTools = (toolProps: LawnWateringPageProps) => {
 
     return (<>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
-        {/* <TextField
-          select
-          label='Soil Water Capacity'
-          value={soilCap}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSoilCap(e.target.value as SoilMoistureOptionLevel)}
-        >
-          <MenuItem value={SoilMoistureOptionLevel.HIGH}>High (Clay, fine texture)</MenuItem>
-          <MenuItem value={SoilMoistureOptionLevel.MEDIUM}>Medium (Loam, med texture)</MenuItem>
-          <MenuItem value={SoilMoistureOptionLevel.LOW}>Low (Sand, coarse texture)</MenuItem>
-        </TextField> */}
         <SoilCapacitySelector recommendedSoilCap={toolProps.recommendedSoilCap} soilCap={toolProps.soilCap} setSoilCap={toolProps.setSoilCap} />
-        
         <LastIrrigationSelector today={toolProps.today} lastIrrigation={toolProps.lastIrrigation} setLastIrrigation={toolProps.setLastIrrigation} />
-        {/* <TextField
-          type='date'
-          label='Last Water Date'
-          value={lastWater}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastWater(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          inputProps={{
-            min: march1,
-            max: today,
-            style: {
-              textAlign: 'center'
-            }
-          }}
-        /> */}
       </Box>
 
       <DailyChart

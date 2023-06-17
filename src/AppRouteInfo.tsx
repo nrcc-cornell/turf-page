@@ -710,6 +710,11 @@ const routeInfo: RouteInfo[] = [
     path: '/irrigation/topsoil-moisture/forecast',
     props: {
       pageType: 'soilSat',
+      chart: {
+        data: 'temp',
+        title: 'Water Deficit Forecast',
+        rowNames: ['Soil Sat. %'],
+      },
       maps: [
         {
           url: '',
