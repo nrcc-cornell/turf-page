@@ -12,6 +12,7 @@ import roundXDigits from '../../../Scripts/Rounding';
 import LawnWateringConditionalText from './LawnWateringConditionalText';
 import SoilCapacitySelector, { SoilCapacitySelectorProps } from '../../SoilCapacitySelector';
 import LastIrrigationSelector, { LastIrrigationSelectorProps } from '../../LastIrrigationSelector';
+import WaterDeficitGraph from './WaterDeficitGraph';
 
 type LawnWateringPageProps = {
   currentLocation: UserLocation;
@@ -40,12 +41,22 @@ const renderTools = (toolProps: LawnWateringPageProps) => {
       data: toolProps.soilSaturation.slice(-6).map(val => roundXDigits(val, 2))
     }] as (StringRow | NumberRow)[];
 
-    const todaysValue = toolProps.soilSaturation[toolProps.soilSaturation.length - (toolProps.todayFromAcis ? 3 : 4)];
+    const todayIdx = toolProps.soilSaturation.length - (toolProps.todayFromAcis ? 3 : 4);
+    const todaysValue = toolProps.soilSaturation[todayIdx];
 
     return (<>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
-        <SoilCapacitySelector recommendedSoilCap={toolProps.recommendedSoilCap} soilCap={toolProps.soilCap} setSoilCap={toolProps.setSoilCap} />
-        <LastIrrigationSelector today={toolProps.today} lastIrrigation={toolProps.lastIrrigation} setLastIrrigation={toolProps.setLastIrrigation} />
+        <SoilCapacitySelector
+          recommendedSoilCap={toolProps.recommendedSoilCap}
+          soilCap={toolProps.soilCap}
+          setSoilCap={toolProps.setSoilCap}
+        />
+        
+        <LastIrrigationSelector
+          today={toolProps.today}
+          lastIrrigation={toolProps.lastIrrigation}
+          setLastIrrigation={toolProps.setLastIrrigation}
+        />
       </Box>
 
       <DailyChart
@@ -57,11 +68,21 @@ const renderTools = (toolProps: LawnWateringPageProps) => {
       
       <StyledDivider />
       
-      <LawnWateringConditionalText soilcap={toolProps.soilCap} today={todaysValue} />
+      <LawnWateringConditionalText
+        soilcap={toolProps.soilCap}
+        today={todaysValue}
+      />
 
       <StyledDivider />
 
-      {/* <WastedWater /> */}
+      <WaterDeficitGraph
+        dates={toolProps.soilSaturationDates}
+        deficits={toolProps.soilSaturation}
+        soilCap={toolProps.soilCap}
+        todayIdx={todayIdx}
+        today={toolProps.today}
+        lastIrrigation={toolProps.lastIrrigation}
+      />
     </>);
   }
 };

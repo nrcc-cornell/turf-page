@@ -24,7 +24,7 @@ export default function LawnWateringConditionalText(props: LWCTProps) {
     <Box sx={{
       display: 'flex',
       justifyContent: 'space-evenly',
-      margin: '0 auto',
+      margin: '0 auto 20px',
       width: '98%',
       gap: '10px',
       '@media (max-width: 558px)': {

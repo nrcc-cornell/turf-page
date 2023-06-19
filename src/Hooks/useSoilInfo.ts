@@ -44,6 +44,22 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
       const newGrowthPotential = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, irrigationIdxs, 0, 'gp');
       const newLawnWatering = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, irrigationIdxs, 0, 'lawn');
 
+
+
+      // Why dont the sat percentages make sense based on the amount that the deficit changes?
+      // What is the max, what is the min, what should the sats be at each deficit
+
+      // console.log('-----------------------');
+      // for (let i = 100; i < 111; i++) {
+      //   console.log(soilSatRawData.dates[i]);
+      //   console.log(newGrowthPotential.deficitsInches[i], newGrowthPotential.saturationPercents[i], newLawnWatering.deficitsInches[i], newLawnWatering.saturationPercents[i]);
+      // }
+      // console.log('-----------------------');
+
+
+
+
+
       setSoilSaturation({
         gp: newGrowthPotential.saturationPercents,
         lawn: newLawnWatering.deficitsInches,
