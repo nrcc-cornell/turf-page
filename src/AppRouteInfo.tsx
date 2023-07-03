@@ -712,8 +712,8 @@ const routeInfo: RouteInfo[] = [
       pageType: 'soilSat',
       chart: {
         data: 'temp',
-        title: 'Water Deficit Forecast',
-        rowNames: ['Soil Sat. %'],
+        title: 'Volumetric Water Content Forecast',
+        rowNames: ['VWC (in./ft.)'],
       },
       maps: [
         {

@@ -230,5 +230,5 @@ export function runWaterDeficitModel(
     saturationDaily.push((soil_options[soilcap].fieldcapacity + deficit) / soil_options[soilcap].saturation);
   }
 
-  return { saturationPercents: saturationDaily, deficitsInches: deficitDaily };
+  return { saturationPercents: saturationDaily, deficitsInches: deficitDaily, soilOptions: soil_options[soilcap] };
 }

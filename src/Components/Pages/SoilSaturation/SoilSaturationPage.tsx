@@ -34,7 +34,7 @@ export default function SoilSaturationPage(props: SoilSaturationPageProps) {
   },{
     rowName: props.pageInfo.chart.rowNames[0],
     type: 'numbers',
-    data: props.soilSaturation.slice(-6).map(val => roundXDigits(val * 100, 0))
+    data: props.soilSaturation.slice(-6).map(val => roundXDigits(val, 2))
   }] as (StringRow | NumberRow)[];
 
 

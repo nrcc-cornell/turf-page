@@ -47,7 +47,7 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
       setSoilSaturation({
         gp: newGrowthPotential.saturationPercents,
         lawn: newLawnWatering.deficitsInches,
-        soilSat: newLawnWatering.saturationPercents
+        soilSat: newLawnWatering.deficitsInches.map(deficit => (newLawnWatering.soilOptions.fieldcapacity + deficit) / 12)
       });
     }
     setLoading(false);
@@ -56,35 +56,6 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
   const changeSoilCapacity = (newSoilCap: SoilMoistureOptionLevel) => {
     setSelectedSoilCapacity(newSoilCap);
   };
-
-  // useEffect(() => {
-  //   // soilSatOpts = {
-  //   //   last irrigation
-  //   //   selected soil type
-  //   // }
-  //   // soilSatRawData = {
-  //   //   precip
-  //   //   et
-  //   //   calcedSoilType
-  //   // }
-
-  //   // calculate soil moisture as both deficit and % and store into soilSaturation
-
-  //   // pass the necessary soil saturation into each page
-  //   // pass setter functions into each page to allow for changing the selected soil type and last irrigation
-  //   if (waterDeficitModelData) {
-  //     setLoading(true);
-
-
-  //     const sliceIdx = waterDeficitModelData.dates.length - numDaysToProcess;
-  //     const slicedSats = soilSaturations.slice(sliceIdx);
-  //     const slicedAvgts = waterDeficitModelData.avgt.slice(sliceIdx);
-  //     const slicedDates = waterDeficitModelData.dates.slice(sliceIdx);
-
-  //     setGrowthPotentialModelResults(calcGrowthPotential(slicedSats, slicedAvgts, slicedDates, isIrrigation, props.currentLocation, numDaysToProcess));
-  //     setLoading(false);
-  //   }
-  // }, [lastIrrigation, selectedSoilCapacity, soilSatRawData]);
 
   return {
     isLoadingSoilInfo: loading,
