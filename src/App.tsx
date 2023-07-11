@@ -232,6 +232,7 @@ function App() {
             isLoading={isLoading}
             setLastIrrigation={setLastIrrigation}
             setSoilCap={changeSoilCapacity}
+            optimalWaterTotal={soilSaturation ? soilSaturation.optimalWaterTotal[0] : 0}
             soilSaturation={soilSaturation ? soilSaturation.lawn : []}
             soilSaturationDates={soilSaturationDates || []}
             recommendedSoilCap={recommendedSoilCap}

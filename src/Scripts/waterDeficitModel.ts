@@ -121,7 +121,8 @@ export function runWaterDeficitModel(
   soilcap: SoilMoistureOptionLevel,
   irrigationIdxs: number[],
   initDeficit: number,
-  returnType: ('gp' | 'lawn')
+  returnType: ('gp' | 'lawn' | 'optimalWatering'),
+  optimalWateringIncrement?: number
 ) {
   // -----------------------------------------------------------------------------------------
   // Calculate daily water deficit (inches) from daily precipitation, evapotranspiration, soil drainage and runoff.
@@ -134,14 +135,23 @@ export function runWaterDeficitModel(
   //    - bounded below by the wilting point ( = soil moisture at wilting point minus soil moisture at field capacity )
   //    - bounded above by saturation ( = soil moisture at saturation minus soil moisture at field capacity)
   //
-  //  precip       : daily precipitation array (in) : (NRCC ACIS grid 3)
-  //  pet          : daily potential evapotranspiration array (in) : (grass reference PET obtained from NRCC MORECS model output)
-  //  initDeficit  : water deficit used to initialize the model
-  //  soilcap      : soil water capacity ('high','medium','low')
+  //  precip         : daily precipitation array (in) : (NRCC ACIS grid 3)
+  //  pet            : daily potential evapotranspiration array (in) : (grass reference PET obtained from NRCC MORECS model output)
+  //  soilcap        : soil water capacity ('high','medium','low')
+  //  irrigationIdxs : array of indices where the user irrigated
+  //  initDeficit    : water deficit used to initialize the model
+  //  retunType      : type of model to run ('gp', 'lawn', 'optimalWatering')
   //
   // -----------------------------------------------------------------------------------------
 
-  const soil_options = SOIL_DATA.soilmoistureoptions[returnType];
+  const calcOptTotal = returnType === 'optimalWatering';
+  const smType = returnType === 'optimalWatering' ? 'lawn' : returnType;
+  const soil_options = SOIL_DATA.soilmoistureoptions[smType];
+  
+  // To calculate wasted water we need the sum of water added if added optimally. Whenever the deficit hits 'optimalWateringThreshold' we add 'optimalWateringIncrement' and keep track of the total water added in 'optimalWateringTotal'
+  let optimalWateringTotal = 0;
+  const optimalWateringThreshold = soil_options[soilcap].stressthreshold - soil_options[soilcap].fieldcapacity;
+  if (!optimalWateringIncrement) optimalWateringIncrement = 0.5;
 
   // Total water available to plant
   let TAW: number | null = null;
@@ -187,7 +197,7 @@ export function runWaterDeficitModel(
 
     // We already know what the daily total is for Precip and ET
     totalDailyPET = -1 * pet[idx] * soil_options.kc * Ks;
-    totalDailyPrecip = precip[idx] + (irrigationIdxs.includes(idx) ? 0.50 : 0);
+    totalDailyPrecip = precip[idx] + ((returnType !== 'optimalWatering' && irrigationIdxs.includes(idx)) ? 0.50 : 0);
 
     // Convert daily rates to hourly rates. For this simple model, rates are constant throughout the day.
     // For precip   : this assumption is about all we can do without hourly observations
@@ -226,9 +236,21 @@ export function runWaterDeficitModel(
       );
     }
 
+    // When running 'optimalWatering' returnType the irrigationIdxs array will contain one value representing the idx of May 1st
+    // Start watering on May 1st
+    if (calcOptTotal && idx >= irrigationIdxs[0] && deficit <= optimalWateringThreshold) {
+      deficit += optimalWateringIncrement;
+      optimalWateringTotal += optimalWateringIncrement;
+    }
+
     deficitDaily.push(deficit);
     saturationDaily.push((soil_options[soilcap].fieldcapacity + deficit) / soil_options[soilcap].saturation);
   }
 
-  return { saturationPercents: saturationDaily, deficitsInches: deficitDaily, soilOptions: soil_options[soilcap] };
+  return {
+    saturationPercents: saturationDaily,
+    deficitsInches: deficitDaily,
+    soilOptions: soil_options[soilcap],
+    optimalWateringTotal
+  };
 }

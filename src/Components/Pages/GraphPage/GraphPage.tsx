@@ -94,8 +94,8 @@ export default function GraphPage(props: GraphPageProps) {
             alignItems: 'center',
           }}
         >
-          <Box sx={{ fontSize: '18px' }}>Total Precipitation</Box>
-          <Box sx={{ marginBottom: '10px' }}>
+          <Box sx={{ fontSize: '18px', fontWeight: 'bold' }}>Total Precipitation</Box>
+          <Box sx={{ fontSize: '14px', marginBottom: '10px' }}>
             {sDate} <span style={{ fontSize: '12px' }}>to</span>{' '}
             {eDate}
           </Box>

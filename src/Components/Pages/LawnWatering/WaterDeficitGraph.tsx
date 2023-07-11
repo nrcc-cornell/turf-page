@@ -124,10 +124,9 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
   };
 
   const { plotLines, plotBands, breakpoints }  = getPlotBandsLinesBreakpoints(props.deficits[props.todayIdx], props.soilCap);
-  const observedDeficits = colorPoints(breakpoints, props.deficits.slice(0,props.todayIdx + 1).concat(Array(props.deficits.length - props.todayIdx + 1).fill(null)));
+  const observedDeficits = colorPoints(breakpoints, props.deficits.slice(0,props.todayIdx + 1).concat(Array(props.deficits.length - (props.todayIdx + 1)).fill(null)));
   const forecastedDeficits = colorPoints(breakpoints, Array(props.todayIdx + 1).fill(null).concat(props.deficits.slice(props.todayIdx + 1)));
   const irrigationIdx = props.lastIrrigation ? props.dates.findIndex(d => d === props.lastIrrigation?.slice(5)) : null;
-  console.log(irrigationIdx);
 
   const options = {
     credits: { enabled: false },

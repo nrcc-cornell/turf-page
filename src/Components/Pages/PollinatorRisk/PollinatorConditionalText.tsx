@@ -19,7 +19,7 @@ const colorToText = (type: string, color: string) => {
   } else if (color === 'rgb(255,0,0)') {
     return `${textType} is flowering. If insecticide applications are required, mow off ${textType.toLowerCase()} flowers prior to application, water-in insecticides as label requires, and apply when pollinators are inactive at night, the early morning or evening.`;
   } else if (color === 'rgb(170,170,170)') {
-    return `${textType} no longer flowering`;
+    return `${textType} is no longer flowering`;
   }
 };
 
