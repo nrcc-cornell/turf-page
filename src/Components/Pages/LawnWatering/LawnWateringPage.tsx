@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, Popper, Fade } from '@mui/material';
 import HelpIcon from '@mui/icons-material/Help';
+import { eachDayOfInterval, isMonday, isWednesday, isFriday } from 'date-fns';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
@@ -25,6 +26,15 @@ type LawnWateringPageProps = {
   optimalWaterTotal: number;
 } & LastIrrigationSelectorProps & SoilCapacitySelectorProps
 
+function countWateringDays( d0: Date, d1: Date ) {
+  const dates = eachDayOfInterval({
+    start: d0,
+    end: d1
+  });
+
+  return dates.reduce((count, date) => (isMonday(date) || isWednesday(date) || isFriday(date)) ? count += 1 : count, 0);
+}
+
 const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: React.MouseEvent<SVGSVGElement>) => void, handleClose: () => void) => {
   if (!toolProps.currentLocation.address.includes('New York')) {
     return <InvalidText type='notNY' />;
@@ -45,9 +55,8 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
 
     const todayIdx = toolProps.soilSaturation.length - (toolProps.todayFromAcis ? 3 : 4);
     const todaysValue = toolProps.soilSaturation[todayIdx];
-    const mayFirstIdx = toolProps.soilSaturationDates.findIndex(d => d === '05-01');
-    const wateringDaysSinceMayFirst = Math.round((todayIdx - mayFirstIdx) / 7 * 3);
-    const typicalWaterUsed = wateringDaysSinceMayFirst * 0.5;
+    const numberWateringDays = countWateringDays(new Date(toolProps.today.getFullYear(), 4, 1), toolProps.today);
+    const typicalWaterUsed = numberWateringDays * 0.5;
 
     return (<>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
@@ -87,12 +96,34 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
           alignItems: 'center',
         }}
       >
-        <Box sx={{ fontSize: '18px', fontWeight: 'bold' }}>
-          <span>Wasted Water</span>
+        <Box sx={{ fontSize: '18px' }}>
+          <span>Irrigation amount since May 1<sup>st</sup> using:</span>
           <HelpIcon onMouseLeave={handleClose} onMouseEnter={handleOpen} sx={{ color: 'rgb(120,150,255)', fontSize: '14px', position: 'relative', bottom:'6px' }} />
         </Box>
-        <Box sx={{ marginBottom: '10px', fontSize: '14px' }}>with a typical watering schedule</Box>
-        <Box sx={{ fontWeight: 'bold', fontSize: '24px' }}>{typicalWaterUsed - toolProps.optimalWaterTotal} in</Box>
+        <Box sx={{ display: 'flex', margin: '5px auto 10px' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>
+            <Box sx={{ fontSize: '14px' }}>Water Deficit</Box>
+            <Box sx={{ fontWeight: 'bold', fontSize: '18px' }}>{toolProps.optimalWaterTotal} in</Box>
+          </Box>
+          <Box sx={{ margin: '0px 10px', width: '2px', height: '40px', backgroundColor: 'rgb(220,220,220)' }} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>
+            <Box sx={{ fontSize: '14px' }}>M/W/F Watering Schedule</Box>
+            <Box sx={{ fontWeight: 'bold', fontSize: '18px' }}>{typicalWaterUsed} in</Box>
+          </Box>
+        </Box>
+        <Box sx={{ fontSize: '18px' }}>Potential Water Savings</Box>
+        <Box sx={{ fontWeight: 'bold' }}>{typicalWaterUsed - toolProps.optimalWaterTotal} in</Box>
+        <Box
+          sx={{
+            color: 'rgb(80,80,80)',
+            fontSize: '12px',
+            fontStyle: 'italic',
+            position: 'relative',
+            top: 9
+          }}
+        >
+          *assumes 0.5&quot; added per watering
+        </Box>
       </Box>
       
       <StyledDivider />
@@ -124,7 +155,7 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
 
   const handleOpen = (event: React.MouseEvent<SVGSVGElement>) => {
     setAnchorEl(event.currentTarget);
-    setDescription('Wasted water is defined as the difference between the total water used in a typical watering schedule (0.5" added 3 times per week) and the total water used in an optimal watering plan (0.5" added when the water deficit crosses the plant stress threshold).');
+    setDescription('Assuming 0.5" of water added per session');
   };
 
   const handleClose = () => {
