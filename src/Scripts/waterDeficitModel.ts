@@ -73,9 +73,14 @@ export const SOIL_DATA = {
     high: { daysToDrainToFcFromSat: 2.0 },
   },
   soilRecommendations: {
-    low: [[0, 'No deficit, watering is unnecessary'],[-0.5, 'Low deficit, no plant stress, watering is unnecessary'], [-0.85, 'Moderate deficit, plant stress likely, consider watering'], [-999, 'High deficit, severe plant stress likely, watering is recommended']],
-    medium: [[0, 'No deficit, watering is unnecessary'],[-0.7, 'Low deficit, no plant stress, watering is unnecessary'], [-1.275, 'Moderate deficit, plant stress likely, consider watering'], [-999, 'High deficit, severe plant stress likely, watering is recommended']],
-    high: [[0, 'No deficit, watering is unnecessary'],[-1.0, 'Low deficit, no plant stress, watering is unnecessary'], [-1.7, 'Moderate deficit, plant stress likely, consider watering'], [-999, 'High deficit, severe plant stress likely, watering is recommended']],
+    text: [
+      'Watering is unnecessary',
+      'Consider watering due to moderate water deficit',
+      'Watering is recommended due to high water deficit'
+    ],
+    low: [-0.5, -0.85],
+    medium: [-0.7, -1.275],
+    high: [-1.0, -1.7]
   }
 };
 

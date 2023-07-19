@@ -129,7 +129,13 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
   const irrigationIdx = props.lastIrrigation ? props.dates.findIndex(d => d === props.lastIrrigation?.slice(5)) : null;
 
   const options = {
-    credits: { enabled: false },
+    credits: {
+      href: 'https://www.nrcc.cornell.edu/',
+      text: 'Northeast Regional Climate Center',
+      position: {
+        y: -4
+      }
+    },
     chart: {
       zoomType: 'x',
       events: {
@@ -142,7 +148,9 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
           axis.setExtremes(Math.max(axis.categories.length - 30, 0), axis.categories.length - 1);
         }
       },
-      plotBorderWidth: 1
+      plotBorderWidth: 1,
+      spacingBottom: 17,
+      spacingTop: 0
     },
     title: {
       text: `Water Deficit for ${props.today.getFullYear()}`

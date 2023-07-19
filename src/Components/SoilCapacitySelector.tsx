@@ -9,18 +9,32 @@ export type SoilCapacitySelectorProps = {
   setSoilCap: (a: SoilMoistureOptionLevel) => void;
 };
 
+const SOIL_CLASSES = [{
+  value: SoilMoistureOptionLevel.HIGH,
+  name: 'Clay',
+  texture: 'fine'
+},{
+  value: SoilMoistureOptionLevel.MEDIUM,
+  name: 'Loam',
+  texture: 'medium'
+},{
+  value: SoilMoistureOptionLevel.LOW,
+  name: 'Sand',
+  texture: 'coarse'
+}];
+
 export default function SoilCapacitySelector(props: SoilCapacitySelectorProps) {
+  const recommendation = SOIL_CLASSES.find(obj => obj.value === props.recommendedSoilCap) || { name: 'Unknown' };
+  
   return (
     <TextField
       select
-      label='Soil Water Capacity'
+      label='Soil Type'
       value={props.soilCap}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) => props.setSoilCap(e.target.value as SoilMoistureOptionLevel)}
-      helperText={`${props.recommendedSoilCap.slice(0,1).toUpperCase() + props.recommendedSoilCap.slice(1)} is recommended for your location`}
+      helperText={`${recommendation.name} is recommended for your location`}
     >
-      <MenuItem value={SoilMoistureOptionLevel.HIGH}>High (Clay, fine texture)</MenuItem>
-      <MenuItem value={SoilMoistureOptionLevel.MEDIUM}>Medium (Loam, med texture)</MenuItem>
-      <MenuItem value={SoilMoistureOptionLevel.LOW}>Low (Sand, coarse texture)</MenuItem>
+      {SOIL_CLASSES.map(obj => <MenuItem key={obj.name} value={obj.value}>{obj.name}, {obj.texture} texture</MenuItem>)}
     </TextField>
   );
 }

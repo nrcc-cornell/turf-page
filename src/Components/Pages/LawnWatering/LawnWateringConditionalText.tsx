@@ -7,46 +7,42 @@ type LWCTProps = {
   today: number;
 }
 
-const valueToText = (value: number, thresholds: [number, string][]) => {
-  let text = 'There was a problem calculating your recommendation, please try again later.';
-  for (const [thresh, txt] of thresholds) {
-    if (value > thresh) {
-      text = txt;
-      break;
+const valueToText = (value: number, thresholds: number[], textOpts: string[]) => {
+  for (let i = 0; i < textOpts.length; i++) {
+    if (thresholds[i] !== undefined && value >= thresholds[i]) {
+      return textOpts[i];
     }
   }
-  return text;
+  return textOpts[textOpts.length - 1];
 };
 
 
 export default function LawnWateringConditionalText(props: LWCTProps) {
   return (
-    <Box sx={{
-      display: 'flex',
-      justifyContent: 'space-evenly',
-      margin: '0 auto 20px',
-      width: '98%',
-      gap: '10px',
-      '@media (max-width: 558px)': {
+    <Box
+      sx={{
+        boxSizing: 'border-box',
+        margin: '10px auto 0px auto',
+        position: 'relative',
+        top: '13px',
+        border: '2px solid rgb(220,220,220)',
+        borderRadius: '4px',
+        padding: '10px',
+        width: 'fit-content',
+        display: 'flex',
         flexDirection: 'column',
-        gap: '20px'
-      }
-    }}>
-      <Box sx={{
-        width: '50%',
-        '@media (max-width: 558px)': {
-          width: '100%',
-        }
-      }}>
-        <Typography variant='h5'>Lawn Watering Recommendation</Typography>
-        <Box sx={{ paddingLeft: '20px' }}>
-          <Typography
-            variant='mapPage'
-            sx={{
-              lineHeight: '1.2'
-            }}
-          >{valueToText(props.today, SOIL_DATA.soilRecommendations[props.soilcap] as [number, string][])}</Typography>
-        </Box>
+        gap: '5px',
+        alignItems: 'center',
+      }}
+    >
+      <Typography variant='h5' sx={{ fontSize: '18px' }}>Lawn Watering Recommendation</Typography>
+      <Box sx={{ paddingLeft: '20px' }}>
+        <Typography
+          variant='mapPage'
+          sx={{
+            lineHeight: '1.2', fontWeight: 'bold'
+          }}
+        >{valueToText(props.today, SOIL_DATA.soilRecommendations[props.soilcap], SOIL_DATA.soilRecommendations.text)}</Typography>
       </Box>
     </Box>
   );

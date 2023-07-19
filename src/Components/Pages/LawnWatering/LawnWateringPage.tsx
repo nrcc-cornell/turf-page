@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, Popper, Fade } from '@mui/material';
 import HelpIcon from '@mui/icons-material/Help';
-import { eachDayOfInterval, isMonday, isWednesday, isFriday } from 'date-fns';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
@@ -15,6 +14,7 @@ import LawnWateringConditionalText from './LawnWateringConditionalText';
 import SoilCapacitySelector, { SoilCapacitySelectorProps } from '../../SoilCapacitySelector';
 import LastIrrigationSelector, { LastIrrigationSelectorProps } from '../../LastIrrigationSelector';
 import WaterDeficitGraph from './WaterDeficitGraph';
+import WaterSaving from './WaterSaving';
 
 type LawnWateringPageProps = {
   currentLocation: UserLocation;
@@ -26,14 +26,7 @@ type LawnWateringPageProps = {
   optimalWaterTotal: number;
 } & LastIrrigationSelectorProps & SoilCapacitySelectorProps
 
-function countWateringDays( d0: Date, d1: Date ) {
-  const dates = eachDayOfInterval({
-    start: d0,
-    end: d1
-  });
 
-  return dates.reduce((count, date) => (isMonday(date) || isWednesday(date) || isFriday(date)) ? count += 1 : count, 0);
-}
 
 const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: React.MouseEvent<SVGSVGElement>) => void, handleClose: () => void) => {
   if (!toolProps.currentLocation.address.includes('New York')) {
@@ -55,10 +48,29 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
 
     const todayIdx = toolProps.soilSaturation.length - (toolProps.todayFromAcis ? 3 : 4);
     const todaysValue = toolProps.soilSaturation[todayIdx];
-    const numberWateringDays = countWateringDays(new Date(toolProps.today.getFullYear(), 4, 1), toolProps.today);
-    const typicalWaterUsed = numberWateringDays * 0.5;
+
 
     return (<>
+      <Box sx={{
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        zIndex: -1,
+        '@media (max-width: 448px)': {
+          top: 136,
+          zIndex: 1
+        },
+      }}>
+        <a href="https://www.nrcc.cornell.edu/" target='_blank' rel='noreferrer'><img src={process.env.PUBLIC_URL + '/Assets/ACIS_NRCC.jpg'} alt='Powered by ACIS NRCC, logo' style={{ width: '100px' }} /></a>
+      </Box>
+
+      <LawnWateringConditionalText
+        soilcap={toolProps.soilCap}
+        today={todaysValue}
+      />
+
+      <StyledDivider />
+
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
         <SoilCapacitySelector
           recommendedSoilCap={toolProps.recommendedSoilCap}
@@ -80,59 +92,13 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
         numRows={3}
       />
 
-      <Box
-        sx={{
-          boxSizing: 'border-box',
-          margin: '10px auto 0px auto',
-          position: 'relative',
-          top: '13px',
-          border: '2px solid rgb(220,220,220)',
-          borderRadius: '4px',
-          padding: '10px',
-          width: 'fit-content',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '5px',
-          alignItems: 'center',
-        }}
-      >
-        <Box sx={{ fontSize: '18px' }}>
-          <span>Irrigation amount since May 1<sup>st</sup> using:</span>
-          <HelpIcon onMouseLeave={handleClose} onMouseEnter={handleOpen} sx={{ color: 'rgb(120,150,255)', fontSize: '14px', position: 'relative', bottom:'6px' }} />
-        </Box>
-        <Box sx={{ display: 'flex', margin: '5px auto 10px' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>
-            <Box sx={{ fontSize: '14px' }}>Water Deficit</Box>
-            <Box sx={{ fontWeight: 'bold', fontSize: '18px' }}>{toolProps.optimalWaterTotal} in</Box>
-          </Box>
-          <Box sx={{ margin: '0px 10px', width: '2px', height: '40px', backgroundColor: 'rgb(220,220,220)' }} />
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>
-            <Box sx={{ fontSize: '14px' }}>M/W/F Watering Schedule</Box>
-            <Box sx={{ fontWeight: 'bold', fontSize: '18px' }}>{typicalWaterUsed} in</Box>
-          </Box>
-        </Box>
-        <Box sx={{ fontSize: '18px' }}>Potential Water Savings</Box>
-        <Box sx={{ fontWeight: 'bold' }}>{typicalWaterUsed - toolProps.optimalWaterTotal} in</Box>
-        <Box
-          sx={{
-            color: 'rgb(80,80,80)',
-            fontSize: '12px',
-            fontStyle: 'italic',
-            position: 'relative',
-            top: 9
-          }}
-        >
-          *assumes 0.5&quot; added per watering
-        </Box>
-      </Box>
-      
-      <StyledDivider />
-      
-      <LawnWateringConditionalText
-        soilcap={toolProps.soilCap}
-        today={todaysValue}
+      <WaterSaving
+        open={handleOpen}
+        close={handleClose}
+        today={toolProps.today}
+        optimalWaterTotal={toolProps.optimalWaterTotal}
       />
-
+      
       <StyledDivider />
 
       <WaterDeficitGraph
@@ -155,7 +121,7 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
 
   const handleOpen = (event: React.MouseEvent<SVGSVGElement>) => {
     setAnchorEl(event.currentTarget);
-    setDescription('Assuming 0.5" of water added per session');
+    setDescription('Assuming 0.5" of water added per watering session');
   };
 
   const handleClose = () => {
@@ -166,25 +132,27 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
     <StyledCard
       variant='outlined'
       sx={{
-        padding: '10px',
+        position: 'relative',
+        zIndex: 1,
+        padding: '60px 10px 10px',
         boxSizing: 'border-box',
         maxWidth: '1100px',
         '@media (max-width: 448px)': {
           width: '100%',
-          padding: '10px 0px',
+          padding: '30px 0px 10px',
           border: 'none',
+          position: 'initial'
         },
       }}
     >
-      <Typography variant='h5' sx={{ marginLeft: '6px' }}>Lawn Watering Forecast for New York State</Typography>
-      <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for reducing water usage when watering lawns</Typography>
+      <Typography variant='h5' sx={{ marginLeft: '6px' }}>Lawn Watering Forecast for {props.currentLocation.address}</Typography>
 
       {renderTools(props, handleOpen, handleClose)}
 
       <Popper open={Boolean(anchorEl)} anchorEl={anchorEl} transition>
       {({ TransitionProps }) => (
         <Fade {...TransitionProps} timeout={350}>
-          <Box sx={{ border: 1, borderRadius: 2, p: 1, bgcolor: 'white', maxWidth: 275, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <Box sx={{ border: 1, borderRadius: 2, p: 1, bgcolor: 'white', maxWidth: 275, textAlign: 'center' }}>
             <Typography sx={{ lineHeight: '15px', fontSize: '15px' }}>{description}</Typography>
           </Box>
         </Fade>
