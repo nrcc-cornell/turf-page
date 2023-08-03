@@ -115,8 +115,47 @@ async function getWaterDeficitData(today: Date, lngLat: [number, number], coords
       fetchTempPrcpData(lngLat, format(today, 'yyyy-MM-dd'))
     ]);
 
+    // console.log(forecast, rawEtData, pastPrecipAndTemp);
+
     if (forecast && rawEtData) {
+      // const lastFcstDay = String(new Date().getFullYear()) + rawEtData.dates_pet_fcst[rawEtData.dates_pet_fcst.length - 1].split('/').join('');
+      // const et = rawEtData.pet.concat(rawEtData.pet_fcst);
+
+      // let precip = [];
+      // const temp = [];
+      // let precipDates = [];
+      // for (const [d, p, t] of pastPrecipAndTemp) {
+      //   if (p !== -999 && t !== -999) {
+      //     precip.push(p);
+      //     temp.push(t);
+      //     precipDates.push(d);
+      //   }
+      // }
+
+      // const nextDate = format(addDays(parse(precipDates[precipDates.length - 1], 'yyyy-MM-dd', new Date()), 1), 'yyyyMMdd');
+      // const nextDateIdx = forecast.dates.findIndex((dateStr: number) => String(dateStr) === nextDate);
+      // const lastDateIdx = forecast.dates.findIndex((dateStr: number) => String(dateStr) === lastFcstDay);
+      // console.log(nextDate, lastFcstDay, nextDateIdx, lastDateIdx);
+      // if (nextDateIdx < 0 || lastDateIdx < 0) return newModelData;
+
+      // precip = precip.concat(forecast.precipChart.raim.slice(nextDateIdx, nextDateIdx + lastDateIdx));
+      // precipDates = precipDates.concat(forecast.dates.slice(nextDateIdx, nextDateIdx + lastDateIdx).map((val: number) => `${String(val).slice(0,4)}-${String(val).slice(4,6)}-${String(val).slice(6)}`));
+      // precipDates = precipDates.map(date => date.slice(5));
+
+      // const avgt = [];
+      // for (let i = nextDateIdx; i < nextDateIdx + lastDateIdx; i++) {
+      //   avgt.push(roundXDigits((forecast.tempChart.mint[i] + forecast.tempChart.maxt[i]) / 2, 1));
+      // }
+
+      // console.log({
+      //   dates: precipDates,
+      //   precip: precip,
+      //   et: et,
+      //   avgt: avgt
+      // });
+
       const aligned = alignAndExtract(rawEtData, pastPrecipAndTemp, today.getFullYear());
+      console.log(aligned);
 
       const numFcstDays = rawEtData.dates_pet_fcst.length;
       aligned.et = aligned.et.concat(rawEtData.pet_fcst);
@@ -124,6 +163,7 @@ async function getWaterDeficitData(today: Date, lngLat: [number, number], coords
 
       const nextDate = format(addDays(parse(aligned.precipDates[aligned.precipDates.length - 1], 'yyyy-MM-dd', new Date()), 1), 'yyyyMMdd');
       const nextDateIdx = forecast.dates.findIndex((dateStr: number) => String(dateStr) === nextDate);
+      console.log(nextDate, nextDateIdx, nextDateIdx + numFcstDays, numFcstDays);
       aligned.precip = aligned.precip.concat(forecast.precipChart.raim.slice(nextDateIdx, nextDateIdx + numFcstDays));
       aligned.precipDates = aligned.precipDates.concat(forecast.dates.slice(nextDateIdx, nextDateIdx + numFcstDays).map((val: number) => `${String(val).slice(0,4)}-${String(val).slice(4,6)}-${String(val).slice(6)}`));
       aligned.precipDates = aligned.precipDates.map(date => date.slice(5));

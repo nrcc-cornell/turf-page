@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextField, MenuItem } from '@mui/material';
 
-import { SoilMoistureOptionLevel } from '../Scripts/waterDeficitModel';
+import { SoilMoistureOptionLevel } from '../../Scripts/waterDeficitModel';
 
 export type SoilCapacitySelectorProps = {
   soilCap: SoilMoistureOptionLevel;

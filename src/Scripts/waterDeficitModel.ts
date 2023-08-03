@@ -16,56 +16,29 @@ type SoilCharacteristics = {
 // soil moisture and drainage characteristics for different levels of soil water capacity
 export const SOIL_DATA = {
   soilmoistureoptions: {
-    gp: {
-      low: {
-        wiltingpoint: 1.0,
-        prewiltingpoint: 1.15,
-        stressthreshold: 1.5,
-        fieldcapacity: 2.1,
-        saturation: 5.2,
-      },
-      medium: {
-        wiltingpoint: 1.0,
-        prewiltingpoint: 2.225,
-        stressthreshold: 2.8,
-        fieldcapacity: 4.2,
-        saturation: 5.8,
-      },
-      high: {
-        wiltingpoint: 1.0,
-        prewiltingpoint: 3.3,
-        stressthreshold: 4.0,
-        fieldcapacity: 5.0,
-        saturation: 6.5,
-      },
-      kc: 1.2,
-      p: 0.7
+    low: {
+      wiltingpoint: 1.0,
+      prewiltingpoint: 1.15,
+      stressthreshold: 1.42,
+      fieldcapacity: 2.4,
+      saturation: 5.2,
     },
-    lawn: {
-      low: {
-        wiltingpoint: 1.0,
-        prewiltingpoint: 1.15,
-        stressthreshold: 1.5,
-        fieldcapacity: 2.0,
-        saturation: 5.0,
-      },
-      medium: {
-        wiltingpoint: 2.0,
-        prewiltingpoint: 2.225,
-        stressthreshold: 2.8,
-        fieldcapacity: 3.5,
-        saturation: 5.5,
-      },
-      high: {
-        wiltingpoint: 3.0,
-        prewiltingpoint: 3.3,
-        stressthreshold: 4.0,
-        fieldcapacity: 5.0,
-        saturation: 6.5,
-      },
-      kc: 1.0,
-      p: 0.5
+    medium: {
+      wiltingpoint: 1.0,
+      prewiltingpoint: 1.65,
+      stressthreshold: 1.75,
+      fieldcapacity: 3.5,
+      saturation: 5.8,
     },
+    high: {
+      wiltingpoint: 1.0,
+      prewiltingpoint: 1.9,
+      stressthreshold: 2.11,
+      fieldcapacity: 4.7,
+      saturation: 6.5,
+    },
+    kc: 1.2,
+    p: 0.7
   },
   soildrainageoptions: {
     low: { daysToDrainToFcFromSat: 0.125 },
@@ -78,9 +51,9 @@ export const SOIL_DATA = {
       'Consider watering due to moderate water deficit',
       'Watering is recommended due to high water deficit'
     ],
-    low: [-0.5, -0.85],
-    medium: [-0.7, -1.275],
-    high: [-1.0, -1.7]
+    low: [-0.98, -1.25],
+    medium: [-1.75, -1.85],
+    high: [-2.59, -2.8]
   }
 };
 
@@ -126,7 +99,7 @@ export function runWaterDeficitModel(
   soilcap: SoilMoistureOptionLevel,
   irrigationIdxs: number[],
   initDeficit: number,
-  returnType: ('gp' | 'lawn' | 'optimalWatering'),
+  returnType: ('actual' | 'optimalWatering'),
   optimalWateringIncrement?: number
 ) {
   // -----------------------------------------------------------------------------------------
@@ -145,17 +118,17 @@ export function runWaterDeficitModel(
   //  soilcap        : soil water capacity ('high','medium','low')
   //  irrigationIdxs : array of indices where the user irrigated
   //  initDeficit    : water deficit used to initialize the model
-  //  retunType      : type of model to run ('gp', 'lawn', 'optimalWatering')
+  //  retunType      : type of model to run ('actual', 'optimalWatering')
   //
   // -----------------------------------------------------------------------------------------
 
   const calcOptTotal = returnType === 'optimalWatering';
-  const smType = returnType === 'optimalWatering' ? 'lawn' : returnType;
-  const soil_options = SOIL_DATA.soilmoistureoptions[smType];
+  const soil_options = SOIL_DATA.soilmoistureoptions;
   
   // To calculate wasted water we need the sum of water added if added optimally. Whenever the deficit hits 'optimalWateringThreshold' we add 'optimalWateringIncrement' and keep track of the total water added in 'optimalWateringTotal'
   let optimalWateringTotal = 0;
-  const optimalWateringThreshold = soil_options[soilcap].stressthreshold - soil_options[soilcap].fieldcapacity;
+  const optimalWateringDateIndices: number[] = [];
+  const optimalWateringThreshold = soil_options[soilcap].prewiltingpoint - soil_options[soilcap].fieldcapacity;
   if (!optimalWateringIncrement) optimalWateringIncrement = 0.5;
 
   // Total water available to plant
@@ -246,6 +219,7 @@ export function runWaterDeficitModel(
     if (calcOptTotal && idx >= irrigationIdxs[0] && deficit <= optimalWateringThreshold) {
       deficit += optimalWateringIncrement;
       optimalWateringTotal += optimalWateringIncrement;
+      optimalWateringDateIndices.push(idx);
     }
 
     deficitDaily.push(deficit);
@@ -256,6 +230,7 @@ export function runWaterDeficitModel(
     saturationPercents: saturationDaily,
     deficitsInches: deficitDaily,
     soilOptions: soil_options[soilcap],
-    optimalWateringTotal
+    optimalWateringTotal,
+    optimalWateringDateIndices
   };
 }

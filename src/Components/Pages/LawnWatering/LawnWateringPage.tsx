@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { Box, Typography, Popper, Fade } from '@mui/material';
-import HelpIcon from '@mui/icons-material/Help';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
 import InvalidText from '../../InvalidText';
 import Loading from '../../Loading';
-import DailyChart, { NumberRow, StringRow } from '../../DailyChart';
+// import DailyChart, { NumberRow, StringRow } from '../../DailyChart';
 import { TablePageInfo } from '../TablePage/TablePage';
 
-import roundXDigits from '../../../Scripts/Rounding';
+// import roundXDigits from '../../../Scripts/Rounding';
 import LawnWateringConditionalText from './LawnWateringConditionalText';
-import SoilCapacitySelector, { SoilCapacitySelectorProps } from '../../SoilCapacitySelector';
-import LastIrrigationSelector, { LastIrrigationSelectorProps } from '../../LastIrrigationSelector';
+import SoilMoistureOptions, { SoilMoistureOptionsProps } from '../../SoilMoistureOptions/SoilMoistureOptions';
 import WaterDeficitGraph from './WaterDeficitGraph';
 import WaterSaving from './WaterSaving';
 
@@ -24,7 +22,7 @@ type LawnWateringPageProps = {
   soilSaturationDates: string[];
   isLoading: boolean;
   optimalWaterTotal: number;
-} & LastIrrigationSelectorProps & SoilCapacitySelectorProps
+} & SoilMoistureOptionsProps;
 
 
 
@@ -35,16 +33,18 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
     return <Loading />;
   } else if (!toolProps.soilSaturation) {
     return <InvalidText type='outOfSeason' />;
+  } else if (toolProps.soilSaturation.length === 0) {
+    return <InvalidText type='badData' />;
   } else {
-    const data = [{
-      rowName: 'As of 8am On',
-      type: 'dates',
-      data: toolProps.soilSaturationDates.slice(-6)
-    },{
-      rowName: toolProps.pageInfo.chart.rowNames[0],
-      type: 'numbers',
-      data: toolProps.soilSaturation.slice(-6).map(val => roundXDigits(val, 2))
-    }] as (StringRow | NumberRow)[];
+    // const data = [{
+    //   rowName: 'As of 8am On',
+    //   type: 'dates',
+    //   data: toolProps.soilSaturationDates.slice(-6)
+    // },{
+    //   rowName: toolProps.pageInfo.chart.rowNames[0],
+    //   type: 'numbers',
+    //   data: toolProps.soilSaturation.slice(-6).map(val => roundXDigits(val, 2))
+    // }] as (StringRow | NumberRow)[];
 
     const todayIdx = toolProps.soilSaturation.length - (toolProps.todayFromAcis ? 3 : 4);
     const todaysValue = toolProps.soilSaturation[todayIdx];
@@ -71,25 +71,15 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
 
       <StyledDivider />
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
-        <SoilCapacitySelector
-          recommendedSoilCap={toolProps.recommendedSoilCap}
-          soilCap={toolProps.soilCap}
-          setSoilCap={toolProps.setSoilCap}
-        />
-        
-        <LastIrrigationSelector
-          today={toolProps.today}
-          lastIrrigation={toolProps.lastIrrigation}
-          setLastIrrigation={toolProps.setLastIrrigation}
-        />
-      </Box>
-
-      <DailyChart
-        {...toolProps.pageInfo.chart}
-        data={data}
-        todayFromAcis={toolProps.todayFromAcis}
-        numRows={3}
+      <SoilMoistureOptions
+        recommendedSoilCap={toolProps.recommendedSoilCap}
+        soilCap={toolProps.soilCap}
+        setSoilCap={toolProps.setSoilCap}
+        today={toolProps.today}
+        irrigationDates={toolProps.irrigationDates}
+        setIrrigationDates={toolProps.setIrrigationDates}
+        useIdeal={toolProps.useIdeal}
+        setUseIdeal={toolProps.setUseIdeal}
       />
 
       <WaterSaving
@@ -107,7 +97,7 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
         soilCap={toolProps.soilCap}
         todayIdx={todayIdx}
         today={toolProps.today}
-        lastIrrigation={toolProps.lastIrrigation}
+        irrigationDates={toolProps.irrigationDates}
       />
     </>);
   }

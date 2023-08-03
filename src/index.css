@@ -142,6 +142,35 @@ code {
   margin-left: 20px;
 }
 
+.rmdp-container {
+  width: fit-content;
+}
+
+.rmdp-input {
+  padding-right: 24px !important;
+  height: 49px !important;
+  border-radius: 4px !important;
+  border-color: rgba(0,0,0,0.23) !important;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: "Open Sans", "Helvetica Neue", "Helvetica", "Roboto", "Arial", "sans-serif";
+  color: rgba(0,0,0,0.87);
+}
+
+.rmdp-input:hover {
+  border-color: rgba(0,0,0,0.87) !important;
+}
+
+.rmdp-input:focus {
+  box-shadow: inset 0px 0px 0px 2px #1976d2 !important;
+  border-color: rgba(0,0,0,0) !important;
+}
+
+.icon-tabler-calendar-event {
+  right: 6px !important;
+}
+
+
 @media only screen and (max-width: 745px) {
   .aFormula {
     font-size: 13px;

@@ -22,7 +22,6 @@ function calculateWaterUsed( d0: Date, d1: Date ) {
     const numberWateringDays = dates.reduce((count, date) => (isMonday(date) || isWednesday(date) || isFriday(date)) ? count += 1 : count, 0);
     return numberWateringDays * waterPerDay;
   } catch {
-    console.log('failed');
     return null;
   }
 }

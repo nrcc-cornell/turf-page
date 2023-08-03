@@ -12,8 +12,7 @@ import Loading from '../../Loading';
 import StyledDivider from '../../StyledDivider';
 import InvalidText from '../../InvalidText';
 import MapWithOptions from '../../OverlayMap/MapWithOptions';
-import SoilCapacitySelector, { SoilCapacitySelectorProps } from '../../SoilCapacitySelector';
-import LastIrrigationSelector, { LastIrrigationSelectorProps } from '../../LastIrrigationSelector';
+import SoilMoistureOptions, { SoilMoistureOptionsProps } from '../../SoilMoistureOptions/SoilMoistureOptions';
 
 import { gpVariableOptions } from '../../OverlayMap/Options';
 import roundXDigits from '../../../Scripts/Rounding';
@@ -24,7 +23,7 @@ type GrowthPotentialPageProps = DisplayProps& {
   soilSaturationDates: string[];
   isLoading: boolean;
   avgts: number[];
-} & LastIrrigationSelectorProps & SoilCapacitySelectorProps;
+} & SoilMoistureOptionsProps;
 
 export type ForecastSS = {
   two: number[];
@@ -134,8 +133,8 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
     return <Loading />;
   } else if (!toolProps.soilSaturation) {
     return <InvalidText type='outOfSeason' />;
-  } else if (toolProps.soilSaturation && toolProps.soilSaturationDates.length === 0) {
-    return <InvalidText type='noSoilData' />;
+  } else if (toolProps.soilSaturation.length === 0) {
+    return <InvalidText type='badData' />;
   } else {
     const THRESHOLDS = [0, 25, 66];
     const growthPotentialOutput = calcGrowthPotential(toolProps.soilSaturation, toolProps.avgts, toolProps.soilSaturationDates, toolProps.currentLocation, toolProps.today, numDaysToProcess);
@@ -145,16 +144,16 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
         <Typography variant='h5'>Growth Potential Estimates</Typography>
       </Box>
 
-      <Box sx={{
-        display: 'flex',
-        gap: '20px',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: '10px'
-      }}>
-        <SoilCapacitySelector recommendedSoilCap={toolProps.recommendedSoilCap} soilCap={toolProps.soilCap} setSoilCap={toolProps.setSoilCap} />
-        <LastIrrigationSelector today={toolProps.today} lastIrrigation={toolProps.lastIrrigation} setLastIrrigation={toolProps.setLastIrrigation} />
-      </Box>
+      <SoilMoistureOptions
+        recommendedSoilCap={toolProps.recommendedSoilCap}
+        soilCap={toolProps.soilCap}
+        setSoilCap={toolProps.setSoilCap}
+        today={toolProps.today}
+        irrigationDates={toolProps.irrigationDates}
+        setIrrigationDates={toolProps.setIrrigationDates}
+        useIdeal={toolProps.useIdeal}
+        setUseIdeal={toolProps.setUseIdeal}
+      />
 
       <GrowthPotentialGraph
         modelResults={growthPotentialOutput}

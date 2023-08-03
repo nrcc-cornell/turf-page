@@ -22,7 +22,7 @@ import {
 } from './Components';
 
 import { AppRouteInfo, PageInfo } from './AppRouteInfo';
-import { usePageTracking } from './Scripts/usePageTracking';
+import { usePageTracking } from './Hooks/usePageTracking';
 
 import { getData, ToolData } from './Scripts/Data';
 import SoilSaturationPage from './Components/Pages/SoilSaturation/SoilSaturationPage';
@@ -81,9 +81,11 @@ function App() {
     avgts,
     recommendedSoilCap,
     selectedSoilCap,
-    lastIrrigation,
     changeSoilCapacity,
-    setLastIrrigation
+    irrigationDates,
+    setIrrigationDates,
+    useIdeal,
+    setUseIdeal
   } = useSoilInfo(today, currentLocation.lngLat, coordsIdxs);
   const isLoading = isLoadingCoords || isLoadingSoilInfo;
 
@@ -174,14 +176,16 @@ function App() {
             handleChangeLocations={handleChangeLocations}
             sx={sx}
             isLoading={isLoading}
-            setLastIrrigation={setLastIrrigation}
+            setIrrigationDates={setIrrigationDates}
             setSoilCap={changeSoilCapacity}
             soilSaturation={soilSaturation ? soilSaturation.gp : []}
             soilSaturationDates={soilSaturationDates || []}
             avgts={avgts || []}
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}
-            lastIrrigation={lastIrrigation}
+            irrigationDates={irrigationDates}
+            useIdeal={useIdeal}
+            setUseIdeal={setUseIdeal}
           />
         );
       } else if (info.pageType === 'runoffRisk') {
@@ -204,13 +208,15 @@ function App() {
             pageInfo={info}
             todayFromAcis={toolData.todayFromAcis}
             isLoading={isLoading}
-            setLastIrrigation={setLastIrrigation}
+            setIrrigationDates={setIrrigationDates}
             setSoilCap={changeSoilCapacity}
             soilSaturation={soilSaturation ? soilSaturation.soilSat : []}
             soilSaturationDates={soilSaturationDates || []}
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}
-            lastIrrigation={lastIrrigation}
+            irrigationDates={irrigationDates}
+            useIdeal={useIdeal}
+            setUseIdeal={setUseIdeal}
           />
         );
       } else if (info.pageType === 'pollinator') {
@@ -223,6 +229,11 @@ function App() {
           />
         );
       } else if (info.pageType === 'lawn-watering') {
+        let ssVals: number[] = [];
+        if (soilSaturation) {
+          ssVals = useIdeal ? soilSaturation.optimalWaterDeficits : soilSaturation.lawn;
+        }
+        
         return (
           <LawnWateringPage
             today={today}
@@ -230,14 +241,16 @@ function App() {
             pageInfo={info}
             todayFromAcis={toolData.todayFromAcis}
             isLoading={isLoading}
-            setLastIrrigation={setLastIrrigation}
+            setIrrigationDates={setIrrigationDates}
             setSoilCap={changeSoilCapacity}
             optimalWaterTotal={soilSaturation ? soilSaturation.optimalWaterTotal[0] : 0}
-            soilSaturation={soilSaturation ? soilSaturation.lawn : []}
+            soilSaturation={ssVals}
             soilSaturationDates={soilSaturationDates || []}
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}
-            lastIrrigation={lastIrrigation}
+            irrigationDates={irrigationDates}
+            useIdeal={useIdeal}
+            setUseIdeal={setUseIdeal}
           />
         );
       }

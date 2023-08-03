@@ -129,9 +129,9 @@ const calcAvgSoilComp = (soilTypes: SoilType[]) => {
 const categorizeTexture = (clay: number, sand: number, silt: number): SoilMoistureOptionLevel => {
   let type: SoilMoistureOptionLevel = SoilMoistureOptionLevel.MEDIUM;
   
-  if (sand >= 75) {
+  if (sand >= 50 && clay < 20) {
     type = SoilMoistureOptionLevel.LOW;
-  } else if (clay >= 30) {
+  } else if (clay >= 36 || silt >= 50 || (clay >= 30 && sand < 45)) {
     type = SoilMoistureOptionLevel.HIGH;
   }
 

@@ -23,30 +23,38 @@ type WaterDeficitGraphProps = {
   soilCap: SoilMoistureOptionLevel;
   todayIdx: number;
   today: Date;
-  lastIrrigation: string | null;
+  irrigationDates: string[];
 };
 
-const GRAPH_MINS = {
-  'low': -1.5,
-  'medium': -2.0,
-  'high': -2.5
-};
+// const GRAPH_MINS = {
+//   'low': -1.5,
+//   'medium': -1.8,
+//   'high': -2.2
+// };
+// const GRAPH_MAXS = {
+//   'low': 3.8,
+//   'medium': 4.1,
+//   'high': 4.4
+// };
 
-const PLOT_BAND_COLORS = ['0,128,0', '255,255,0', '255,128,0', '255,0,0'];
-const PLOT_BAND_LABELS = ['No deficit for plant', 'Deficit, no plant stress', 'Deficit, plant stress likely', 'Deficit, severe plant stress'];
-const PLOT_LINE_LABELS = ['Saturation', 'Field Capacity', 'Plant Stress Begins', 'WIlting Danger Exists'];
+// const PLOT_BAND_COLORS = ['0,128,0', '255,255,0', '255,128,0', '255,0,0'];
+// const PLOT_BAND_LABELS = ['No deficit for plant', 'Deficit, no plant stress', 'Deficit, plant stress likely', 'Deficit, severe plant stress'];
+// const PLOT_LINE_LABELS = ['Saturation', 'Field Capacity', 'Plant Stress Begins', 'WIlting Danger Exists'];
+const PLOT_BAND_COLORS = ['0,128,0', '255,255,0', '255,0,0'];
+const PLOT_BAND_LABELS = ['No water necessary', 'Deficit, minor plant stress', 'Deficit, severe plant stress'];
+const PLOT_LINE_LABELS = ['Saturation', 'Field Capacity', 'Plant Stress Begins', 'Wilting Danger Exists'];
 
-const colorPoints = (breakpoints: number[], values: (number | null)[]) => {
-  const bounds = [...breakpoints].reverse();
-  const reversedColors = [...PLOT_BAND_COLORS].reverse();
+const colorPoints = (bounds: number[], values: (number | null)[]) => {
   return values.map(value => {
     let color = 'transparent';
     if (value !== null) {
       for (let i = 0; i < bounds.length; i++) {
         const bound = bounds[i];
-        if (value < bound && reversedColors[i]) {
-          color = `rgba(${reversedColors[i]},0.8)`;
+        if (value >= bound && PLOT_BAND_COLORS[i]) {
+          color = `rgba(${PLOT_BAND_COLORS[i]},0.8)`;
           break;
+        } else if (i === bounds.length - 1) {
+          color = `rgba(${PLOT_BAND_COLORS[i + 1]},0.8)`;
         }
       }
     }
@@ -58,30 +66,47 @@ const colorPoints = (breakpoints: number[], values: (number | null)[]) => {
 };
 
 const getPlotBandsLinesBreakpoints = (todayDeficit: number, soilCap: SoilMoistureOptionLevel, ) => {
-  const soilConstants = SOIL_DATA.soilmoistureoptions.lawn[soilCap];
+  const soilConstants = SOIL_DATA.soilmoistureoptions[soilCap];
 
   const breakpoints = [
-    soilConstants.saturation - soilConstants.fieldcapacity,
-    soilConstants.fieldcapacity - soilConstants.fieldcapacity,
-    soilConstants.stressthreshold - soilConstants.fieldcapacity,
-    soilConstants.prewiltingpoint - soilConstants.fieldcapacity
+    roundXDigits(soilConstants.saturation - soilConstants.stressthreshold, 3),
+    roundXDigits(soilConstants.fieldcapacity - soilConstants.stressthreshold, 3),
+    roundXDigits(soilConstants.stressthreshold - soilConstants.stressthreshold, 3),
+    roundXDigits(soilConstants.prewiltingpoint - soilConstants.stressthreshold, 3)
   ];
-  
-  const plotLines = [];
-  const plotBands = [];
-  for (let i = 0; i < breakpoints.length; i++) {
-    const high = breakpoints[i] === undefined ? 99 : breakpoints[i];
+
+  const plotLines = breakpoints.map((bp, i) => ({
+    value: bp,
+    width: 1.0,
+    color: 'rgba(200,200,200,0.5)',
+    label: {
+      text: PLOT_LINE_LABELS[i] || '',
+      style: {
+          fontSize: '0.8em',
+          color: 'gray',
+          fontWeight: 'lighter',
+      },
+      align: 'right',
+      x: -4,
+      y: 8
+    }
+  }));
+
+  breakpoints.shift();
+
+  const plotBands = breakpoints.map((bp, i) => {
+    const high = i === 0 ? 99 : bp;
     const low = breakpoints[i + 1] === undefined ? -99 : breakpoints[i + 1];
     const todayInBand = low <= todayDeficit && todayDeficit < high;
 
-    plotBands.push({
+    return {
       to: high,
       from: low,
-      color: PLOT_BAND_COLORS[i] && todayInBand ? `rgba(${PLOT_BAND_COLORS[i]},0.5)` : 'transparent',
+      color: PLOT_BAND_COLORS[i] && todayInBand ? `rgba(${PLOT_BAND_COLORS[i]},0.2)` : 'transparent',
       label: {
         text: PLOT_BAND_LABELS[i] || '',
         style: {
-          fontSize: '1.2em',
+          fontSize: '1.0em',
           color: todayInBand ? 'black' : 'gray',
           fontWeight: todayInBand ? 'bold' : 'lighter',
         },
@@ -90,25 +115,10 @@ const getPlotBandsLinesBreakpoints = (todayDeficit: number, soilCap: SoilMoistur
         x: 10,
         y: 5
       }
-    });
+    };
+  });
 
-    plotLines.push({
-      value: high,
-      width: 1.0,
-      color: '#808080',
-      label: {
-        text: PLOT_LINE_LABELS[i] || '',
-        style: {
-            fontSize: '0.8em',
-            color: todayInBand ? 'black' : 'gray',
-            fontWeight: todayInBand ? 'bold' : 'lighter',
-        },
-        align: 'right',
-        x: -4,
-        y: 12
-      }
-    });
-  }
+  breakpoints.shift();
 
   return { plotBands, plotLines, breakpoints };
 };
@@ -123,10 +133,16 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
     }
   };
 
-  const { plotLines, plotBands, breakpoints }  = getPlotBandsLinesBreakpoints(props.deficits[props.todayIdx], props.soilCap);
-  const observedDeficits = colorPoints(breakpoints, props.deficits.slice(0,props.todayIdx + 1).concat(Array(props.deficits.length - (props.todayIdx + 1)).fill(null)));
-  const forecastedDeficits = colorPoints(breakpoints, Array(props.todayIdx + 1).fill(null).concat(props.deficits.slice(props.todayIdx + 1)));
-  const irrigationIdx = props.lastIrrigation ? props.dates.findIndex(d => d === props.lastIrrigation?.slice(5)) : null;
+  // Shift deficits to have stress threshold be 0 on the new scale (instead of field capacity as is output from the model)
+  const adjustment = SOIL_DATA.soilmoistureoptions[props.soilCap].fieldcapacity - SOIL_DATA.soilmoistureoptions[props.soilCap].stressthreshold;
+  const adjustedDeficits = props.deficits.map(val => val + adjustment);
+  const defMin = Math.min(...adjustedDeficits) - 0.1;
+  const defMax = Math.max(...adjustedDeficits) + 0.1;
+
+  const { plotLines, plotBands, breakpoints }  = getPlotBandsLinesBreakpoints(adjustedDeficits[props.todayIdx], props.soilCap);
+  const observedDeficits = colorPoints(breakpoints, adjustedDeficits.slice(0,props.todayIdx + 1).concat(Array(adjustedDeficits.length - (props.todayIdx + 1)).fill(null)));
+  const forecastedDeficits = colorPoints(breakpoints, Array(props.todayIdx + 1).fill(null).concat(adjustedDeficits.slice(props.todayIdx + 1)));
+  const irrigationIdxs = props.irrigationDates.length > 0 ? props.irrigationDates.map(irriDate => props.dates.findIndex(d => d === irriDate?.slice(5))) : [];
 
   const options = {
     credits: {
@@ -191,25 +207,25 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
     },
     xAxis: {
       categories: props.dates,
-      plotLines: [{
+      plotLines: irrigationIdxs.map(idx => ({
         color: 'rgba(0,0,255,0.5)',
         width: 2,
         dashStyle: 'dash',
-        value: irrigationIdx,
+        value: idx,
         label: {
             text: 'Irrigation',
             rotation: 90,
             y: 10,
         },
         zIndex: 1
-      }]
+      }))
     },
     yAxis: {
       title: {
         text: 'Water Deficit (in/ft soil)',
       },
-      max: 0.5,
-      min: GRAPH_MINS[props.soilCap],
+      max: defMax,
+      min: defMin,
       tickInterval: 0.5,
       gridLineWidth : 0,
       plotBands,
@@ -228,7 +244,7 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
             <Fragment key={p.series.name}>
               <Box>{p.series.name}</Box>
               <Box style={{ justifySelf: 'right' }}>
-                <span style={{ fontWeight: 'bold' }}>{p.y ? roundXDigits(p.y, 2) : ''}</span> in
+                <span style={{ fontWeight: 'bold' }}>{typeof p.y === 'number' ? roundXDigits(p.y, 2) : ''}</span> in
               </Box>
             </Fragment>
           );

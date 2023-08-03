@@ -7,8 +7,7 @@ import Loading from '../../Loading';
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
 import MapWithOptions from '../../OverlayMap/MapWithOptions';
-import SoilCapacitySelector, { SoilCapacitySelectorProps } from '../../SoilCapacitySelector';
-import LastIrrigationSelector, { LastIrrigationSelectorProps } from '../../LastIrrigationSelector';
+import SoilMoistureOptions, { SoilMoistureOptionsProps } from '../../SoilMoistureOptions/SoilMoistureOptions';
 import DailyChart, { NumberRow, StringRow } from '../../DailyChart';
 
 import { TablePageInfo } from '../TablePage/TablePage';
@@ -23,7 +22,7 @@ type SoilSaturationPageProps = {
   soilSaturation:  number[];
   soilSaturationDates: string[];
   isLoading: boolean;
-} & LastIrrigationSelectorProps & SoilCapacitySelectorProps & DisplayProps
+} & SoilMoistureOptionsProps & DisplayProps
 
 
 export default function SoilSaturationPage(props: SoilSaturationPageProps) {
@@ -36,7 +35,7 @@ export default function SoilSaturationPage(props: SoilSaturationPageProps) {
   } else {
     const overlayDates = Array.from({length: 5}, (v, i) => format(addDays(props.today, i), 'yyyyMMdd'));
 
-    const data = [{
+    const data = props.soilSaturation.length > 0 ? [{
       rowName: 'As of 8am On',
       type: 'dates',
       data: props.soilSaturationDates.slice(-6)
@@ -44,7 +43,7 @@ export default function SoilSaturationPage(props: SoilSaturationPageProps) {
       rowName: props.pageInfo.chart.rowNames[0],
       type: 'numbers',
       data: props.soilSaturation.slice(-6).map(val => roundXDigits(val, 2))
-    }] as (StringRow | NumberRow)[];
+    }] as (StringRow | NumberRow)[] : null;
 
 
 
@@ -64,17 +63,27 @@ export default function SoilSaturationPage(props: SoilSaturationPageProps) {
       >
         <Typography variant='h5' sx={{ marginLeft: '6px' }}>Soil Saturation Forecast for New York State</Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '20px' }}>
-          <SoilCapacitySelector recommendedSoilCap={props.recommendedSoilCap} soilCap={props.soilCap} setSoilCap={props.setSoilCap} />
-          <LastIrrigationSelector today={props.today} lastIrrigation={props.lastIrrigation} setLastIrrigation={props.setLastIrrigation} />
-        </Box>
+        {data === null ? <InvalidText type='badData' /> :
+          <> 
+            <SoilMoistureOptions
+              recommendedSoilCap={props.recommendedSoilCap}
+              soilCap={props.soilCap}
+              setSoilCap={props.setSoilCap}
+              today={props.today}
+              irrigationDates={props.irrigationDates}
+              setIrrigationDates={props.setIrrigationDates}
+              useIdeal={props.useIdeal}
+              setUseIdeal={props.setUseIdeal}
+            />
 
-        <DailyChart
-          {...props.pageInfo.chart}
-          data={data}
-          todayFromAcis={props.todayFromAcis}
-          numRows={3}
-        />
+            <DailyChart
+              {...props.pageInfo.chart}
+              data={data}
+              todayFromAcis={props.todayFromAcis}
+              numRows={3}
+            />
+          </>
+        }
 
         <StyledDivider />
 
