@@ -166,11 +166,6 @@ code {
   border-color: rgba(0,0,0,0) !important;
 }
 
-.icon-tabler-calendar-event {
-  right: 6px !important;
-}
-
-
 @media only screen and (max-width: 745px) {
   .aFormula {
     font-size: 13px;

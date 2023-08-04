@@ -58,6 +58,7 @@ export default function useRunoffApi(coords: LngLatArr) {
         { dateStr: format(new Date(), 'yyyyMMdd') },
         'coordinates'
       );
+
       setCoordArrs(results);
     })();
   }, []);

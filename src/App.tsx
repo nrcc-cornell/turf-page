@@ -238,7 +238,6 @@ function App() {
           <LawnWateringPage
             today={today}
             currentLocation={currentLocation}
-            pageInfo={info}
             todayFromAcis={toolData.todayFromAcis}
             isLoading={isLoading}
             setIrrigationDates={setIrrigationDates}

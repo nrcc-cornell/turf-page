@@ -47,9 +47,9 @@ export const SOIL_DATA = {
   },
   soilRecommendations: {
     text: [
-      'Watering is unnecessary',
-      'Consider watering due to moderate water deficit',
-      'Watering is recommended due to high water deficit'
+      'Watering is unnecessary.',
+      'Consider watering due to moderate water deficit.',
+      'Watering is recommended due to high water deficit.'
     ],
     low: [-0.98, -1.25],
     medium: [-1.75, -1.85],
@@ -223,7 +223,7 @@ export function runWaterDeficitModel(
     }
 
     deficitDaily.push(deficit);
-    saturationDaily.push((soil_options[soilcap].fieldcapacity + deficit) / soil_options[soilcap].saturation);
+    saturationDaily.push((soil_options[soilcap].fieldcapacity + deficit) / soil_options[soilcap].fieldcapacity);
   }
 
   return {

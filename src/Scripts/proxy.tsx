@@ -11,7 +11,6 @@ type StateOverlayBody = {
 };
 
 
-// const proxyUrl = 'http://192.168.0.149:8787/';
 const proxyUrl = 'https://cors-proxy.benlinux915.workers.dev/';
 
 async function updateStateFromProxy<T>(

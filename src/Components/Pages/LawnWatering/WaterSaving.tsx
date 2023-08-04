@@ -4,7 +4,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import { eachDayOfInterval, isMonday, isWednesday, isFriday } from 'date-fns';
 
 type WaterSavingProps = {
-  open: (event: React.MouseEvent<SVGSVGElement>) => void;
+  open: (event: React.MouseEvent<SVGSVGElement>, desc: string) => void;
   close: () => void;
   optimalWaterTotal: number;
   today: Date;
@@ -49,13 +49,13 @@ export default function WaterSaving(props: WaterSavingProps) {
       {typicalWaterUsed === null ? <>
         <Box sx={{ fontSize: '18px' }}>
           <span>Irrigation amount since May 1<sup>st</sup>:</span>
-          <HelpIcon onMouseLeave={props.close} onMouseEnter={props.open} sx={{ color: 'rgb(120,150,255)', fontSize: '14px', position: 'relative', bottom:'6px' }} />
+          <HelpIcon onMouseLeave={props.close} onMouseEnter={(e) => props.open(e, 'Assuming 0.5" of water added per watering session')} sx={{ color: 'rgb(120,150,255)', fontSize: '14px', position: 'relative', bottom:'6px' }} />
         </Box>
         <Box sx={{ fontWeight: 'bold', fontSize: '18px', marginTop: '8px' }}>Too Early In the Season to Water</Box>
       </> : <>
         <Box sx={{ fontSize: '18px' }}>
           <span>Irrigation amount since May 1<sup>st</sup> using:</span>
-          <HelpIcon onMouseLeave={props.close} onMouseEnter={props.open} sx={{ color: 'rgb(120,150,255)', fontSize: '14px', position: 'relative', bottom:'6px' }} />
+          <HelpIcon onMouseLeave={props.close} onMouseEnter={(e) => props.open(e, 'Assuming 0.5" of water added per watering session')} sx={{ color: 'rgb(120,150,255)', fontSize: '14px', position: 'relative', bottom:'6px' }} />
         </Box>
         <Box sx={{ display: 'flex', margin: '18px auto 13px' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>

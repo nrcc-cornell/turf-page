@@ -87,8 +87,6 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
     setUseIdeal(newValue);
   };
 
-  console.log(soilSaturation?.optimalWateringDates, irrigationDates);
-
   return {
     isLoadingSoilInfo: loading,
     soilSaturation,
