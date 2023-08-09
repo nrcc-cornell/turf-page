@@ -250,6 +250,7 @@ function App() {
             irrigationDates={irrigationDates}
             useIdeal={useIdeal}
             setUseIdeal={setUseIdeal}
+            coordsIdxs={coordsIdxs}
           />
         );
       }

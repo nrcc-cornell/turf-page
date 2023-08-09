@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Popper, Fade } from '@mui/material';
+import JSZip from 'jszip';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
@@ -10,6 +11,7 @@ import SoilMoistureOptions, { SoilMoistureOptionsProps } from '../../SoilMoistur
 import WaterDeficitGraph from './WaterDeficitGraph';
 import WaterSaving from './WaterSaving';
 import { SOIL_DATA } from '../../../Scripts/waterDeficitModel';
+import { CoordsIdxObj } from '../../../Hooks/useRunoffApi';
 
 type LawnWateringPageProps = {
   currentLocation: UserLocation;
@@ -18,11 +20,12 @@ type LawnWateringPageProps = {
   soilSaturationDates: string[];
   isLoading: boolean;
   optimalWaterTotal: number;
+  coordsIdxs: CoordsIdxObj | null;
 } & SoilMoistureOptionsProps;
 
 
 
-const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: React.MouseEvent<SVGSVGElement>, desc: string) => void, handleClose: () => void) => {
+const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: React.MouseEvent<SVGSVGElement>, desc: string) => void, handleClose: () => void, maxEt: number | null) => {
   if (!toolProps.currentLocation.address.includes('New York')) {
     return <InvalidText type='notNY' />;
   } else if (toolProps.isLoading) {
@@ -59,13 +62,16 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
     // console.log(daysUntilWaterNeeded);
 
     // Use coordsIdxs to access precalculated ets, replace following value with retrieved value
-    const maxET = 0.25;
-    const wateringThreshold = SOIL_DATA.soilmoistureoptions[toolProps.soilCap].stressthreshold - SOIL_DATA.soilmoistureoptions[toolProps.soilCap].fieldcapacity;
-    let deficit = todaysValue;
     let daysUntilWaterNeeded = 0;
-    while(deficit > wateringThreshold) {
-      daysUntilWaterNeeded++;
-      deficit -= maxET;
+    if (maxEt !== null) {
+      const wateringThreshold = SOIL_DATA.soilmoistureoptions[toolProps.soilCap].prewiltingpoint - SOIL_DATA.soilmoistureoptions[toolProps.soilCap].fieldcapacity;
+      let deficit = todaysValue;
+      while(deficit > wateringThreshold) {
+        daysUntilWaterNeeded++;
+        deficit -= maxEt;
+      }
+    } else {
+      daysUntilWaterNeeded = -1;
     }
 
     return (<>
@@ -129,6 +135,26 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
 export default function LawnWateringPage(props: LawnWateringPageProps) {
   const [anchorEl, setAnchorEl] = useState<null | SVGSVGElement>(null);
   const [description, setDescription] = useState('');
+  const [maxEt, setMaxEt] = useState<number | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const filename = `month_${props.today.getMonth()}_et_grid`;
+      fetch(process.env.PUBLIC_URL + `/Data/${filename}.zip`)
+      .then(response => response.blob())
+          .then(blob => JSZip.loadAsync(blob))
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          .then(zip => zip.file(`${filename}.json`).async('string'))
+          .then(strRes => {
+            if (props.coordsIdxs !== null) {
+              setMaxEt(JSON.parse(strRes)[props.coordsIdxs.idxLat][props.coordsIdxs.idxLng]);
+            } else {
+              setMaxEt(null);
+            }
+          });
+      })();
+  }), [props.coordsIdxs, props.today];
 
   const handleOpen = (event: React.MouseEvent<SVGSVGElement>, desc: string) => {
     console.log('open');
@@ -161,7 +187,7 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
     >
       <Typography variant='h5' sx={{ marginLeft: '6px' }}>Lawn Watering Forecast for {props.currentLocation.address}</Typography>
 
-      {renderTools(props, handleOpen, handleClose)}
+      {renderTools(props, handleOpen, handleClose, maxEt)}
 
       <Popper open={Boolean(anchorEl)} anchorEl={anchorEl} transition sx={{ zIndex: 2 }}>
       {({ TransitionProps }) => (
