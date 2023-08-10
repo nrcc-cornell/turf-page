@@ -36,12 +36,14 @@ import MapsOnlyPage from './Components/Pages/MapsOnlyPage/MapsOnlyPage';
 import LawnWateringPage from './Components/Pages/LawnWatering/LawnWateringPage';
 import useRunoffApi from './Hooks/useRunoffApi';
 import useSoilInfo from './Hooks/useSoilInfo';
+import InvalidText from './Components/InvalidText';
 
 
 const today = new Date();
 
 function App() {
   const [toolData, setToolData] = useState<ToolData | null>(null);
+  const [dataProblem, setDataProblem] = useState(false);
   const [pastLocations, setPastLocations] = useState<UserLocation[]>(() => {
     const pastLocations = localStorage.getItem('pastLocations');
     if (pastLocations) {
@@ -102,8 +104,14 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      const data = await getData(currentLocation.lngLat);
-      setToolData(data);
+      try {
+        const data = await getData(currentLocation.lngLat);
+        setToolData(data);
+        setDataProblem(false);
+      } catch {
+        setToolData(null);
+        setDataProblem(true);
+      }
     })();
   }, [currentLocation]);
 
@@ -254,6 +262,8 @@ function App() {
           />
         );
       }
+    } else if (dataProblem) {
+      return <InvalidText type='dataProblem' />;
     } else {
       return <Loading />;
     }
