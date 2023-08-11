@@ -12,6 +12,7 @@ type SoilSaturations = {
   optimalWaterTotal: number[];
   optimalWateringDates: string[];
   optimalWaterDeficits: number[];
+  numFcstDays: number;
 };
 
 const LOCAL_IRRI_DATES_KEY = 'turf-eas-irrigation-dates';
@@ -40,6 +41,8 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
           getSoilCapacity(lngLat)
         ]);
 
+        console.log(newSSRD);
+
         setSoilSatRawData(newSSRD);
         setCalculatedSoilCapacity(newCSC);
         setSelectedSoilCapacity(newCSC);
@@ -67,7 +70,8 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
         soilSat: newWaterDeficit.deficitsInches.map(deficit => (newWaterDeficit.soilOptions.fieldcapacity + deficit) / 12),
         optimalWaterDeficits: newOptimalWatering.deficitsInches,
         optimalWaterTotal: [newOptimalWatering.optimalWateringTotal],
-        optimalWateringDates
+        optimalWateringDates,
+        numFcstDays: soilSatRawData.numFcstDays
       });
     }
     setLoading(false);

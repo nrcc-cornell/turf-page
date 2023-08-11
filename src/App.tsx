@@ -246,13 +246,13 @@ function App() {
           <LawnWateringPage
             today={today}
             currentLocation={currentLocation}
-            todayFromAcis={toolData.todayFromAcis}
             isLoading={isLoading}
             setIrrigationDates={setIrrigationDates}
             setSoilCap={changeSoilCapacity}
             optimalWaterTotal={soilSaturation ? soilSaturation.optimalWaterTotal[0] : 0}
             soilSaturation={ssVals}
             soilSaturationDates={soilSaturationDates || []}
+            numFcstDays={soilSaturation ? soilSaturation.numFcstDays : 0}
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}
             irrigationDates={irrigationDates}

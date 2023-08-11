@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Popper, Fade } from '@mui/material';
 import JSZip from 'jszip';
+import { format } from 'date-fns';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
@@ -15,7 +16,7 @@ import { CoordsIdxObj } from '../../../Hooks/useRunoffApi';
 
 type LawnWateringPageProps = {
   currentLocation: UserLocation;
-  todayFromAcis: boolean;
+  numFcstDays: number;
   soilSaturation:  number[];
   soilSaturationDates: string[];
   isLoading: boolean;
@@ -35,8 +36,9 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
   } else if (toolProps.soilSaturation.length === 0) {
     return <InvalidText type='badData' />;
   } else {
-    const todayIdx = toolProps.soilSaturation.length - (toolProps.todayFromAcis ? 3 : 4);
+    const todayIdx = toolProps.soilSaturation.length - toolProps.numFcstDays - 1;
     const todaysValue = toolProps.soilSaturation[todayIdx];
+    
 
     // // Use coordsIdxs to access precalculated ets, replace following value with retrieved value
     // const maxET = 0.25;
@@ -157,14 +159,11 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
   }), [props.coordsIdxs, props.today];
 
   const handleOpen = (event: React.MouseEvent<SVGSVGElement>, desc: string) => {
-    console.log('open');
-    console.log(event.currentTarget);
     setAnchorEl(event.currentTarget);
     setDescription(desc);
   };
 
   const handleClose = () => {
-    console.log('close');
     setAnchorEl(null);
   };
   

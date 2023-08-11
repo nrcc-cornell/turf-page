@@ -1,4 +1,4 @@
-import { isAfter, isBefore, format, parse, addDays, differenceInCalendarDays } from 'date-fns';
+import { isAfter, isBefore, format, parse, addDays } from 'date-fns';
 
 import { getFromProxy } from './proxy';
 import roundXDigits from './Rounding';
@@ -9,6 +9,7 @@ export type WaterDeficitModelData = {
   et: number[];
   avgt: number[];
   dates: string[];
+  numFcstDays: number;
 };
 
 type ForecastData = {
@@ -28,52 +29,7 @@ type ForecastData = {
   }
 }
 
-type tempPrcpReturn = AsyncReturnType<typeof fetchTempPrcpData>;
 type EtReturn = AsyncReturnType<typeof fetchETData>;
-
-
-const getDateAdjustment = (
-  etData: EtReturn,
-  tempPrcpData: tempPrcpReturn,
-  year: number
-) => {
-  const etParts = etData.dates_pet[0].split('/');
-  const tempPrcpParts: [number, number, number] = tempPrcpData[0][0]
-    .split('-')
-    .map((str: string) => parseInt(str));
-  tempPrcpParts[1] = tempPrcpParts[1] - 1;
-  return differenceInCalendarDays(
-    new Date(year, parseInt(etParts[0]) - 1, etParts[1]),
-    new Date(...tempPrcpParts)
-  );
-};
-
-const alignAndExtract = (rawEtData: EtReturn, prcpAndTempData: [string, number, number][], year: number) => {
-  let etData, etDates;
-  const DA = getDateAdjustment(rawEtData, prcpAndTempData, year);
-  if (DA > 0) {
-    const currentDateIdx = prcpAndTempData.findIndex(
-      (arr: [string, number, number]) => arr[1] === -999
-    );
-    prcpAndTempData = prcpAndTempData.slice(
-      DA,
-      currentDateIdx >= 0 ? currentDateIdx : prcpAndTempData.length
-    );
-    etData = rawEtData.pet;
-    etDates = rawEtData.dates_pet;
-  } else if (DA < 0) {
-    etData = rawEtData.pet.slice(Math.abs(DA));
-    etDates = rawEtData.dates_pet.slice(Math.abs(DA));
-  } else {
-    etData = rawEtData.pet;
-    etDates = rawEtData.dates_pet;
-  }
-
-  const startIdx = 0;
-  const endIdx = Math.min(etData.length, prcpAndTempData.length);
-
-  return { et: etData.slice(startIdx,endIdx), etDates: etDates.slice(startIdx,endIdx), precip: prcpAndTempData.slice(startIdx,endIdx).map(arr => arr[1]), precipDates: prcpAndTempData.slice(startIdx,endIdx).map(arr => arr[0]), avgt: prcpAndTempData.slice(startIdx,endIdx).map(arr => arr[2]) };
-};
 
 const fetchTempPrcpData = async (loc: [number, number], eDate: string) => {
   const response = await fetch('https://grid2.rcc-acis.org/GridData', {
@@ -103,6 +59,68 @@ const fetchETData = (coords: number[], year: number) => {
     .catch(() => null);
 };
 
+const processPrecipTempData = (forecastData: ForecastData, observedData: [string, number, number][]) => {
+  const { precipDates, precipValues, avgts } = observedData.reduce((acc, dayArr) => {
+    if (!dayArr.includes(-999)) {
+      acc.precipDates.push(dayArr[0]);
+      acc.precipValues.push(dayArr[1]);
+      acc.avgts.push(dayArr[2]);
+    }
+    return acc;
+  }, { precipDates: [] as string[], precipValues: [] as number[], avgts: [] as number[] });
+  const pDates = precipDates.map(date => date.slice(5));
+
+  const nextDate = format(addDays(parse(precipDates[precipDates.length - 1], 'yyyy-MM-dd', new Date()), 1), 'yyyyMMdd');
+  const nextDateIdx = forecastData.dates.findIndex((dateStr: number) => String(dateStr) === nextDate);
+  
+  let numFcstDays = 0;
+  for (let i = nextDateIdx; i < forecastData.tempChart.mint.length; i++) {
+    const d = forecastData.dates[i];
+    pDates.push(`${String(d).slice(4,6)}-${String(d).slice(6)}`);
+    precipValues.push(forecastData.precipChart.raim[i]);
+    avgts.push(roundXDigits((forecastData.tempChart.mint[i] + forecastData.tempChart.maxt[i]) / 2, 1));
+    numFcstDays++;
+  }
+  return {
+    dates: pDates,
+    precips: precipValues,
+    avgts,
+    numFcstDays
+  };
+};
+
+const processEtData = (rawEtData: EtReturn) => {
+  const numFcstDays = rawEtData.dates_pet_fcst.length;
+  const ets = rawEtData.pet.concat(rawEtData.pet_fcst);
+  const dates = rawEtData.dates_pet.concat(rawEtData.dates_pet_fcst).map((str: string) => str.replace('/', '-'));
+  return {
+    dates,
+    ets,
+    numFcstDays
+  };
+};
+
+const findMatchingStartAndEndPoints = (arr1: (string | number)[], arr2: (string | number)[]) => {
+  const findStartAndEnd = (v1: (string | number), v2: (string | number), arr: (string | number)[]) => {
+    const startIdx = arr.findIndex(val => val === v1);
+    const endIdx = arr.findIndex(val => val === v2);
+    console.log(v1, v2, arr, startIdx, endIdx);
+    return {
+      start: startIdx >= 0 ? startIdx : 0,
+      end: endIdx >= 0 ? endIdx : arr.length - 1
+    };
+  };
+
+  return {
+    arr1: findStartAndEnd(arr2[0], arr2[arr2.length - 1], arr1),
+    arr2: findStartAndEnd(arr1[0], arr1[arr1.length - 1], arr2)
+  };
+};
+
+const calcFcstDays = (origFcstDays: number, origArr: number[], newEndIdx: number) => {
+  return  origFcstDays - ((origArr.length - 1) - newEndIdx);
+};
+
 async function getWaterDeficitData(today: Date, lngLat: [number, number], coordsIdxs: CoordsIdxObj) {
   let newModelData: WaterDeficitModelData | null = null;
   if (isAfter(today, new Date(today.getFullYear(), 2, 9)) && isBefore(today, new Date(today.getFullYear(), 10, 1))) {
@@ -116,27 +134,22 @@ async function getWaterDeficitData(today: Date, lngLat: [number, number], coords
     ]);
 
     if (forecast && rawEtData) {
-      const aligned = alignAndExtract(rawEtData, pastPrecipAndTemp, today.getFullYear());
+      const precipAndTempObj = processPrecipTempData(forecast, pastPrecipAndTemp);
+      const etObj = processEtData(rawEtData);
 
-      const numFcstDays = rawEtData.dates_pet_fcst.length;
-      aligned.et = aligned.et.concat(rawEtData.pet_fcst);
-      aligned.etDates = aligned.etDates.concat(rawEtData.dates_pet_fcst);
-
-      const nextDate = format(addDays(parse(aligned.precipDates[aligned.precipDates.length - 1], 'yyyy-MM-dd', new Date()), 1), 'yyyyMMdd');
-      const nextDateIdx = forecast.dates.findIndex((dateStr: number) => String(dateStr) === nextDate);
-      aligned.precip = aligned.precip.concat(forecast.precipChart.raim.slice(nextDateIdx, nextDateIdx + numFcstDays));
-      aligned.precipDates = aligned.precipDates.concat(forecast.dates.slice(nextDateIdx, nextDateIdx + numFcstDays).map((val: number) => `${String(val).slice(0,4)}-${String(val).slice(4,6)}-${String(val).slice(6)}`));
-      aligned.precipDates = aligned.precipDates.map(date => date.slice(5));
-
-      for (let i = nextDateIdx; i < nextDateIdx + numFcstDays; i++) {
-        aligned.avgt.push(roundXDigits((forecast.tempChart.mint[i] + forecast.tempChart.maxt[i]) / 2, 1));
-      }
+      const startEndObj = findMatchingStartAndEndPoints(precipAndTempObj.dates, etObj.dates);
+      
+      const numFcstDays = Math.max(
+        calcFcstDays(precipAndTempObj.numFcstDays, precipAndTempObj.precips, startEndObj.arr1.end),
+        calcFcstDays(etObj.numFcstDays, etObj.ets, startEndObj.arr2.end)
+      );
 
       newModelData = {
-        dates: aligned.precipDates,
-        precip: aligned.precip,
-        et: aligned.et,
-        avgt: aligned.avgt
+        dates: precipAndTempObj.dates.slice(startEndObj.arr1.start, startEndObj.arr1.end + 1),
+        precip: precipAndTempObj.precips.slice(startEndObj.arr1.start, startEndObj.arr1.end + 1),
+        avgt: precipAndTempObj.avgts.slice(startEndObj.arr1.start, startEndObj.arr1.end + 1),
+        et: etObj.ets.slice(startEndObj.arr2.start, startEndObj.arr2.end + 1),
+        numFcstDays
       };
     }
   }
