@@ -56,16 +56,14 @@ const calcGrowthPotential = (soilSats: number[], avgTemps: number[], dates: stri
       values: [],
     };
 
-    const firstIdx = dates.length - numDaysToProcess;
     const thisYear = today.getFullYear();
 
     const tempValues: number[] = [];
-    for (let i = firstIdx; i < firstIdx + numDaysToProcess; i++) {
+    for (let i = 0; i < soilSats.length; i++) {
       const date = thisYear + dates[i].split('-').join('');
       const ssValue = soilSats[i];
       const atValue = avgTemps[i];
 
-      
       const gp = growthPotentialModel(
         loc.lngLat[1],
         date,
@@ -114,6 +112,8 @@ const generateRecommendation = (
     const iOfToday = modelResults.dates.findIndex((date) => date === todayStr);
     const value = modelResults.values[iOfToday];
 
+    console.log(todayStr, modelResults.dates, iOfToday, value);
+
     if (value < thresholds[1]) {
       text = 'Mowing frequency can be reduced while still following the one third rule.';
     } else if (value < thresholds[2]) {
@@ -121,6 +121,8 @@ const generateRecommendation = (
     } else {
       text = 'Mowing frequency can be increased.';
     }
+
+    console.log(text);
   }
 
   return text;
@@ -137,7 +139,13 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
     return <InvalidText type='badData' />;
   } else {
     const THRESHOLDS = [0, 25, 66];
+
+    console.log(toolProps.irrigationTiming);
+    console.log(toolProps.soilSaturation);
     const growthPotentialOutput = calcGrowthPotential(toolProps.soilSaturation, toolProps.avgts, toolProps.soilSaturationDates, toolProps.currentLocation, toolProps.today, numDaysToProcess);
+
+    const today = format(toolProps.today, 'MM-dd');
+    const todayIdx = toolProps.soilSaturationDates.findIndex(d => d === today) - 4;  // -4 to adjust for 5-day average
 
     return (<>
       <Box sx={{ maxWidth: '700px', margin: '40px auto 0px' }}>
@@ -158,7 +166,7 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
       <GrowthPotentialGraph
         modelResults={growthPotentialOutput}
         thresholds={THRESHOLDS}
-        numDays={numDaysToProcess}
+        todayIdx={todayIdx}
       />
 
       <StyledDivider />

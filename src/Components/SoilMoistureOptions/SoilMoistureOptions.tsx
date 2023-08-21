@@ -10,7 +10,7 @@ export type SoilMoistureOptionsProps = SoilCapacitySelectorProps & IrrigationSel
 
 export default function SoilMoistureOptions(props: SoilMoistureOptionsProps) {
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+    <Box sx={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginTop: '24px' }}>
       <SoilCapacitySelector
         recommendedSoilCap={props.recommendedSoilCap}
         soilCap={props.soilCap}

@@ -144,7 +144,7 @@ export function runWaterDeficitModel(
   //  soilcap        : soil water capacity ('high','medium','low')
   //  irrigationIdxs : array of indices where the user irrigated
   //  initDeficit    : water deficit used to initialize the model
-  //  retunType      : type of model to run ('actual', 'optimalWatering')
+  //  retunType      : type of model to run ('actual', 'avoidPlantStress', 'avoidDormancy)
   //
   // -----------------------------------------------------------------------------------------
 
@@ -245,8 +245,8 @@ export function runWaterDeficitModel(
       );
     }
 
-    // When running 'optimalWatering' returnType the irrigationIdxs array will contain one value representing the idx of May 1st
-    // Start watering on May 1st
+    // When running returnType !== 'default' the irrigationIdxs array will contain one value representing the idx of April 1st
+    // Start watering on April 1st
     if (calcOptTotal && idx >= irrigationIdxs[0] && (optimalWateringThreshold && deficit <= optimalWateringThreshold)) {
       deficit += optimalWateringIncrement;
       optimalWateringTotal += optimalWateringIncrement;

@@ -1,4 +1,5 @@
-import React from 'react';
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import React, { useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Box } from '@mui/material';
 
@@ -13,55 +14,144 @@ Highcharts.Chart.prototype.showResetZoom = function () {
 };
 
 import { GrowthPotentialModelOutput } from './GrowthPotentialPage';
+import StyledButton from '../../StyledBtn';
 
-const thresholdTexts = ['Low Growth', 'Moderate', 'High'];
-const thresholdColors = [
-  'rgba(228, 111, 82, 0.13)',
-  'rgba(222, 227, 82, 0.13)',
-  'rgba(104, 227, 82, 0.13)',
-];
+const PLOT_BAND_COLORS = ['0,128,0', '255,255,0', '255,0,0'];
+const PLOT_BAND_LABELS = ['High Growth', 'Moderate Growth', 'Low Growth'];
+const PLOT_LINE_LABELS = ['', '', ''];
+
+const colorPoints = (bounds: number[], values: (number | null)[]) => {
+  return values.map(value => {
+    let color = 'transparent';
+    if (value !== null) {
+      for (let i = 0; i < bounds.length; i++) {
+        const bound = bounds[i];
+        if (value >= bound && PLOT_BAND_COLORS[i]) {
+          color = `rgba(${PLOT_BAND_COLORS[i]},0.8)`;
+          break;
+        } else if (i === bounds.length - 1) {
+          color = `rgba(${PLOT_BAND_COLORS[i + 1]},0.8)`;
+        }
+      }
+    }
+    return {
+      color,
+      y: value
+    };
+  });
+};
+
+const getPlotBandsLinesBreakpoints = (todayValue: number, breakpoints: number[], ) => {
+  console.log(breakpoints);
+  
+  const plotBands = breakpoints.map((bp, i) => {
+    const high = breakpoints[i - 1] === undefined ? 100 : breakpoints[i - 1];
+    const low = i === breakpoints.length - 1 ? 0 : bp;
+    const todayInBand = low <= todayValue && todayValue < high;
+
+    return {
+      to: high,
+      from: low,
+      color: `rgba(${PLOT_BAND_COLORS[i]},0.13)`,
+      label: {
+        text: PLOT_BAND_LABELS[i] || '',
+        style: {
+          fontSize: '1.0em',
+          color: todayInBand ? 'black' : 'gray',
+          fontWeight: todayInBand ? 'bold' : 'lighter',
+        },
+        align: 'left',
+        verticalAlign: 'middle',
+        x: 10,
+        y: 5
+      }
+    };
+  });
+  
+  breakpoints.pop();
+  
+  const plotLines = breakpoints.map((bp, i) => ({
+    value: bp,
+    width: 1.0,
+    color: 'rgba(200,200,200,0.5)',
+    label: {
+      text: PLOT_LINE_LABELS[i] || '',
+      style: {
+          fontSize: '0.8em',
+          color: 'gray',
+          fontWeight: 'lighter',
+      },
+      align: 'right',
+      x: -4,
+      y: 8
+    }
+  }));
+
+  return { plotBands, plotLines, breakpoints };
+};
 
 export default function GrowthPotentialGraph(props: {
   modelResults: GrowthPotentialModelOutput | null;
   thresholds: number[];
-  numDays: number;
+  todayIdx: number;
 }) {
-  const todayIdx = props.numDays - 7;
+  const chartComponent = useRef<HighchartsReact.RefObject | null>(null);
+  const [isZoomed, setIsZoomed] = useState(true);
+
+  const resetZoom = () => {
+    if (chartComponent && chartComponent.current) {
+      chartComponent.current.chart.zoomOut();
+    }
+  };
+
+
+  let breakpoints = [...props.thresholds];
+  breakpoints.reverse();
   let series;
+  let plotBands;
+  let plotLines;
   let datesConverted: string[] = [];
   if (props.modelResults !== null) {
     datesConverted = props.modelResults.dates.map(
       (date: string) => date.slice(4, 6) + '-' + date.slice(6)
     );
-    const modelValues = props.modelResults.values;
+    
+    ({ plotLines, plotBands, breakpoints } = getPlotBandsLinesBreakpoints(props.modelResults.values[props.todayIdx], breakpoints));
+    
+    const observed = colorPoints(breakpoints, props.modelResults.values.slice(0,props.todayIdx).concat(Array(props.modelResults.values.length - (props.todayIdx)).fill(null)));
+    const forecasted = colorPoints(breakpoints, Array(props.todayIdx).fill(null).concat(props.modelResults.values.slice(props.todayIdx)));
+  
+    console.log(observed);
 
     series = [
-      // { data: modelValues },
       {
-        data: modelValues.slice(0, todayIdx),
+        data: observed,
         name: 'Observed',
-        color: 'rgb(163,41,41)',
         id: 'Observed',
-      },
-      {
-        data: Array(todayIdx).fill(null)
-          .concat(modelValues[todayIdx])
-          .concat(Array(props.numDays - 5 - todayIdx).fill(null)),
-        name: 'Today',
-        color: 'rgb(163,41,41)',
-        id: 'Today',
+        zIndex: 2,
+        color: 'black',
         marker: {
-          symbol: 'diamond',
-          radius: 6,
+          enabledThresold: 0,
+          lineColor: 'black',
           lineWidth: 1,
-        },
+          symbol: 'circle',
+          radius: 3
+        }
       },
       {
-        data: Array(todayIdx + 1).fill(null).concat(modelValues.slice(todayIdx + 1)),
+        data: forecasted,
         name: 'Forecast',
-        color: 'rgb(163,41,41)',
-        dashStyle: 'Dash',
         id: 'Forecast',
+        zIndex: 2,
+        color: 'black',
+        dashStyle: 'ShortDot',
+        marker: {
+          enabledThresold: 0,
+          lineColor: 'black',
+          lineWidth: 1,
+          symbol: 'circle',
+          radius: 3
+        }
       },
     ];
   } else {
@@ -75,11 +165,29 @@ export default function GrowthPotentialGraph(props: {
         marker: {
           symbol: 'circle',
           radius: 3,
+          enabled: true
         },
       },
     },
+    legend: {
+      enabled: false
+    },
     chart: {
       type: 'line',
+      zoomType: 'x',
+      events: {
+        selection: function (e: any) {
+          setIsZoomed(e.resetSelection ? false : true);
+        },
+        load: function () {
+          // @ts-ignore
+          const axis = this.xAxis[0];
+          axis.setExtremes(Math.max(axis.categories.length - 30, 0), axis.categories.length - 1);
+        }
+      },
+      plotBorderWidth: 1,
+      spacingBottom: 17,
+      spacingTop: 5
     },
     title: {
       floating: true,
@@ -94,42 +202,14 @@ export default function GrowthPotentialGraph(props: {
       max: 100,
       gridLineWidth: 0,
       title: { text: 'Growth Potential (%)' },
-      plotBands: props.thresholds.map((val, i) => {
-        let lower, upper;
-        if (i === props.thresholds.length - 1) {
-          lower = val;
-          upper = 100;
-        } else {
-          lower = val;
-          upper = props.thresholds[i + 1];
-        }
-
-        return {
-          from: lower,
-          to: upper,
-          color: thresholdColors[i],
-          label: {
-            text: thresholdTexts[i],
-            style: {
-              fontSize: 10,
-              color: 'rgb(150,150,150)',
-            },
-          },
-        };
-      }),
+      plotBands,
+      plotLines
     },
     tooltip: {
       outside: true,
       useHTML: true,
       formatter: function (this: Highcharts.TooltipFormatterContextObject) {
         if (!this || !this.point) return '';
-
-        let when = 'Today';
-        if (this.point.x < todayIdx) {
-          when = 'Observed';
-        } else if (this.point.x > todayIdx) {
-          when = 'Forecast';
-        }
 
         return renderToStaticMarkup(
           <Box
@@ -145,16 +225,7 @@ export default function GrowthPotentialGraph(props: {
                 textAlign: 'center',
               }}
             >
-              {this.x}
-            </Box>
-            <Box
-              style={{
-                fontSize: '12px',
-                fontStyle: 'italic',
-                textAlign: 'center',
-              }}
-            >
-              ({when})
+              {this.key}
             </Box>
 
             <Box
@@ -166,7 +237,20 @@ export default function GrowthPotentialGraph(props: {
               }}
             />
 
-            <Box style={{ textAlign: 'center' }}>{this.point.y}%</Box>
+            <Box
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 50%)',
+                gridTemplateRows: `repeat(1, 18px)`,
+                gridColumnGap: '3px',
+                alignItems: 'center',
+              }}
+            >
+              <Box>{this.series.name}</Box>
+              <Box style={{ justifySelf: 'right' }}>
+                <span style={{ fontWeight: 'bold' }}>{this.y}</span>%
+              </Box>
+            </Box>
           </Box>
         );
       },
@@ -181,7 +265,22 @@ export default function GrowthPotentialGraph(props: {
         width: '100%',
       }}
     >
-      <HighchartsReact highcharts={Highcharts} options={options} />
+      {isZoomed && (
+        <StyledButton
+          sx={{
+            position: 'absolute',
+            bottom: '-20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1
+          }}
+          onClick={resetZoom}
+        >
+          Reset zoom
+        </StyledButton>
+      )}
+
+      <HighchartsReact ref={chartComponent} highcharts={Highcharts} options={options} />
     </Box>
   );
 }

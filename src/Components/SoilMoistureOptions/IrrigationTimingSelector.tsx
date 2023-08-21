@@ -25,7 +25,7 @@ export default function IrrigationTimingSelector(props: FullIrrigationTimingSele
   return (
     <TextField
       select
-      label='Irrigation Timing'
+      label='Irrigation Strategy'
       value={props.irrigationTiming}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) => props.setIrrigationTiming(e.target.value)}
     >

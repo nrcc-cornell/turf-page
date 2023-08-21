@@ -35,12 +35,14 @@ const createRow = (items: { name: string, total: (string | number), diff: (numbe
   return (
     <Box sx={{ display: 'flex', margin: '18px auto 13px' }}>
       {items.map(({name, total, diff}, i) => {
+        const value = useWhich === 'total' ? total : diff;
+        const units = value !== '-' ? 'in' : '';
         return (
           <React.Fragment key={name}>
             {i > 0 && DIVIDER}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'center' }}>
               <Box sx={{ fontSize: '14px' }}>{name}</Box>
-              <Box sx={{ fontWeight: 'bold', fontSize: '18px' }}>{useWhich === 'total' ? total + ' in' : diff}</Box>
+              <Box sx={{ fontWeight: 'bold', fontSize: '18px' }}>{value} {units}</Box>
             </Box>
           </React.Fragment>
         );
@@ -59,7 +61,7 @@ const createTitle = (text: (JSX.Element | string), extra?: (JSX.Element)) => {
 };
 
 export default function WaterSaving(props: WaterSavingProps) {
-  const typicalWaterUsed = calculateWaterUsed(new Date(props.today.getFullYear(), 4, 1), props.today);
+  const typicalWaterUsed = calculateWaterUsed(new Date(props.today.getFullYear(), 3, 1), props.today);
   const IRRI_AMOUNT_ITEMS = typicalWaterUsed ? [{
     name: 'M/W/F Watering Schedule',
     total: typicalWaterUsed,
@@ -90,8 +92,6 @@ export default function WaterSaving(props: WaterSavingProps) {
       sx={{
         boxSizing: 'border-box',
         margin: '10px auto 0px auto',
-        position: 'relative',
-        top: '13px',
         border: '2px solid rgb(220,220,220)',
         borderRadius: '4px',
         padding: '10px',
@@ -103,14 +103,14 @@ export default function WaterSaving(props: WaterSavingProps) {
       }}
     >
       {typicalWaterUsed === null ? <>
-        {createTitle(<span>Irrigation amount since May 1<sup>st</sup> using:</span>, HELP_ICON)}
+        {createTitle(<span>Irrigation amount since April 1<sup>st</sup> using:</span>, HELP_ICON)}
         <Box sx={{ fontWeight: 'bold', fontSize: '18px', marginTop: '8px' }}>Too Early In the Season to Water</Box>
       </> : <>
-        {createTitle(<span>Irrigation amount since May 1<sup>st</sup> using:</span>, HELP_ICON)}
+        {createTitle(<span>Irrigation amount since April 1<sup>st</sup> using:</span>, HELP_ICON)}
         {createRow(IRRI_AMOUNT_ITEMS, 'total')}
-        <Box sx={{ height: '6px' }} />
+        {/* <Box sx={{ height: '6px' }} />
         {createTitle('Potential Water Savings Using:')}
-        {createRow(IRRI_AMOUNT_ITEMS, 'diff')}
+        {createRow(IRRI_AMOUNT_ITEMS, 'diff')} */}
       </>}
     </Box>
   );

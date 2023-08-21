@@ -5,16 +5,17 @@ import { runWaterDeficitModel, SoilMoistureOptionLevel } from '../Scripts/waterD
 import { getSoilCapacity } from '../Scripts/soilCharacteristics';
 import { CoordsIdxObj } from '../Hooks/useRunoffApi';
 
+export type IrriTimingOption = ('default' | 'avoidPlantStress' | 'avoidDormancy');
+
 type IrriTimingObj = {
-  optimalWaterDeficits: number[]
-  optimalWaterTotal: number[]
-  optimalWateringDates: string[]
+  deficits: number[]
+  saturations: number[]
+  wateringTotal: number[]
+  wateringDates: string[]
 };
 
 type SoilSaturations = {
-  gp: number[];
-  lawn: number[];
-  soilSat: number[];
+  default: IrriTimingObj;
   avoidDormancy: IrriTimingObj;
   avoidPlantStress: IrriTimingObj;
   numFcstDays: number;
@@ -60,29 +61,34 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
     if (soilSatRawData) {
       const irrigationIdxs: number[] = irrigationDates.map(irriDate => soilSatRawData.dates.findIndex(d => d === irriDate.slice(5)));
 
-      const mayFirstIdx: number[] = [];
-      mayFirstIdx.push(soilSatRawData.dates.findIndex(d => d === '05-01'));
+      const aprilFirstIdx: number[] = [];
+      aprilFirstIdx.push(soilSatRawData.dates.findIndex(d => d === '04-01'));
 
-      const newWaterDeficit = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, irrigationIdxs, 0, 'actual');
-      const newDormancyWatering = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, mayFirstIdx, 0, 'avoidDormancy', 0.5);
+      const newDefault = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, irrigationIdxs, 0, 'actual');
+      const newDormancyWatering = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, aprilFirstIdx, 0, 'avoidDormancy', 0.5);
       const newDormancyDates = newDormancyWatering.optimalWateringDateIndices.map(di => today.getFullYear() + '-' + soilSatRawData.dates[di]);
 
-      const newPlantStressWatering = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, mayFirstIdx, 0, 'avoidPlantStress', 0.5);
+      const newPlantStressWatering = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, aprilFirstIdx, 0, 'avoidPlantStress', 0.5);
       const newPlantStressDates = newPlantStressWatering.optimalWateringDateIndices.map(di => today.getFullYear() + '-' + soilSatRawData.dates[di]);
 
       setSoilSaturation({
-        gp: newWaterDeficit.saturationPercents,
-        lawn: newWaterDeficit.deficitsInches,
-        soilSat: newWaterDeficit.deficitsInches.map(deficit => (newWaterDeficit.soilOptions.fieldcapacity + deficit) / 6),
+        default: {
+          deficits: newDefault.deficitsInches,
+          saturations: newDefault.saturationPercents,
+          wateringDates: [],
+          wateringTotal: []
+        },
         avoidDormancy: {
-          optimalWaterDeficits: newDormancyWatering.deficitsInches,
-          optimalWaterTotal: [newDormancyWatering.optimalWateringTotal],
-          optimalWateringDates: newDormancyDates,
+          deficits: newDormancyWatering.deficitsInches,
+          saturations: newDormancyWatering.saturationPercents,
+          wateringTotal: [newDormancyWatering.optimalWateringTotal],
+          wateringDates: newDormancyDates,
         },
         avoidPlantStress: {
-          optimalWaterDeficits: newPlantStressWatering.deficitsInches,
-          optimalWaterTotal: [newPlantStressWatering.optimalWateringTotal],
-          optimalWateringDates: newPlantStressDates,
+          deficits: newPlantStressWatering.deficitsInches,
+          saturations: newPlantStressWatering.saturationPercents,
+          wateringTotal: [newPlantStressWatering.optimalWateringTotal],
+          wateringDates: newPlantStressDates,
         },
         numFcstDays: soilSatRawData.numFcstDays
       });
@@ -112,7 +118,7 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
     recommendedSoilCap: calculatedSoilCapacity,
     selectedSoilCap: selectedSoilCapacity,
     changeSoilCapacity,
-    irrigationDates: irrigationTiming === 'default' ? irrigationDates: (soilSaturation ? soilSaturation[irrigationTiming as ('avoidPlantStress' | 'avoidDormancy')].optimalWateringDates : []),
+    irrigationDates: irrigationTiming === 'default' ? irrigationDates: (soilSaturation ? soilSaturation[irrigationTiming as ('avoidPlantStress' | 'avoidDormancy')].wateringDates : []),
     setIrrigationDates: handleSetIrrigationDates,
     irrigationTiming,
     setIrrigationTiming: handleSetUseIdeal

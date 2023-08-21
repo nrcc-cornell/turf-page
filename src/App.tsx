@@ -35,8 +35,9 @@ import GddDiffDaysPage from './Components/Pages/GddDiffDays/GddDiffDaysPage';
 import MapsOnlyPage from './Components/Pages/MapsOnlyPage/MapsOnlyPage';
 import LawnWateringPage from './Components/Pages/LawnWatering/LawnWateringPage';
 import useRunoffApi from './Hooks/useRunoffApi';
-import useSoilInfo from './Hooks/useSoilInfo';
+import useSoilInfo, { IrriTimingOption } from './Hooks/useSoilInfo';
 import InvalidText from './Components/InvalidText';
+import { SOIL_DATA } from './Scripts/waterDeficitModel';
 
 
 const today = new Date();
@@ -186,7 +187,7 @@ function App() {
             isLoading={isLoading}
             setIrrigationDates={setIrrigationDates}
             setSoilCap={changeSoilCapacity}
-            soilSaturation={soilSaturation ? soilSaturation.gp : []}
+            soilSaturation={soilSaturation ? soilSaturation[irrigationTiming as IrriTimingOption].saturations : []}
             soilSaturationDates={soilSaturationDates || []}
             avgts={avgts || []}
             recommendedSoilCap={recommendedSoilCap}
@@ -207,6 +208,9 @@ function App() {
           />
         );
       } else if (info.pageType === 'soilSat') {
+        const fc = SOIL_DATA.soilmoistureoptions[selectedSoilCap].fieldcapacity;
+        const deficits = soilSaturation ? soilSaturation[irrigationTiming as IrriTimingOption].deficits : [];
+        
         return (
           <SoilSaturationPage
             currentLocation={currentLocation}
@@ -218,7 +222,7 @@ function App() {
             isLoading={isLoading}
             setIrrigationDates={setIrrigationDates}
             setSoilCap={changeSoilCapacity}
-            soilSaturation={soilSaturation ? soilSaturation.soilSat : []}
+            soilSaturation={deficits.map(deficit => (fc + deficit) / 6)}
             soilSaturationDates={soilSaturationDates || []}
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}
@@ -238,8 +242,14 @@ function App() {
         );
       } else if (info.pageType === 'lawn-watering') {
         let ssVals: number[] = [];
+        let apswt = 0;
+        let adwt = 0;
+        let nfd = 0;
         if (soilSaturation) {
-          ssVals = irrigationTiming === 'default' ? soilSaturation.lawn : soilSaturation[irrigationTiming as ('avoidPlantStress' | 'avoidDormancy')].optimalWaterDeficits;
+          ssVals = soilSaturation[irrigationTiming as IrriTimingOption].deficits;
+          apswt = soilSaturation.avoidPlantStress.wateringTotal[0];
+          adwt = soilSaturation.avoidDormancy.wateringTotal[0];
+          nfd = soilSaturation.numFcstDays;
         }
         
         return (
@@ -249,11 +259,11 @@ function App() {
             isLoading={isLoading}
             setIrrigationDates={setIrrigationDates}
             setSoilCap={changeSoilCapacity}
-            avoidPlantStressWaterTotal={soilSaturation ? soilSaturation.avoidPlantStress.optimalWaterTotal[0] : 0}
-            avoidDormancyWaterTotal={soilSaturation ? soilSaturation.avoidDormancy.optimalWaterTotal[0] : 0}
+            avoidPlantStressWaterTotal={apswt}
+            avoidDormancyWaterTotal={adwt}
             soilSaturation={ssVals}
             soilSaturationDates={soilSaturationDates || []}
-            numFcstDays={soilSaturation ? soilSaturation.numFcstDays : 0}
+            numFcstDays={nfd}
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}
             irrigationDates={irrigationDates}

@@ -26,20 +26,6 @@ type WaterDeficitGraphProps = {
   irrigationDates: string[];
 };
 
-// const GRAPH_MINS = {
-//   'low': -1.5,
-//   'medium': -1.8,
-//   'high': -2.2
-// };
-// const GRAPH_MAXS = {
-//   'low': 3.8,
-//   'medium': 4.1,
-//   'high': 4.4
-// };
-
-// const PLOT_BAND_COLORS = ['0,128,0', '255,255,0', '255,128,0', '255,0,0'];
-// const PLOT_BAND_LABELS = ['No deficit for plant', 'Deficit, no plant stress', 'Deficit, plant stress likely', 'Deficit, severe plant stress'];
-// const PLOT_LINE_LABELS = ['Saturation', 'Field Capacity', 'Plant Stress Begins', 'WIlting Danger Exists'];
 const PLOT_BAND_COLORS = ['0,128,0', '255,255,0', '255,0,0'];
 const PLOT_BAND_LABELS = ['No water necessary', 'Deficit, minor plant stress', 'Deficit, severe plant stress'];
 const PLOT_LINE_LABELS = ['Saturation', 'Field Capacity', 'Plant Stress Begins', 'Wilting Danger Exists'];
@@ -102,7 +88,7 @@ const getPlotBandsLinesBreakpoints = (todayDeficit: number, soilCap: SoilMoistur
     return {
       to: high,
       from: low,
-      color: PLOT_BAND_COLORS[i] && todayInBand ? `rgba(${PLOT_BAND_COLORS[i]},0.2)` : 'transparent',
+      color: `rgba(${PLOT_BAND_COLORS[i]},0.13)`,
       label: {
         text: PLOT_BAND_LABELS[i] || '',
         style: {

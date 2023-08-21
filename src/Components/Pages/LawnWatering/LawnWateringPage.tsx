@@ -104,6 +104,15 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
 
       <StyledDivider />
 
+      <WaterDeficitGraph
+        dates={toolProps.soilSaturationDates}
+        deficits={toolProps.soilSaturation}
+        soilCap={toolProps.soilCap}
+        todayIdx={todayIdx}
+        today={toolProps.today}
+        irrigationDates={toolProps.irrigationDates}
+      />
+
       <SoilMoistureOptions
         recommendedSoilCap={toolProps.recommendedSoilCap}
         soilCap={toolProps.soilCap}
@@ -115,6 +124,8 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
         setIrrigationTiming={toolProps.setIrrigationTiming}
       />
 
+      <StyledDivider />
+      
       <WaterSaving
         open={handleOpen}
         close={handleClose}
@@ -122,17 +133,7 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
         avoidPlantStressWaterTotal={toolProps.avoidPlantStressWaterTotal}
         avoidDormancyWaterTotal={toolProps.avoidDormancyWaterTotal}
       />
-      
-      <StyledDivider />
 
-      <WaterDeficitGraph
-        dates={toolProps.soilSaturationDates}
-        deficits={toolProps.soilSaturation}
-        soilCap={toolProps.soilCap}
-        todayIdx={todayIdx}
-        today={toolProps.today}
-        irrigationDates={toolProps.irrigationDates}
-      />
     </>);
   }
 };
