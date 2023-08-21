@@ -168,6 +168,13 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
       spacingBottom: 17,
       spacingTop: 0
     },
+    plotOptions: {
+      series: {
+        marker: {
+          enabled: true
+        }
+      }
+    },
     title: {
       text: `Lawn Water Deficit for ${props.today.getFullYear()}`
     },

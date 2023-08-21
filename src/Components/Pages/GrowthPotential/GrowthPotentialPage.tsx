@@ -151,8 +151,8 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
         today={toolProps.today}
         irrigationDates={toolProps.irrigationDates}
         setIrrigationDates={toolProps.setIrrigationDates}
-        useIdeal={toolProps.useIdeal}
-        setUseIdeal={toolProps.setUseIdeal}
+        irrigationTiming={toolProps.irrigationTiming}
+        setIrrigationTiming={toolProps.setIrrigationTiming}
       />
 
       <GrowthPotentialGraph

@@ -3,9 +3,9 @@ import { Box } from '@mui/material';
 
 import SoilCapacitySelector, { SoilCapacitySelectorProps } from './SoilCapacitySelector';
 import IrrigationSelector, { IrrigationSelectorProps } from './IrrigationSelector';
-import IrrigationDatesToggle, { IrrigationDatesToggleProps } from './IrrigationDatesToggle';
+import IrrigationTimingSelector, { IrrigationTimingSelectorProps } from './IrrigationTimingSelector';
 
-export type SoilMoistureOptionsProps = SoilCapacitySelectorProps & IrrigationSelectorProps & IrrigationDatesToggleProps;
+export type SoilMoistureOptionsProps = SoilCapacitySelectorProps & IrrigationSelectorProps & IrrigationTimingSelectorProps;
 
 
 export default function SoilMoistureOptions(props: SoilMoistureOptionsProps) {
@@ -21,13 +21,13 @@ export default function SoilMoistureOptions(props: SoilMoistureOptionsProps) {
         today={props.today}
         irrigationDates={props.irrigationDates}
         setIrrigationDates={props.setIrrigationDates}
-        disabled={props.useIdeal}
+        disabled={props.irrigationTiming !== 'default'}
       />
 
-      <IrrigationDatesToggle
+      <IrrigationTimingSelector
         customDates={props.irrigationDates.length > 0}
-        useIdeal={props.useIdeal}
-        setUseIdeal={props.setUseIdeal}
+        irrigationTiming={props.irrigationTiming}
+        setIrrigationTiming={props.setIrrigationTiming}
       />
     </Box>
   );

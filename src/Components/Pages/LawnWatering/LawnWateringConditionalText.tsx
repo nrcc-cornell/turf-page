@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import HelpIcon from '@mui/icons-material/Help';
 import { SOIL_DATA, SoilMoistureOptionLevel } from '../../../Scripts/waterDeficitModel';
+import roundXDigits from '../../../Scripts/Rounding';
 
 type LWCTProps = {
   soilcap: SoilMoistureOptionLevel;
@@ -22,6 +23,16 @@ const valueToText = (value: number, thresholds: number[], textOpts: string[]) =>
 
 
 export default function LawnWateringConditionalText(props: LWCTProps) {
+  const soilConstants = SOIL_DATA.soilmoistureoptions[props.soilcap];
+
+  const breakpoints = [
+    0,
+    roundXDigits(soilConstants.prewiltingpoint - soilConstants.stressthreshold, 3)
+  ];
+
+  const adjustment = SOIL_DATA.soilmoistureoptions[props.soilcap].fieldcapacity - SOIL_DATA.soilmoistureoptions[props.soilcap].stressthreshold;
+  const todayAdjusted = props.today + adjustment;
+  
   return (
     <Box
       sx={{
@@ -48,7 +59,7 @@ export default function LawnWateringConditionalText(props: LWCTProps) {
             sx={{
               lineHeight: '1.2', fontWeight: 'bold'
             }}
-          >{valueToText(props.today, SOIL_DATA.soilRecommendations[props.soilcap], SOIL_DATA.soilRecommendations.text)}</Typography>
+          >{valueToText(todayAdjusted, breakpoints, SOIL_DATA.soilRecommendations.text)}</Typography>
         </Box>
       </Box>
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Popper, Fade } from '@mui/material';
 import JSZip from 'jszip';
-import { format } from 'date-fns';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
@@ -20,7 +19,8 @@ type LawnWateringPageProps = {
   soilSaturation:  number[];
   soilSaturationDates: string[];
   isLoading: boolean;
-  optimalWaterTotal: number;
+  avoidPlantStressWaterTotal: number;
+  avoidDormancyWaterTotal: number;
   coordsIdxs: CoordsIdxObj | null;
 } & SoilMoistureOptionsProps;
 
@@ -64,9 +64,13 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
     // console.log(daysUntilWaterNeeded);
 
     // Use coordsIdxs to access precalculated ets, replace following value with retrieved value
+    
+    // CHANGE THIS TO USE THE PREWILTING OR STRESS THRESHOLD BASED ON IRRIGATIONTIMING
+    
     let daysUntilWaterNeeded = 0;
     if (maxEt !== null) {
-      const wateringThreshold = SOIL_DATA.soilmoistureoptions[toolProps.soilCap].prewiltingpoint - SOIL_DATA.soilmoistureoptions[toolProps.soilCap].fieldcapacity;
+      const endPoint = toolProps.irrigationTiming === 'avoidPlantStress' ? SOIL_DATA.soilmoistureoptions[toolProps.soilCap].stressthreshold : SOIL_DATA.soilmoistureoptions[toolProps.soilCap].prewiltingpoint;
+      const wateringThreshold = endPoint - SOIL_DATA.soilmoistureoptions[toolProps.soilCap].fieldcapacity;
       let deficit = todaysValue;
       while(deficit > wateringThreshold) {
         daysUntilWaterNeeded++;
@@ -107,15 +111,16 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
         today={toolProps.today}
         irrigationDates={toolProps.irrigationDates}
         setIrrigationDates={toolProps.setIrrigationDates}
-        useIdeal={toolProps.useIdeal}
-        setUseIdeal={toolProps.setUseIdeal}
+        irrigationTiming={toolProps.irrigationTiming}
+        setIrrigationTiming={toolProps.setIrrigationTiming}
       />
 
       <WaterSaving
         open={handleOpen}
         close={handleClose}
         today={toolProps.today}
-        optimalWaterTotal={toolProps.optimalWaterTotal}
+        avoidPlantStressWaterTotal={toolProps.avoidPlantStressWaterTotal}
+        avoidDormancyWaterTotal={toolProps.avoidDormancyWaterTotal}
       />
       
       <StyledDivider />

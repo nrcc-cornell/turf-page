@@ -17,28 +17,51 @@ type SoilCharacteristics = {
 export const SOIL_DATA = {
   soilmoistureoptions: {
     low: {
-      wiltingpoint: 1.0,
-      prewiltingpoint: 1.15,
-      stressthreshold: 1.42,
-      fieldcapacity: 2.4,
-      saturation: 5.2,
+      wiltingpoint: 0.4,
+      prewiltingpoint: 0.64,
+      stressthreshold: 0.8,
+      fieldcapacity: 1.2,
+      saturation: 2.6
     },
     medium: {
-      wiltingpoint: 1.0,
-      prewiltingpoint: 1.65,
-      stressthreshold: 1.75,
-      fieldcapacity: 3.5,
-      saturation: 5.8,
+        wiltingpoint: 0.6,
+        prewiltingpoint: 0.945,
+        stressthreshold: 1.175,
+        fieldcapacity: 1.75,
+        saturation: 2.9
     },
     high: {
-      wiltingpoint: 1.0,
-      prewiltingpoint: 1.9,
-      stressthreshold: 2.11,
-      fieldcapacity: 4.7,
-      saturation: 6.5,
+        wiltingpoint: 0.85,
+        prewiltingpoint: 1.30,
+        stressthreshold: 1.6,
+        fieldcapacity: 2.35,
+        saturation: 3.25
     },
-    kc: 1.2,
-    p: 0.7
+    kc: 1.0,
+    p: 0.5
+    // low: {
+    //   wiltingpoint: 1.0,
+    //   prewiltingpoint: 1.15,
+    //   stressthreshold: 1.42,
+    //   fieldcapacity: 2.4,
+    //   saturation: 5.2,
+    // },
+    // medium: {
+    //   wiltingpoint: 1.0,
+    //   prewiltingpoint: 1.65,
+    //   stressthreshold: 1.75,
+    //   fieldcapacity: 3.5,
+    //   saturation: 5.8,
+    // },
+    // high: {
+    //   wiltingpoint: 1.0,
+    //   prewiltingpoint: 1.9,
+    //   stressthreshold: 2.11,
+    //   fieldcapacity: 4.7,
+    //   saturation: 6.5,
+    // },
+    // kc: 1.2,
+    // p: 0.7
   },
   soildrainageoptions: {
     low: { daysToDrainToFcFromSat: 0.125 },
@@ -51,9 +74,12 @@ export const SOIL_DATA = {
       'Consider watering due to moderate water deficit.',
       'Watering is recommended due to high water deficit.'
     ],
-    low: [-0.98, -1.25],
-    medium: [-1.75, -1.85],
-    high: [-2.59, -2.8]
+    // low: [-0.98, -1.25],
+    // medium: [-1.75, -1.85],
+    // high: [-2.59, -2.8]
+    low: [-0.4, -0.56],
+    medium: [-0.575, -0.805],
+    high: [-0.75, -1.05]
   }
 };
 
@@ -99,7 +125,7 @@ export function runWaterDeficitModel(
   soilcap: SoilMoistureOptionLevel,
   irrigationIdxs: number[],
   initDeficit: number,
-  returnType: ('actual' | 'optimalWatering'),
+  returnType: ('actual' | 'avoidPlantStress' | 'avoidDormancy'),
   optimalWateringIncrement?: number
 ) {
   // -----------------------------------------------------------------------------------------
@@ -122,13 +148,18 @@ export function runWaterDeficitModel(
   //
   // -----------------------------------------------------------------------------------------
 
-  const calcOptTotal = returnType === 'optimalWatering';
+  const calcOptTotal = returnType !== 'actual';
   const soil_options = SOIL_DATA.soilmoistureoptions;
   
   // To calculate wasted water we need the sum of water added if added optimally. Whenever the deficit hits 'optimalWateringThreshold' we add 'optimalWateringIncrement' and keep track of the total water added in 'optimalWateringTotal'
   let optimalWateringTotal = 0;
   const optimalWateringDateIndices: number[] = [];
-  const optimalWateringThreshold = soil_options[soilcap].prewiltingpoint - soil_options[soilcap].fieldcapacity;
+  let optimalWateringThreshold;
+  if (returnType === 'avoidPlantStress') {
+    optimalWateringThreshold = soil_options[soilcap].stressthreshold - soil_options[soilcap].fieldcapacity;
+  } else if (returnType === 'avoidDormancy') {
+    optimalWateringThreshold = soil_options[soilcap].prewiltingpoint - soil_options[soilcap].fieldcapacity;
+  }
   if (!optimalWateringIncrement) optimalWateringIncrement = 0.5;
 
   // Total water available to plant
@@ -175,7 +206,7 @@ export function runWaterDeficitModel(
 
     // We already know what the daily total is for Precip and ET
     totalDailyPET = -1 * pet[idx] * soil_options.kc * Ks;
-    totalDailyPrecip = precip[idx] + ((returnType !== 'optimalWatering' && irrigationIdxs.includes(idx)) ? 0.50 : 0);
+    totalDailyPrecip = precip[idx] + ((returnType === 'actual' && irrigationIdxs.includes(idx)) ? 0.50 : 0);
 
     // Convert daily rates to hourly rates. For this simple model, rates are constant throughout the day.
     // For precip   : this assumption is about all we can do without hourly observations
@@ -216,7 +247,7 @@ export function runWaterDeficitModel(
 
     // When running 'optimalWatering' returnType the irrigationIdxs array will contain one value representing the idx of May 1st
     // Start watering on May 1st
-    if (calcOptTotal && idx >= irrigationIdxs[0] && deficit <= optimalWateringThreshold) {
+    if (calcOptTotal && idx >= irrigationIdxs[0] && (optimalWateringThreshold && deficit <= optimalWateringThreshold)) {
       deficit += optimalWateringIncrement;
       optimalWateringTotal += optimalWateringIncrement;
       optimalWateringDateIndices.push(idx);

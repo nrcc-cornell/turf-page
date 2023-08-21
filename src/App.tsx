@@ -86,8 +86,8 @@ function App() {
     changeSoilCapacity,
     irrigationDates,
     setIrrigationDates,
-    useIdeal,
-    setUseIdeal
+    irrigationTiming,
+    setIrrigationTiming
   } = useSoilInfo(today, currentLocation.lngLat, coordsIdxs);
   const isLoading = isLoadingCoords || isLoadingSoilInfo;
 
@@ -192,8 +192,8 @@ function App() {
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}
             irrigationDates={irrigationDates}
-            useIdeal={useIdeal}
-            setUseIdeal={setUseIdeal}
+            irrigationTiming={irrigationTiming}
+            setIrrigationTiming={setIrrigationTiming}
           />
         );
       } else if (info.pageType === 'runoffRisk') {
@@ -223,8 +223,8 @@ function App() {
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}
             irrigationDates={irrigationDates}
-            useIdeal={useIdeal}
-            setUseIdeal={setUseIdeal}
+            irrigationTiming={irrigationTiming}
+            setIrrigationTiming={setIrrigationTiming}
           />
         );
       } else if (info.pageType === 'pollinator') {
@@ -239,7 +239,7 @@ function App() {
       } else if (info.pageType === 'lawn-watering') {
         let ssVals: number[] = [];
         if (soilSaturation) {
-          ssVals = useIdeal ? soilSaturation.optimalWaterDeficits : soilSaturation.lawn;
+          ssVals = irrigationTiming === 'default' ? soilSaturation.lawn : soilSaturation[irrigationTiming as ('avoidPlantStress' | 'avoidDormancy')].optimalWaterDeficits;
         }
         
         return (
@@ -249,15 +249,16 @@ function App() {
             isLoading={isLoading}
             setIrrigationDates={setIrrigationDates}
             setSoilCap={changeSoilCapacity}
-            optimalWaterTotal={soilSaturation ? soilSaturation.optimalWaterTotal[0] : 0}
+            avoidPlantStressWaterTotal={soilSaturation ? soilSaturation.avoidPlantStress.optimalWaterTotal[0] : 0}
+            avoidDormancyWaterTotal={soilSaturation ? soilSaturation.avoidDormancy.optimalWaterTotal[0] : 0}
             soilSaturation={ssVals}
             soilSaturationDates={soilSaturationDates || []}
             numFcstDays={soilSaturation ? soilSaturation.numFcstDays : 0}
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}
             irrigationDates={irrigationDates}
-            useIdeal={useIdeal}
-            setUseIdeal={setUseIdeal}
+            irrigationTiming={irrigationTiming}
+            setIrrigationTiming={setIrrigationTiming}
             coordsIdxs={coordsIdxs}
           />
         );

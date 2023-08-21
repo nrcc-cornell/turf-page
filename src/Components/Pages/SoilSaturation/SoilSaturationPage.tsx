@@ -72,8 +72,8 @@ export default function SoilSaturationPage(props: SoilSaturationPageProps) {
               today={props.today}
               irrigationDates={props.irrigationDates}
               setIrrigationDates={props.setIrrigationDates}
-              useIdeal={props.useIdeal}
-              setUseIdeal={props.setUseIdeal}
+              irrigationTiming={props.irrigationTiming}
+              setIrrigationTiming={props.setIrrigationTiming}
             />
 
             <DailyChart

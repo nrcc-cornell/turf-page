@@ -5,18 +5,23 @@ import { runWaterDeficitModel, SoilMoistureOptionLevel } from '../Scripts/waterD
 import { getSoilCapacity } from '../Scripts/soilCharacteristics';
 import { CoordsIdxObj } from '../Hooks/useRunoffApi';
 
+type IrriTimingObj = {
+  optimalWaterDeficits: number[]
+  optimalWaterTotal: number[]
+  optimalWateringDates: string[]
+};
+
 type SoilSaturations = {
   gp: number[];
   lawn: number[];
   soilSat: number[];
-  optimalWaterTotal: number[];
-  optimalWateringDates: string[];
-  optimalWaterDeficits: number[];
+  avoidDormancy: IrriTimingObj;
+  avoidPlantStress: IrriTimingObj;
   numFcstDays: number;
 };
 
 const LOCAL_IRRI_DATES_KEY = 'turf-eas-irrigation-dates';
-const LOCAL_TOGGLE_KEY = 'turf-eas-use-ideal';
+const LOCAL_IRRI_TIMING_KEY = 'turf-eas-irrigation-timing';
 
 
 export default function useSoilInfo(today: Date, lngLat: [number, number], coordsIdxs: CoordsIdxObj | null) {
@@ -28,7 +33,7 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
   const [calculatedSoilCapacity, setCalculatedSoilCapacity] = useState<SoilMoistureOptionLevel>(SoilMoistureOptionLevel.MEDIUM);
   const [soilSatRawData, setSoilSatRawData] = useState<WaterDeficitModelData | null>(null);
   const [soilSaturation, setSoilSaturation] = useState<SoilSaturations | null>(null);
-  const [useIdeal, setUseIdeal] = useState(Boolean(localStorage.getItem(LOCAL_TOGGLE_KEY)));
+  const [irrigationTiming, setIrrigationTiming] = useState(localStorage.getItem(LOCAL_IRRI_TIMING_KEY) || 'default');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -40,8 +45,6 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
           getWaterDeficitData(today, lngLat, coordsIdxs),
           getSoilCapacity(lngLat)
         ]);
-
-        console.log(newSSRD);
 
         setSoilSatRawData(newSSRD);
         setCalculatedSoilCapacity(newCSC);
@@ -61,16 +64,26 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
       mayFirstIdx.push(soilSatRawData.dates.findIndex(d => d === '05-01'));
 
       const newWaterDeficit = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, irrigationIdxs, 0, 'actual');
-      const newOptimalWatering = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, mayFirstIdx, 0, 'optimalWatering', 0.5);
-      const optimalWateringDates = newOptimalWatering.optimalWateringDateIndices.map(di => today.getFullYear() + '-' + soilSatRawData.dates[di]);
+      const newDormancyWatering = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, mayFirstIdx, 0, 'avoidDormancy', 0.5);
+      const newDormancyDates = newDormancyWatering.optimalWateringDateIndices.map(di => today.getFullYear() + '-' + soilSatRawData.dates[di]);
+
+      const newPlantStressWatering = runWaterDeficitModel(soilSatRawData.precip, soilSatRawData.et, selectedSoilCapacity, mayFirstIdx, 0, 'avoidPlantStress', 0.5);
+      const newPlantStressDates = newPlantStressWatering.optimalWateringDateIndices.map(di => today.getFullYear() + '-' + soilSatRawData.dates[di]);
 
       setSoilSaturation({
         gp: newWaterDeficit.saturationPercents,
         lawn: newWaterDeficit.deficitsInches,
-        soilSat: newWaterDeficit.deficitsInches.map(deficit => (newWaterDeficit.soilOptions.fieldcapacity + deficit) / 12),
-        optimalWaterDeficits: newOptimalWatering.deficitsInches,
-        optimalWaterTotal: [newOptimalWatering.optimalWateringTotal],
-        optimalWateringDates,
+        soilSat: newWaterDeficit.deficitsInches.map(deficit => (newWaterDeficit.soilOptions.fieldcapacity + deficit) / 6),
+        avoidDormancy: {
+          optimalWaterDeficits: newDormancyWatering.deficitsInches,
+          optimalWaterTotal: [newDormancyWatering.optimalWateringTotal],
+          optimalWateringDates: newDormancyDates,
+        },
+        avoidPlantStress: {
+          optimalWaterDeficits: newPlantStressWatering.deficitsInches,
+          optimalWaterTotal: [newPlantStressWatering.optimalWateringTotal],
+          optimalWateringDates: newPlantStressDates,
+        },
         numFcstDays: soilSatRawData.numFcstDays
       });
     }
@@ -86,9 +99,9 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
     setIrrigationDates(newDates);
   };
 
-  const handleSetUseIdeal = (newValue: boolean) => {
-    localStorage.setItem(LOCAL_TOGGLE_KEY, JSON.stringify(newValue));
-    setUseIdeal(newValue);
+  const handleSetUseIdeal = (newValue: string) => {
+    localStorage.setItem(LOCAL_IRRI_TIMING_KEY, newValue);
+    setIrrigationTiming(newValue);
   };
 
   return {
@@ -99,9 +112,9 @@ export default function useSoilInfo(today: Date, lngLat: [number, number], coord
     recommendedSoilCap: calculatedSoilCapacity,
     selectedSoilCap: selectedSoilCapacity,
     changeSoilCapacity,
-    irrigationDates: useIdeal ? (soilSaturation?.optimalWateringDates || []) : irrigationDates,
+    irrigationDates: irrigationTiming === 'default' ? irrigationDates: (soilSaturation ? soilSaturation[irrigationTiming as ('avoidPlantStress' | 'avoidDormancy')].optimalWateringDates : []),
     setIrrigationDates: handleSetIrrigationDates,
-    useIdeal,
-    setUseIdeal: handleSetUseIdeal
+    irrigationTiming,
+    setIrrigationTiming: handleSetUseIdeal
   };
 }
