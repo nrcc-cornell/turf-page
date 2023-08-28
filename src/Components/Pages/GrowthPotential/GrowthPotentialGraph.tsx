@@ -42,8 +42,6 @@ const colorPoints = (bounds: number[], values: (number | null)[]) => {
 };
 
 const getPlotBandsLinesBreakpoints = (todayValue: number, breakpoints: number[], ) => {
-  console.log(breakpoints);
-  
   const plotBands = breakpoints.map((bp, i) => {
     const high = breakpoints[i - 1] === undefined ? 100 : breakpoints[i - 1];
     const low = i === breakpoints.length - 1 ? 0 : bp;
@@ -121,8 +119,6 @@ export default function GrowthPotentialGraph(props: {
     const observed = colorPoints(breakpoints, props.modelResults.values.slice(0,props.todayIdx).concat(Array(props.modelResults.values.length - (props.todayIdx)).fill(null)));
     const forecasted = colorPoints(breakpoints, Array(props.todayIdx).fill(null).concat(props.modelResults.values.slice(props.todayIdx)));
   
-    console.log(observed);
-
     series = [
       {
         data: observed,

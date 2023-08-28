@@ -11,6 +11,7 @@ type MapSlider = {
   idx: number;
   marks: Mark[];
   setFunction: Dispatch<SetStateAction<number>>;
+  max: number
 };
 
 export default function MapSlider(props: MapSlider) {
@@ -43,7 +44,7 @@ export default function MapSlider(props: MapSlider) {
         onChange={(e, v) => props.setFunction(v as number)}
         valueLabelDisplay='off'
         min={0}
-        max={4}
+        max={props.max}
         marks={props.marks}
         aria-labelledby='date-slider'
       />

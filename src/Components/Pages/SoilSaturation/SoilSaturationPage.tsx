@@ -90,7 +90,6 @@ export default function SoilSaturationPage(props: SoilSaturationPageProps) {
         <MapWithOptions
           {...props}
           dropdownOptions={ssVariableOptions}
-          proxyEndpointName='soil-saturation'
           dates={overlayDates}
         />
       </StyledCard>

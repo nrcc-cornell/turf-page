@@ -104,7 +104,6 @@ const findMatchingStartAndEndPoints = (arr1: (string | number)[], arr2: (string 
   const findStartAndEnd = (v1: (string | number), v2: (string | number), arr: (string | number)[]) => {
     const startIdx = arr.findIndex(val => val === v1);
     const endIdx = arr.findIndex(val => val === v2);
-    console.log(v1, v2, arr, startIdx, endIdx);
     return {
       start: startIdx >= 0 ? startIdx : 0,
       end: endIdx >= 0 ? endIdx : arr.length - 1

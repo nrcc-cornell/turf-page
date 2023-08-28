@@ -112,8 +112,6 @@ const generateRecommendation = (
     const iOfToday = modelResults.dates.findIndex((date) => date === todayStr);
     const value = modelResults.values[iOfToday];
 
-    console.log(todayStr, modelResults.dates, iOfToday, value);
-
     if (value < thresholds[1]) {
       text = 'Mowing frequency can be reduced while still following the one third rule.';
     } else if (value < thresholds[2]) {
@@ -121,8 +119,6 @@ const generateRecommendation = (
     } else {
       text = 'Mowing frequency can be increased.';
     }
-
-    console.log(text);
   }
 
   return text;
@@ -140,8 +136,6 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
   } else {
     const THRESHOLDS = [0, 25, 66];
 
-    console.log(toolProps.irrigationTiming);
-    console.log(toolProps.soilSaturation);
     const growthPotentialOutput = calcGrowthPotential(toolProps.soilSaturation, toolProps.avgts, toolProps.soilSaturationDates, toolProps.currentLocation, toolProps.today, numDaysToProcess);
 
     const today = format(toolProps.today, 'MM-dd');
@@ -216,8 +210,8 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
         <MapWithOptions
           {...props}
           dropdownOptions={gpVariableOptions}
-          proxyEndpointName='soil-saturation'
           dates={overlayDates}
+          isGrowthPotential={true}
         />
       </Box>
     </StyledCard>

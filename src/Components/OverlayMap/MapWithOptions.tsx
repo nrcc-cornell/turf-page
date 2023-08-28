@@ -12,13 +12,11 @@ import { VariableOptions } from './Options';
 
 type RRMap = DisplayProps & {
   dropdownOptions: VariableOptions;
-  proxyEndpointName: string;
   dates: string[];
+  isGrowthPotential?: boolean;
 };
 
-export default function MapWithOptions(
-  props: RRMap
-) {
+export default function MapWithOptions(props: RRMap) {
   const today = new Date();
   const todayStr = format(today, 'yyyyMMdd');
   const initKey = Object.keys(props.dropdownOptions)[0];
@@ -28,18 +26,35 @@ export default function MapWithOptions(
   const [overlay, setOverlay] = useState('');
 
   useEffect(() => {
-    let forecastDateStr = props.dates[forecastDateIdx] || format(new Date(), 'yyyyMMdd');
-    forecastDateStr = forecastDateStr.slice(4) + forecastDateStr.slice(0, 4);
-    
-    updateStateFromProxy<string>(
-      {
-        dateStr: todayStr,
-        option: legendInfo.overlay,
-        forecastDateStr,
-      },
-      'rr-overlay',
-      setOverlay
-    );
+    if (props.isGrowthPotential) {
+      fetch(process.env.PUBLIC_URL + `/maps/f${forecastDateIdx + 1}_growth_potential_data.png`)
+        .then(response => {
+          if (response.ok) {
+            return response.blob();
+          } else {
+            alert('An error has occurred on this page. Please refresh to try again.');
+            return null;
+          }
+        })
+        .then(blob => {
+          if (blob) {
+            setOverlay(URL.createObjectURL(blob));
+          }
+        });
+    } else {
+      let forecastDateStr = props.dates[forecastDateIdx] || format(new Date(), 'yyyyMMdd');
+      forecastDateStr = forecastDateStr.slice(4) + forecastDateStr.slice(0, 4);
+
+      updateStateFromProxy<string>(
+        {
+          dateStr: todayStr,
+          option: legendInfo.overlay,
+          forecastDateStr,
+        },
+        'rr-overlay',
+        setOverlay
+      );
+    }
   }, [option, forecastDateIdx]);
 
   const handleOptionChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
@@ -93,7 +108,7 @@ export default function MapWithOptions(
         <MapSlider
           label={`Forecast Date`}
           idx={forecastDateIdx}
-          marks={props.dates.slice(0, 5).map((date, i) => {
+          marks={props.dates.slice(0, props.isGrowthPotential ? 3 : 5).map((date, i) => {
             const d = parse(date, 'yyyyMMdd', new Date());
             let label = format(d, 'MM/dd');
             if (option.includes('72-hour')) {
@@ -105,6 +120,7 @@ export default function MapWithOptions(
             };
           })}
           setFunction={setForecastDateIdx}
+          max={props.isGrowthPotential ? 2 : 4}
         />
         <OverlayMap {...props} src={overlay} />
         <Legend {...legendInfo} />

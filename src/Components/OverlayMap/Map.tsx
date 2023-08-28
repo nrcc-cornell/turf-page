@@ -29,12 +29,26 @@ type OverlayMapProps = {
     a: 'add' | 'remove' | 'change',
     b: UserLocation
   ) => void;
+  isGrowthPotential?: boolean;
 };
 
 const bounds = { south: 37.09, west: -82.7542 };
 const mainMapStyle =
   'mapbox://styles/precipadmin/clbqxcrdb000014pjs0qz90h5/draft';
 const zoomedMapStyle = 'mapbox://styles/mapbox/satellite-streets-v11';
+
+const RR_OVERLAY_BOUNDS = [
+  [-79.95970329697062, 46.54645497007963],
+  [-69.66501014096089, 46.54645497007963],
+  [-69.66501014096083, 39.33905737461734],
+  [-79.95970329697053, 39.3390573746173]
+];
+const GP_OVERLAY_BOUUNDS = [
+  [-79.79167, 45.04166],
+  [-71.875, 45.04166],
+  [-71.875, 40.45834],
+  [-79.79167, 40.45834]
+];
 
 function isTouchDevice() {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -152,28 +166,7 @@ export default function OverlayMap(props: OverlayMapProps) {
             id='overlay'
             type='image'
             url={props.src}
-            coordinates={[
-              [-79.95970329697062, 46.54645497007963],
-              [-69.66501014096089, 46.54645497007963],
-              [-69.66501014096083, 39.33905737461734],
-              [-79.95970329697053, 39.3390573746173],
-              // [-79.79167, 45.04166],  // 4km
-              // [-71.8333, 45.04166],  // 4km
-              // [-71.8333, 40.45834],  // 4km
-              // [-79.79167, 40.45834],  // 4km
-              // [-79.770835, 45.02083],  // 4km shifted by half of a cell (~3km towards SE)
-              // [-71.854135, 45.02083],  // 4km shifted by half of a cell (~3km towards SE)
-              // [-71.854135, 40.43751],  // 4km shifted by half of a cell (~3km towards SE)
-              // [-79.770835, 40.43751],  // 4km shifted by half of a cell (~3km towards SE)
-              // [-79.79167, 45.04166],  // 8km
-              // [-71.875, 45.04166],  // 8km
-              // [-71.875, 40.45834],  // 8km
-              // [-79.79167, 40.45834],  // 8km
-              // [-79.79167, 45.04166],  // contour epsg 3857
-              // [-71.875, 45.04166],  // contour epsg 3857
-              // [-71.875, 40.45834],  // contour epsg 3857
-              // [-79.79167, 40.45834],  // contour epsg 3857
-            ]}
+            coordinates={props.isGrowthPotential ? GP_OVERLAY_BOUUNDS : RR_OVERLAY_BOUNDS}
           >
             <Layer
               id='overlay-layer'

@@ -59,7 +59,6 @@ const renderTools = (modelData: RRData) => {
   </>);
 };
 
-const PROXY_EP_NAME = 'runoff-risk';
 export default function RunoffRiskPage(props: DisplayProps & { today:Date, coordsIdxs: CoordsIdxObj | null }) {
   const [modelData, setModelData] = useState(emptyData);
 
@@ -67,7 +66,7 @@ export default function RunoffRiskPage(props: DisplayProps & { today:Date, coord
     if (props.coordsIdxs) {
       updateStateFromProxy(
         { dateStr: format(props.today, 'yyyyMMdd'), ...props.coordsIdxs },
-        PROXY_EP_NAME,
+        'runoff-risk',
         setModelData
       );
     }
@@ -98,7 +97,6 @@ export default function RunoffRiskPage(props: DisplayProps & { today:Date, coord
       <MapWithOptions
         {...props}
         dropdownOptions={rrVariableOptions}
-        proxyEndpointName={PROXY_EP_NAME}
         dates={modelData.dates}
       />
       <RunoffRiskMoreInfo />
