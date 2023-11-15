@@ -16,7 +16,7 @@ import { CoordsIdxObj } from '../../../Hooks/useRunoffApi';
 type LawnWateringPageProps = {
   currentLocation: UserLocation;
   numFcstDays: number;
-  soilSaturation:  number[];
+  soilSaturation:  number[] | null;
   soilSaturationDates: string[];
   isLoading: boolean;
   avoidPlantStressWaterTotal: number;
@@ -27,6 +27,7 @@ type LawnWateringPageProps = {
 
 
 const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: React.MouseEvent<SVGSVGElement>, desc: string) => void, handleClose: () => void, maxEt: number | null) => {
+  console.log(toolProps.soilSaturation);
   if (!toolProps.currentLocation.address.includes('New York')) {
     return <InvalidText type='notNY' />;
   } else if (toolProps.isLoading) {
@@ -190,7 +191,8 @@ export default function LawnWateringPage(props: LawnWateringPageProps) {
         },
       }}
     >
-      <Typography variant='h5' sx={{ marginLeft: '6px' }}>Lawn Watering Forecast for {props.currentLocation.address}</Typography>
+      <Typography variant='h5'>Lawn Watering Forecast for {props.currentLocation.address}</Typography>
+      <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>This tool predicts the amount of water in the soil based on weather and soil type so that irrigation can be applied only when needed.</Typography>
 
       {renderTools(props, handleOpen, handleClose, maxEt)}
 

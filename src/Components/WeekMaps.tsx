@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { format, addDays } from 'date-fns';
+import { format, addDays, isAfter, isBefore } from 'date-fns';
 
 import {
   Box,
@@ -47,7 +47,12 @@ export default function WeekMaps(props: WeekMapsProps) {
       return fetch(`maps/f1_${props.thumbs[0].name}_map_thumb.png`)
         .then((res) => {
           const dateStr = res.headers.get('last-modified');
-          const date = checkSeason(new Date(dateStr || Date()));
+          let date = checkSeason(new Date(dateStr || Date()));
+          if (isAfter(date, new Date(date.getFullYear(), 9, 31))) {
+            date = new Date(date.getFullYear(), 9, 31);
+          } else if (isBefore(date, new Date(date.getFullYear(), 2, 1))) {
+            date = new Date(date.getFullYear() - 1, 9, 31);
+          }
           setStartDate(date);
         })
         .catch(() => setStartDate(new Date()));

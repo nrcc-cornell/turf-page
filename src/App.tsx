@@ -187,7 +187,7 @@ function App() {
             isLoading={isLoading}
             setIrrigationDates={setIrrigationDates}
             setSoilCap={changeSoilCapacity}
-            soilSaturation={soilSaturation ? soilSaturation[irrigationTiming as IrriTimingOption].saturations : []}
+            soilSaturation={soilSaturation ? soilSaturation[irrigationTiming as IrriTimingOption].saturations : null}
             soilSaturationDates={soilSaturationDates || []}
             avgts={avgts || []}
             recommendedSoilCap={recommendedSoilCap}
@@ -209,7 +209,7 @@ function App() {
         );
       } else if (info.pageType === 'soilSat') {
         const fc = SOIL_DATA.soilmoistureoptions[selectedSoilCap].fieldcapacity;
-        const deficits = soilSaturation ? soilSaturation[irrigationTiming as IrriTimingOption].deficits : [];
+        const deficits = soilSaturation ? soilSaturation[irrigationTiming as IrriTimingOption].deficits.map(deficit => (fc + deficit) / 6) : null;
         
         return (
           <SoilSaturationPage
@@ -222,7 +222,7 @@ function App() {
             isLoading={isLoading}
             setIrrigationDates={setIrrigationDates}
             setSoilCap={changeSoilCapacity}
-            soilSaturation={deficits.map(deficit => (fc + deficit) / 6)}
+            soilSaturation={deficits}
             soilSaturationDates={soilSaturationDates || []}
             recommendedSoilCap={recommendedSoilCap}
             soilCap={selectedSoilCap}
@@ -251,7 +251,7 @@ function App() {
           adwt = soilSaturation.avoidDormancy.wateringTotal[0];
           nfd = soilSaturation.numFcstDays;
         }
-        
+
         return (
           <LawnWateringPage
             today={today}
@@ -261,7 +261,7 @@ function App() {
             setSoilCap={changeSoilCapacity}
             avoidPlantStressWaterTotal={apswt}
             avoidDormancyWaterTotal={adwt}
-            soilSaturation={ssVals}
+            soilSaturation={soilSaturation ? ssVals : null}
             soilSaturationDates={soilSaturationDates || []}
             numFcstDays={nfd}
             recommendedSoilCap={recommendedSoilCap}

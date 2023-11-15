@@ -16,10 +16,11 @@ import SoilMoistureOptions, { SoilMoistureOptionsProps } from '../../SoilMoistur
 
 import { gpVariableOptions } from '../../OverlayMap/Options';
 import roundXDigits from '../../../Scripts/Rounding';
+import GrowthPotentialConditionalText from './GrowthPotentialConditionalText';
 
 type GrowthPotentialPageProps = DisplayProps& {
   sx: { [key: string]: string };
-  soilSaturation:  number[];
+  soilSaturation:  number[] | null;
   soilSaturationDates: string[];
   isLoading: boolean;
   avgts: number[];
@@ -92,37 +93,7 @@ const calcGrowthPotential = (soilSats: number[], avgTemps: number[], dates: stri
   }
 };
 
-const generateRecommendation = (
-  modelResults: GrowthPotentialModelOutput | null,
-  today: Date,
-  thresholds: number[]
-) => {
-  let text = '';
-  if (!modelResults) {
-    const thisMonth = today.getMonth() + 1;
-    if (thisMonth > 10 || thisMonth < 3) {
-      text =
-        'Data for this model is unavailable after November. Please check back in March.';
-    } else {
-      text =
-        'There was a problem getting data for this model. Please refresh to try again.';
-    }
-  } else {
-    const todayStr = format(today, 'yyyyMMdd');
-    const iOfToday = modelResults.dates.findIndex((date) => date === todayStr);
-    const value = modelResults.values[iOfToday];
 
-    if (value < thresholds[1]) {
-      text = 'Mowing frequency can be reduced while still following the one third rule.';
-    } else if (value < thresholds[2]) {
-      text = 'Maintain standard mowing frequency.';
-    } else {
-      text = 'Mowing frequency can be increased.';
-    }
-  }
-
-  return text;
-};
 
 const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: number) => {
   if (!toolProps.currentLocation.address.includes('New York')) {
@@ -141,10 +112,23 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
     const today = format(toolProps.today, 'MM-dd');
     const todayIdx = toolProps.soilSaturationDates.findIndex(d => d === today) - 4;  // -4 to adjust for 5-day average
 
+    const overlayDates = Array.from({length: 5}, (v, i) => format(addDays(toolProps.today, i), 'yyyyMMdd'));
+
     return (<>
-      <Box sx={{ maxWidth: '700px', margin: '40px auto 0px' }}>
-        <Typography variant='h5'>Growth Potential Estimates</Typography>
-      </Box>
+      <GrowthPotentialConditionalText
+        today={toolProps.today}
+        gpOutput={growthPotentialOutput}
+        thresholds={THRESHOLDS}
+      />
+
+      <StyledDivider />
+
+      <GrowthPotentialGraph
+        modelResults={growthPotentialOutput}
+        thresholds={THRESHOLDS}
+        todayIdx={todayIdx}
+        today={toolProps.today}
+      />
 
       <SoilMoistureOptions
         recommendedSoilCap={toolProps.recommendedSoilCap}
@@ -156,26 +140,15 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
         irrigationTiming={toolProps.irrigationTiming}
         setIrrigationTiming={toolProps.setIrrigationTiming}
       />
-
-      <GrowthPotentialGraph
-        modelResults={growthPotentialOutput}
-        thresholds={THRESHOLDS}
-        todayIdx={todayIdx}
-      />
-
+      
       <StyledDivider />
 
-      <Box sx={{ maxWidth: '700px', margin: '0 auto' }}>
-        <Typography variant='h5'>Growth Potential Recommendation</Typography>
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography
-            variant='mapPage'
-            sx={{
-              lineHeight: '1.2',
-            }}
-          >{generateRecommendation(growthPotentialOutput, toolProps.today, THRESHOLDS)}</Typography>
-        </Box>
-      </Box>
+      <MapWithOptions
+        {...toolProps}
+        dropdownOptions={gpVariableOptions}
+        dates={overlayDates}
+        isGrowthPotential={true}
+      />
     </>);
   }
 };
@@ -183,7 +156,6 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
 
 export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
   const numDaysToProcess = 11;
-  const overlayDates = Array.from({length: 5}, (v, i) => format(addDays(props.today, i), 'yyyyMMdd'));
 
   return (
     <StyledCard
@@ -201,18 +173,9 @@ export default function GrowthPotentialPage(props: GrowthPotentialPageProps) {
     >
       <Box>
         <Typography variant='h5'>Growth Potential Forecast for New York State</Typography>
-        <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for managing turfgrass</Typography>
+        <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>This tool estimates the growth rate of turfgrass based on weather and soil type to allow planning of mowing frequencies and fertilizer applications.</Typography>
 
         {renderTools(props, numDaysToProcess)}
-        
-        <StyledDivider />
-
-        <MapWithOptions
-          {...props}
-          dropdownOptions={gpVariableOptions}
-          dates={overlayDates}
-          isGrowthPotential={true}
-        />
       </Box>
     </StyledCard>
   );

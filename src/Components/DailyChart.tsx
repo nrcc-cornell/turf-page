@@ -20,7 +20,7 @@ export type NumberRow = {
 export type DailyChartProps = {
   data: (NumberRow | StringRow)[];
   todayFromAcis: boolean;
-  title: string;
+  title: string | null;
   numRows: number;
   legend?: string[][];
 };
@@ -360,9 +360,9 @@ export default function DailyChart(props: DailyChartProps) {
 
   return (
     <Box sx={{ maxWidth: 730, margin: '0 auto' }}>
-      <Typography variant='h5' sx={{ marginLeft: '16px' }}>
+      {props.title && <Typography variant='h5' sx={{ marginLeft: '16px' }}>
         {props.title}
-      </Typography>
+      </Typography>}
 
       {renderChart(props.data, props.todayFromAcis)}
 

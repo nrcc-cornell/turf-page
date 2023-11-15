@@ -413,19 +413,14 @@ const routeInfo: RouteInfo[] = [
         {
           title: 'Dandelion Flower Status',
           thumbs: constructThumbs('dandelion', 'Dandelion Flower Status maps'),
-        },
-        {
-          title: 'White Clover Flower Status',
-          thumbs: constructThumbs('clover', 'White Clover Flower Status maps'),
-        },
-      ],
+        }],
       chart: {
         rows: [
           {
             rowName: 'Dandelion',
             data: 'gdd50',
             colorizer: function (val: number) {
-              let backgroundColor = 'rgb(170,170,170)';
+              let backgroundColor = 'rgb(0,170,0)';
               if (val < 40) {
                 backgroundColor = 'rgb(0,170,0)';
               } else if (val < 100) {
@@ -440,7 +435,7 @@ const routeInfo: RouteInfo[] = [
             rowName: 'White Clover',
             data: 'daylength',
             colorizer: function (val: number) {
-              let backgroundColor = 'rgb(170,170,170)';
+              let backgroundColor = 'rgb(0,170,0)';
               if (val < 1) {
                 backgroundColor = 'rgb(255,0,0)';
               } else if (val < 2) {
@@ -453,12 +448,11 @@ const routeInfo: RouteInfo[] = [
           },
         ],
         legend: [
-          ['Not yet flowering', 'rgb(255,0,0)'],
-          ['Beginning to flower', 'rgb(255,215,0)'],
-          ['Flowering', 'rgb(0,170,0)'],
-          ['No longer flowering', 'rgb(170,170,170)'],
+          ['Low Risk', 'rgb(255,0,0)'],
+          ['Moderate Risk', 'rgb(255,215,0)'],
+          ['Elevated Risk', 'rgb(0,170,0)'],
         ],
-        title: 'Pollinator Plants in the Lawn',
+        title: '',
       },
     },
   },

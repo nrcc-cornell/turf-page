@@ -215,7 +215,7 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
     },
     yAxis: {
       title: {
-        text: 'Water Deficit (in/ft soil)',
+        text: 'Water Deficit (in water/6in soil)',
       },
       max: defMax,
       min: defMin,

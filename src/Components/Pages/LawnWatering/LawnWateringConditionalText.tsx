@@ -42,16 +42,17 @@ export default function LawnWateringConditionalText(props: LWCTProps) {
         top: '13px',
         border: '2px solid rgb(220,220,220)',
         borderRadius: '4px',
-        padding: '10px',
-        width: 'fit-content'
+        padding: '30px 12px',
+        width: '80%',
+        minWidth: 'fit-content'
       }}
     >
       <Box sx={{ textAlign: 'center', marginBottom: '12px' }}>
-        <Typography variant='h5' sx={{ fontSize: '18px' }}>Lawn Watering Recommendations</Typography>
+        <Typography variant='h5' sx={{ fontSize: '24px' }}>Lawn Watering Recommendations</Typography>
       </Box>
       <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-        <Box>
-          <span>Today:&nbsp;&nbsp;&nbsp;</span>
+        <Box sx={{ textAlign: 'right' }}>
+          <span style={{ whiteSpace: 'nowrap', fontSize: '20px' }}>Today:&nbsp;&nbsp;&nbsp;</span>
         </Box>
         <Box>
           <Typography
@@ -65,12 +66,12 @@ export default function LawnWateringConditionalText(props: LWCTProps) {
 
       {props.daysUntilWaterNeeded > 0 &&
         <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-          <Box>
-            <span>Forecast</span>
+          <Box sx={{ display: 'flex', flexWrap: 'nowrap' }}>
+            <span style={{ fontSize: '20px' }}>Forecast</span>
             <HelpIcon onMouseLeave={props.close} onMouseEnter={(e) => props.open(e, 'This forecast assumes maximum evapotranspiration and no rain to create a conservative estimate of how long your lawn can last without irrigation.')} sx={{ color: 'rgb(120,150,255)', fontSize: '14px', position: 'relative', bottom:'6px' }} />
             <span>:&nbsp;&nbsp;&nbsp;</span>
           </Box>
-          <Box>
+          <Box sx={{ textAlign: 'right' }}>
             <Typography
               variant='mapPage'
               sx={{

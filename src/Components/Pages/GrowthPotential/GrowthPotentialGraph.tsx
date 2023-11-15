@@ -92,6 +92,7 @@ export default function GrowthPotentialGraph(props: {
   modelResults: GrowthPotentialModelOutput | null;
   thresholds: number[];
   todayIdx: number;
+  today: Date
 }) {
   const chartComponent = useRef<HighchartsReact.RefObject | null>(null);
   const [isZoomed, setIsZoomed] = useState(true);
@@ -186,8 +187,7 @@ export default function GrowthPotentialGraph(props: {
       spacingTop: 5
     },
     title: {
-      floating: true,
-      text: '',
+      text: `Growth Potential Estimates for ${props.today.getFullYear()}`,
     },
     series,
     xAxis: {
@@ -259,13 +259,14 @@ export default function GrowthPotentialGraph(props: {
         position: 'relative',
         height: 400,
         width: '100%',
+        paddingBottom: isZoomed ? '20px' : '0px'
       }}
     >
       {isZoomed && (
         <StyledButton
           sx={{
             position: 'absolute',
-            bottom: '-20px',
+            bottom: 0,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1

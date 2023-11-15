@@ -72,7 +72,7 @@ export const SOIL_DATA = {
     text: [
       'Watering is unnecessary.',
       'Consider watering due to moderate water deficit.',
-      'Watering is recommended due to high water deficit.'
+      'Watering is recommended due to severe water deficit.'
     ],
     // low: [-0.98, -1.25],
     // medium: [-1.75, -1.85],

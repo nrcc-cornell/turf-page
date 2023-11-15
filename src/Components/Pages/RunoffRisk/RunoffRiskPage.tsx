@@ -87,7 +87,7 @@ export default function RunoffRiskPage(props: DisplayProps & { today:Date, coord
       }}
     >
       <Typography variant='h5' sx={{ marginLeft: '6px' }}>Runoff Risk Forecast for New York State</Typography>
-      <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>Decision support tool for managing runoff risk of chemical applications to turfgrass</Typography>
+      <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>This tool predicts the risk of runoff several days in advance. Plan chemical applications during low-risk periods to ensure protection of water bodies and maximize product efficacy.</Typography>
       
       {props.currentLocation.address.includes('New York') ? renderTools(modelData) : <InvalidText type='notNY' />}
       

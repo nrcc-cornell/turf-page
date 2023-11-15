@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Typography } from '@mui/material';
 import { format, addDays } from 'date-fns';
 
 import InvalidText from '../../InvalidText';
@@ -19,80 +19,81 @@ type SoilSaturationPageProps = {
   currentLocation: UserLocation;
   pageInfo: TablePageInfo;
   todayFromAcis: boolean;
-  soilSaturation:  number[];
+  soilSaturation:  number[] | null;
   soilSaturationDates: string[];
   isLoading: boolean;
 } & SoilMoistureOptionsProps & DisplayProps
 
-
-export default function SoilSaturationPage(props: SoilSaturationPageProps) {
-  if (!props.currentLocation.address.includes('New York')) {
+const renderTools = (toolProps: SoilSaturationPageProps) => {
+  if (!toolProps.currentLocation.address.includes('New York')) {
     return <InvalidText type='notNY' />;
-  } else if (props.isLoading) {
+  } else if (toolProps.isLoading) {
     return <Loading />;
-  } else if (!props.soilSaturation) {
+  } else if (!toolProps.soilSaturation) {
     return <InvalidText type='outOfSeason' />;
   } else {
-    const overlayDates = Array.from({length: 5}, (v, i) => format(addDays(props.today, i), 'yyyyMMdd'));
-
-    const data = props.soilSaturation.length > 0 ? [{
+    const data = toolProps.soilSaturation.length > 0 ? [{
       rowName: 'As of 8am On',
       type: 'dates',
-      data: props.soilSaturationDates.slice(-6)
+      data: toolProps.soilSaturationDates.slice(-6)
     },{
-      rowName: props.pageInfo.chart.rowNames[0],
+      rowName: toolProps.pageInfo.chart.rowNames[0],
       type: 'numbers',
-      data: props.soilSaturation.slice(-6).map(val => roundXDigits(val, 2))
+      data: toolProps.soilSaturation.slice(-6).map(val => roundXDigits(val, 2))
     }] as (StringRow | NumberRow)[] : null;
 
-
-
-    return (
-      <StyledCard
-        variant='outlined'
-        sx={{
-          padding: '10px',
-          boxSizing: 'border-box',
-          maxWidth: '1100px',
-          '@media (max-width: 448px)': {
-            width: '100%',
-            padding: '10px 0px',
-            border: 'none',
-          },
-        }}
-      >
-        <Typography variant='h5' sx={{ marginLeft: '6px' }}>Soil Saturation Forecast for New York State</Typography>
-
-        {data === null ? <InvalidText type='badData' /> :
-          <> 
-            <SoilMoistureOptions
-              recommendedSoilCap={props.recommendedSoilCap}
-              soilCap={props.soilCap}
-              setSoilCap={props.setSoilCap}
-              today={props.today}
-              irrigationDates={props.irrigationDates}
-              setIrrigationDates={props.setIrrigationDates}
-              irrigationTiming={props.irrigationTiming}
-              setIrrigationTiming={props.setIrrigationTiming}
-            />
-
-            <DailyChart
-              {...props.pageInfo.chart}
-              data={data}
-              todayFromAcis={props.todayFromAcis}
-              numRows={3}
-            />
-          </>
-        }
-
-        <StyledDivider />
-
-        <MapWithOptions
-          {...props}
-          dropdownOptions={ssVariableOptions}
-          dates={overlayDates}
+    return data === null ? <InvalidText type='badData' /> :
+      <> 
+        <SoilMoistureOptions
+          recommendedSoilCap={toolProps.recommendedSoilCap}
+          soilCap={toolProps.soilCap}
+          setSoilCap={toolProps.setSoilCap}
+          today={toolProps.today}
+          irrigationDates={toolProps.irrigationDates}
+          setIrrigationDates={toolProps.setIrrigationDates}
+          irrigationTiming={toolProps.irrigationTiming}
+          setIrrigationTiming={toolProps.setIrrigationTiming}
         />
-      </StyledCard>
-    );
+
+        <DailyChart
+          {...toolProps.pageInfo.chart}
+          data={data}
+          todayFromAcis={toolProps.todayFromAcis}
+          numRows={3}
+        />
+      </>;
   }
+};
+
+export default function SoilSaturationPage(props: SoilSaturationPageProps) {
+
+  const overlayDates = Array.from({length: 5}, (v, i) => format(addDays(props.today, i), 'yyyyMMdd'));
+
+  return (
+    <StyledCard
+      variant='outlined'
+      sx={{
+        padding: '10px',
+        boxSizing: 'border-box',
+        maxWidth: '1100px',
+        '@media (max-width: 448px)': {
+          width: '100%',
+          padding: '10px 0px',
+          border: 'none',
+        },
+      }}
+    >
+      <Typography variant='h5' sx={{ marginLeft: '6px' }}>Soil Saturation Forecast for New York State</Typography>
+
+      {renderTools(props)}
+
+      <StyledDivider />
+
+      <MapWithOptions
+        {...props}
+        dropdownOptions={ssVariableOptions}
+        dates={overlayDates}
+      />
+    </StyledCard>
+  );
 }

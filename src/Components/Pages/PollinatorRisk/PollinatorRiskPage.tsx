@@ -1,5 +1,6 @@
 import React from 'react';
 import { getDayOfYear, addDays, format, parse } from 'date-fns';
+import { Typography } from '@mui/material';
 
 import StyledCard from '../../StyledCard';
 import StyledDivider from '../../StyledDivider';
@@ -60,6 +61,7 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
         cat = 3;
       }
     }
+    console.log(currDay, dayOfYear, yesterdayDayLength, todayDayLength, cat);
 
     categoryByDate.push([format(currDay, 'MM-dd-yyyy'), cat]);
   }
@@ -95,6 +97,9 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
         },
       }}
     >
+      <Typography variant='h5'>Pollinator Plants in the Lawn</Typography>
+      <Typography variant='subtitle1' sx={{ fontSize: '16px', marginLeft: '6px', marginBottom: '20px' }}>This tool predicts when clover and dandelion, two significant weeds in turfgrass that attract pollinators, are flowering. When these plants are in flower, take precautions when applying pesticides or consider avoiding pesticide applications all together.</Typography>
+
       <DailyChart
         {...props.pageInfo.chart}
         data={data}
