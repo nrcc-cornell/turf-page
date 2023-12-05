@@ -37,6 +37,7 @@ type RiskGraphProps = {
     high: number;
   };
   title: string;
+  today: Date;
 };
 
 
@@ -49,23 +50,26 @@ export default function RiskGraph(props: RiskGraphProps) {
       chartComponent.current.chart.zoomOut();
     }
   };
-
-  const pastCutoff = props.todayFromAcis ? -5 : -6;
+  
   const datesConverted = props.data['season'].map((arr: [string, number]) => [
     arr[0].slice(0, 5),
     Math.max(0, arr[1]),
   ]);
 
+  const cutoffDate = format(subDays(props.today, props.todayFromAcis ? 0 : 1), 'MM-dd');
+  let cutoffIdx = datesConverted.findIndex(arr => arr[0] === cutoffDate);
+  if (cutoffIdx === -1) cutoffIdx = datesConverted.length;
+
   const series: SeriesObj[] = [
     {
-      data: datesConverted.slice(0, pastCutoff),
+      data: datesConverted.slice(0, cutoffIdx),
       name: 'Daily',
       color: 'rgb(163,41,41)',
       zIndex: 2,
       id: 'Observed Daily',
     },
     {
-      data: datesConverted.slice(pastCutoff),
+      data: datesConverted.slice(cutoffIdx),
       name: 'Forecast',
       color: 'rgb(163,41,41)',
       zIndex: 2,
@@ -81,7 +85,7 @@ export default function RiskGraph(props: RiskGraphProps) {
     );
 
     series.push({
-      data: otherDatesConverted.slice(0, pastCutoff),
+      data: otherDatesConverted.slice(0, cutoffIdx),
       name: '7 Day Avg',
       color: 'rgb(27,155,32)',
       zIndex: 1,
@@ -89,7 +93,7 @@ export default function RiskGraph(props: RiskGraphProps) {
     });
 
     series.push({
-      data: otherDatesConverted.slice(pastCutoff),
+      data: otherDatesConverted.slice(cutoffIdx),
       name: 'Forecast',
       color: 'rgb(27,155,32)',
       zIndex: 1,
@@ -123,16 +127,12 @@ export default function RiskGraph(props: RiskGraphProps) {
         load: function () {
           const today = new Date();
           const now = format(addDays(today, 5), 'MM-dd');
-          const lastMonth = format(subDays(today, 8), 'MM-dd');
 
           // @ts-ignore
           const axis = this.xAxis[0];
-          const begin = axis.names.findIndex(
-            (date: string) => date === lastMonth
-          );
-          const end = axis.names.findIndex((date: string) => date === now);
-
-          axis.setExtremes(begin, end);
+          let end = axis.names.findIndex((date: string) => date === now);
+          if (end === -1) end = axis.names.length - 1;
+          axis.setExtremes(end - 10, end);
         },
       },
     },

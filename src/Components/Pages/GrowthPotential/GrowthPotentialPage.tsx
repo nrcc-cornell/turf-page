@@ -110,7 +110,8 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
     const growthPotentialOutput = calcGrowthPotential(toolProps.soilSaturation, toolProps.avgts, toolProps.soilSaturationDates, toolProps.currentLocation, toolProps.today, numDaysToProcess);
 
     const today = format(toolProps.today, 'MM-dd');
-    const todayIdx = toolProps.soilSaturationDates.findIndex(d => d === today) - 4;  // -4 to adjust for 5-day average
+    let todayIdx = toolProps.soilSaturationDates.findIndex(d => d === today) - 4;  // -4 to adjust for 5-day average
+    if (todayIdx < 0) todayIdx = toolProps.soilSaturationDates.length - 4;
 
     const overlayDates = Array.from({length: 5}, (v, i) => format(addDays(toolProps.today, i), 'yyyyMMdd'));
 

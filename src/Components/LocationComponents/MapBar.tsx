@@ -66,8 +66,8 @@ export default function MapBar(props: MapBarProps ) {
         }
       })
       .catch(e => {
-        console.log(e);
-        console.log('failed mapbar search');
+        console.error(e);
+        console.warn('failed mapbar search');
         return false;
       });
   };

@@ -19,13 +19,13 @@ type ContextType = {
 export type ToolData = RiskDataResults & GraphDataResults;
 
 // Overarching function to coordinate gathering and calculating data used in the ToolPage components
-const getData = async (lngLat: number[]): Promise<ToolData> => {
-  let today = new Date();
+const getData = async (lngLat: number[], targetDate: Date): Promise<ToolData> => {
+  let today = targetDate;
   const month = today.getMonth();
 
   let seasonEnd, eDate;
   if (month < 2 || month === 11) {
-    today = new Date(today.getFullYear() - (month < 2 ? 1 : 0), 10, 25);
+    today = new Date(today.getFullYear() - 1, 10, 30);
     seasonEnd = format(new Date(today.getFullYear(), 10, 30), 'yyyyMMdd08');
     eDate = format(addDays(today, 6), 'yyyy-MM-dd');
   } else {

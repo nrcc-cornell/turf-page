@@ -56,8 +56,8 @@ const menuGroups: MenuObj[] = [
     ],
   },
   {
-    base: 'pollinator-risk',
-    name: 'Pollinator Risk',
+    base: 'pollinator-protection',
+    name: 'Pollinator Protection',
     icon: <EmojiNature />,
     items: [{ pathname: '/pollinator-protection', label: '' }],
   },

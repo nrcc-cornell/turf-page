@@ -93,8 +93,8 @@ const fetchSoilColumnDataViaPostRest = (lngLat: [number, number]) => {
       return jData.Table;
     })
     .catch((e) => {
-      console.log(e);
-      console.log('failed soil data...');
+      console.error(e);
+      console.warn('failed soil data...');
       return null;
     });
 };

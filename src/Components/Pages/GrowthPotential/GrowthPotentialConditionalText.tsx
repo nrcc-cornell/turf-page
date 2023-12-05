@@ -12,22 +12,17 @@ type GPCTProps = {
 
 
 export default function GrowthPotentialConditionalText(props: GPCTProps) {
+  console.log(props);
   let text = '';
   if (!props.gpOutput) {
-    const thisMonth = props.today.getMonth() + 1;
-    if (thisMonth > 10 || thisMonth < 3) {
-      text =
-        'Data for this model is unavailable after November. Please check back in March.';
-    } else {
-      text =
-        'There was a problem getting data for this model. Please refresh to try again.';
-    }
+    text = 'There was a problem getting data for this model. Please refresh to try again.';
   } else {
     const todayStr = format(props.today, 'yyyyMMdd');
     const iOfToday = props.gpOutput.dates.findIndex((date) => date === todayStr);
     const value = props.gpOutput.values[iOfToday];
-
-    if (value < props.thresholds[1]) {
+    if (value === undefined) {
+      text = 'Out of season. Mowing is not likely to be required.';
+    } else if (value < props.thresholds[1]) {
       text = 'Mowing frequency can be reduced while still following the one third rule.';
     } else if (value < props.thresholds[2]) {
       text = 'Maintain standard mowing frequency.';

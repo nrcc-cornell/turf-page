@@ -129,6 +129,14 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
   const observedDeficits = colorPoints(breakpoints, adjustedDeficits.slice(0,props.todayIdx + 1).concat(Array(adjustedDeficits.length - (props.todayIdx + 1)).fill(null)));
   const forecastedDeficits = colorPoints(breakpoints, Array(props.todayIdx + 1).fill(null).concat(adjustedDeficits.slice(props.todayIdx + 1)));
   const irrigationIdxs = props.irrigationDates.length > 0 ? props.irrigationDates.map(irriDate => props.dates.findIndex(d => d === irriDate?.slice(5))) : [];
+  const dates = [...props.dates];
+  if (props.dates.findIndex(d => d ==='10-31') === props.todayIdx) {
+    for (let i = 0; i < adjustedDeficits.length - (props.todayIdx + 1); i++) {
+      observedDeficits.pop();
+      forecastedDeficits.pop();
+      dates.pop();
+    }
+  }
 
   const options = {
     credits: {
@@ -199,7 +207,7 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
       enabled: false
     },
     xAxis: {
-      categories: props.dates,
+      categories: dates,
       plotLines: irrigationIdxs.map(idx => ({
         color: 'rgba(0,0,255,0.5)',
         width: 2,

@@ -45,7 +45,8 @@ type DiseaseStressRiskProps = {
     [key:string]: string
   };
   data: RiskDataObj;
-  pageInfo: DiseaseStressRiskPageInfo
+  pageInfo: DiseaseStressRiskPageInfo;
+  today: Date;
 };
 
 export default function DiseaseStressRiskPage(props: DiseaseStressRiskProps) {
@@ -59,6 +60,7 @@ export default function DiseaseStressRiskPage(props: DiseaseStressRiskProps) {
         todayFromAcis={props.todayFromAcis}
         thresholds={props.pageInfo.chart.rows[0].thresholds}
         title={props.pageInfo.chart.title}
+        today={props.today}
       />
 
       <StyledDivider />

@@ -46,6 +46,7 @@ type SeedWeedProps = {
     table: [string, number][][];
   };
   pageInfo: SeedWeedPageInfo
+  today: Date;
 };
 
 export default function SeedWeedPage(props: SeedWeedProps) {
@@ -72,6 +73,7 @@ export default function SeedWeedPage(props: SeedWeedProps) {
         data={data}
         todayFromAcis={props.todayFromAcis}
         numRows={3}
+        today={props.today}
       />
 
       <StyledDivider />

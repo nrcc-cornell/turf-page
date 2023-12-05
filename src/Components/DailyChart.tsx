@@ -23,6 +23,7 @@ export type DailyChartProps = {
   title: string | null;
   numRows: number;
   legend?: string[][];
+  today: Date;
 };
 
 
@@ -124,7 +125,7 @@ const renderObservationForecastDivider = (obsSpan: number, foreSpan: number) => 
     <>
       <Box sx={{
         gridColumnStart: `span ${obsSpan}`,
-        borderRight: '3px solid rgb(230,230,230)',
+        borderRight: foreSpan ? '3px solid rgb(230,230,230)' : 'none',
         textAlign: 'right',
         width: '100%',
         boxSizing: 'border-box',
@@ -136,25 +137,27 @@ const renderObservationForecastDivider = (obsSpan: number, foreSpan: number) => 
         <Typography variant='underChart'>Observed</Typography>
       </Box>
       
-      <Box sx={{
-        gridColumnStart: `span ${foreSpan}`,
-        textAlign: 'left',
-        width: '100%',
-        boxSizing: 'border-box',
-        paddingLeft: '5px',
-        backgroundColor: 'white',
-        position: 'relative'
-      }}>
-        <Typography variant='underChart'>Forecast</Typography>
-        <Box sx={{ ...lineSX(false), ...afterSX }} />
-      </Box>
+      {foreSpan ? 
+        <Box sx={{
+          gridColumnStart: `span ${foreSpan}`,
+          textAlign: 'left',
+          width: '100%',
+          boxSizing: 'border-box',
+          paddingLeft: '5px',
+          backgroundColor: 'white',
+          position: 'relative'
+        }}>
+          <Typography variant='underChart'>Forecast</Typography>
+          <Box sx={{ ...lineSX(false), ...afterSX }} />
+        </Box> : ''
+      }
     </>
   );
 };
 
 const renderDatesRow = (name:string, data: string[], idx: number) => {
   const dates = data.map((str, i) => (
-    <Box key={uuid()} sx={dateSX(i, i === idx)}>
+    <Box key={uuid()} sx={dateSX(i, idx === data.length - 1 ? false : (i === idx))}>
       <Box
         sx={{
           width: 'fit-content',
@@ -181,7 +184,7 @@ const renderNumbersRow = (name:string, data: number[], idx: number) => {
       <Box
         key={uuid()}
         sx={{
-          ...cellSX(i === idx),
+          ...cellSX(idx === data.length - 1 ? false : (i === idx)),
           borderLeft: i === 0 ? 'none' : '1px solid rgb(240,240,240)',
         }}
       >
@@ -196,7 +199,7 @@ const renderNumbersRow = (name:string, data: number[], idx: number) => {
 const renderDotsRow = (name:string, data: string[], idx: number) => {
   const dots = data.map((value, i) => {
     return (
-      <Box key={uuid()} sx={cellSX(i === idx)}>
+      <Box key={uuid()} sx={cellSX(idx === data.length - 1 ? false : (i === idx))}>
         <Box
           sx={{
             backgroundColor: value,
@@ -216,13 +219,13 @@ const renderDotsRow = (name:string, data: string[], idx: number) => {
   return [<Box key={uuid()} sx={{ ...HeaderSX, padding: '5px 12px' }}>{name}</Box>].concat(dots);
 };
 
-const renderChart = (rows: (NumberRow | StringRow)[], todayFromAcis: boolean) => {
+const renderChart = (rows: (NumberRow | StringRow)[], todayFromAcis: boolean, today: Date) => {
   const numRows = rows.length;
   const numCols = rows[0].data.length;
 
-  const todayStr = format(new Date(), 'MM-dd');
+  const todayStr = format(today, 'MM-dd');
   const iOfToday = rows[0].data.findIndex((date) => date === todayStr);
-  const iOfDivider = iOfToday + (todayFromAcis ? 1 : 0);
+  const iOfDivider = iOfToday === -1 ? rows[0].data.length : (iOfToday + (todayFromAcis ? 1 : 0));
 
   return (
     <Box
@@ -364,7 +367,7 @@ export default function DailyChart(props: DailyChartProps) {
         {props.title}
       </Typography>}
 
-      {renderChart(props.data, props.todayFromAcis)}
+      {renderChart(props.data, props.todayFromAcis, props.today)}
 
       {props.legend !== undefined && renderLegend(props.legend)}
     </Box>

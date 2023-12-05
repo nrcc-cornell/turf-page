@@ -34,6 +34,7 @@ type TablePageProps = {
   };
   data: TableData;
   pageInfo: TablePageInfo
+  today: Date;
 };
 
 export default function TablePage(props: TablePageProps) {
@@ -60,6 +61,7 @@ export default function TablePage(props: TablePageProps) {
         data={data}
         todayFromAcis={props.todayFromAcis}
         numRows={props.pageInfo.chart.rowNames.length + 1}
+        today={props.today}
       />
 
       <StyledDivider />

@@ -120,38 +120,45 @@ const calcFcstDays = (origFcstDays: number, origArr: number[], newEndIdx: number
   return  origFcstDays - ((origArr.length - 1) - newEndIdx);
 };
 
-async function getWaterDeficitData(today: Date, lngLat: [number, number], coordsIdxs: CoordsIdxObj) {
+async function getWaterDeficitData(targetDate: Date, lngLat: [number, number], coordsIdxs: CoordsIdxObj) {
   let newModelData: WaterDeficitModelData | null = null;
-  if (isAfter(today, new Date(today.getFullYear(), 2, 9)) && isBefore(today, new Date(today.getFullYear(), 10, 1))) {
-    const [ forecast, rawEtData, pastPrecipAndTemp ] = await Promise.all([
-      getFromProxy<ForecastData>(
-        { dateStr: format(new Date(), 'yyyyMMdd'), ...coordsIdxs },
-        'runoff-risk'
-      ),
-      fetchETData(lngLat, today.getFullYear()),
-      fetchTempPrcpData(lngLat, format(today, 'yyyy-MM-dd'))
-    ]);
+  const today = targetDate;
 
-    if (forecast && rawEtData) {
-      const precipAndTempObj = processPrecipTempData(forecast, pastPrecipAndTemp);
-      const etObj = processEtData(rawEtData);
+  // if (isBefore(today, new Date(today.getFullYear(), 2, 10))) {
+  //   today = new Date(today.getFullYear() - 1, 10, 1);
+  // } else if (isAfter(today, new Date(today.getFullYear(), 9, 31))) {
+  //   today = new Date(today.getFullYear(), 10, 1);
+  // }
 
-      const startEndObj = findMatchingStartAndEndPoints(precipAndTempObj.dates, etObj.dates);
-      
-      const numFcstDays = Math.max(
-        calcFcstDays(precipAndTempObj.numFcstDays, precipAndTempObj.precips, startEndObj.arr1.end),
-        calcFcstDays(etObj.numFcstDays, etObj.ets, startEndObj.arr2.end)
-      );
+  const [ forecast, rawEtData, pastPrecipAndTemp ] = await Promise.all([
+    getFromProxy<ForecastData>(
+      { dateStr: format(new Date(), 'yyyyMMdd'), ...coordsIdxs },
+      'runoff-risk'
+    ),
+    fetchETData(lngLat, today.getFullYear()),
+    fetchTempPrcpData(lngLat, format(today, 'yyyy-MM-dd'))
+  ]);
 
-      newModelData = {
-        dates: precipAndTempObj.dates.slice(startEndObj.arr1.start, startEndObj.arr1.end + 1),
-        precip: precipAndTempObj.precips.slice(startEndObj.arr1.start, startEndObj.arr1.end + 1),
-        avgt: precipAndTempObj.avgts.slice(startEndObj.arr1.start, startEndObj.arr1.end + 1),
-        et: etObj.ets.slice(startEndObj.arr2.start, startEndObj.arr2.end + 1),
-        numFcstDays
-      };
-    }
+  if (forecast && rawEtData) {
+    const precipAndTempObj = processPrecipTempData(forecast, pastPrecipAndTemp);
+    const etObj = processEtData(rawEtData);
+
+    const startEndObj = findMatchingStartAndEndPoints(precipAndTempObj.dates, etObj.dates);
+    
+    const numFcstDays = Math.max(
+      calcFcstDays(precipAndTempObj.numFcstDays, precipAndTempObj.precips, startEndObj.arr1.end),
+      calcFcstDays(etObj.numFcstDays, etObj.ets, startEndObj.arr2.end)
+    );
+
+    newModelData = {
+      dates: precipAndTempObj.dates.slice(startEndObj.arr1.start, startEndObj.arr1.end + 1),
+      precip: precipAndTempObj.precips.slice(startEndObj.arr1.start, startEndObj.arr1.end + 1),
+      avgt: precipAndTempObj.avgts.slice(startEndObj.arr1.start, startEndObj.arr1.end + 1),
+      et: etObj.ets.slice(startEndObj.arr2.start, startEndObj.arr2.end + 1),
+      numFcstDays
+    };
   }
+
   return newModelData;
 }
 

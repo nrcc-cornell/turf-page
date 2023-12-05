@@ -27,7 +27,6 @@ type LawnWateringPageProps = {
 
 
 const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: React.MouseEvent<SVGSVGElement>, desc: string) => void, handleClose: () => void, maxEt: number | null) => {
-  console.log(toolProps.soilSaturation);
   if (!toolProps.currentLocation.address.includes('New York')) {
     return <InvalidText type='notNY' />;
   } else if (toolProps.isLoading) {
@@ -40,36 +39,8 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
     const todayIdx = toolProps.soilSaturation.length - toolProps.numFcstDays - 1;
     const todaysValue = toolProps.soilSaturation[todayIdx];
     
-
-    // // Use coordsIdxs to access precalculated ets, replace following value with retrieved value
-    // const maxET = 0.25;
-    // const wateringThreshold = SOIL_DATA.soilmoistureoptions[toolProps.soilCap].stressthreshold - SOIL_DATA.soilmoistureoptions[toolProps.soilCap].fieldcapacity;
-    // let finalDeficit = 0;
-    // let daysUntilWaterNeeded = 0;
-    // for (const deficit of toolProps.soilSaturation.slice(todayIdx)) {
-    //   if (deficit <= wateringThreshold) {
-    //     finalDeficit = deficit;
-    //     break;
-    //   } else {
-    //     finalDeficit = deficit - maxET;
-    //     daysUntilWaterNeeded++;
-    //   }
-    // }
-
-    // while(finalDeficit > wateringThreshold) {
-    //   console.log(finalDeficit);
-    //   daysUntilWaterNeeded++;
-    //   finalDeficit -= maxET;
-    // }
-
-    // console.log(daysUntilWaterNeeded);
-
-    // Use coordsIdxs to access precalculated ets, replace following value with retrieved value
-    
-    // CHANGE THIS TO USE THE PREWILTING OR STRESS THRESHOLD BASED ON IRRIGATIONTIMING
-    
     let daysUntilWaterNeeded = 0;
-    if (maxEt !== null) {
+    if (maxEt !== null && maxEt > 0) {
       const endPoint = toolProps.irrigationTiming === 'avoidPlantStress' ? SOIL_DATA.soilmoistureoptions[toolProps.soilCap].stressthreshold : SOIL_DATA.soilmoistureoptions[toolProps.soilCap].prewiltingpoint;
       const wateringThreshold = endPoint - SOIL_DATA.soilmoistureoptions[toolProps.soilCap].fieldcapacity;
       let deficit = todaysValue;

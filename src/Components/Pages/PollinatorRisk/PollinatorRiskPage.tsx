@@ -34,6 +34,7 @@ type PollinatorProps = {
   gddData: [string, number][];
   pageInfo: PollinatorPageInfo;
   todayFromAcis: boolean;
+  today: Date;
 };
 
 export default function PollinatorRiskPage(props: PollinatorProps) {
@@ -61,7 +62,6 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
         cat = 3;
       }
     }
-    console.log(currDay, dayOfYear, yesterdayDayLength, todayDayLength, cat);
 
     categoryByDate.push([format(currDay, 'MM-dd-yyyy'), cat]);
   }
@@ -105,11 +105,16 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
         data={data}
         todayFromAcis={props.todayFromAcis}
         numRows={3}
+        today={props.today}
       />
 
-      <StyledDivider />
+      {(todayDandelionRisk && todayCloverRisk) &&
+        <>
+          <StyledDivider />
 
-      <PollinatorConditionalText text={[{ name: 'Dandelion', color: todayDandelionRisk}, { name: 'White Clover', color: todayCloverRisk }]} />
+          <PollinatorConditionalText text={[{ name: 'Dandelion', color: todayDandelionRisk}, { name: 'White Clover', color: todayCloverRisk }]} />
+        </>
+      }
 
       <StyledDivider />
 

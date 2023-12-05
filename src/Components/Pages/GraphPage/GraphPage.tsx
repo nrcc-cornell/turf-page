@@ -29,6 +29,7 @@ export type GraphPageInfo = {
 
 type GraphPageProps = {
   todayFromAcis: boolean;
+  today: Date;
   sx: {
     [key:string]: string
   };
@@ -75,6 +76,7 @@ export default function GraphPage(props: GraphPageProps) {
         data={chartData}
         todayFromAcis={props.todayFromAcis}
         numRows={props.pageInfo.chart.rowNames.length + 1}
+        today={props.today}
       />
 
       {props.pageInfo.chart.data === 'precip' && precipSum !== undefined && (

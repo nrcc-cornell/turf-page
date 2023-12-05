@@ -106,7 +106,7 @@ function App() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await getData(currentLocation.lngLat);
+        const data = await getData(currentLocation.lngLat, today);
         setToolData(data);
         setDataProblem(false);
       } catch {
@@ -132,6 +132,7 @@ function App() {
             todayFromAcis={toolData.todayFromAcis}
             sx={sx}
             pageInfo={info}
+            today={today}
           />
         );
       } else if (info.pageType === 'seedWeed') {
@@ -141,6 +142,7 @@ function App() {
             todayFromAcis={toolData.todayFromAcis}
             sx={sx}
             pageInfo={info}
+            today={today}
           />
         );
       } else if (info.pageType === 'graph') {
@@ -150,6 +152,7 @@ function App() {
             todayFromAcis={toolData.todayFromAcis}
             sx={sx}
             pageInfo={info}
+            today={today}
           />
         );
       } else if (info.pageType === 'table') {
@@ -159,6 +162,7 @@ function App() {
             todayFromAcis={toolData.todayFromAcis}
             sx={sx}
             pageInfo={info}
+            today={today}
           />
         );
       } else if (info.pageType === 'text') {
@@ -238,6 +242,7 @@ function App() {
             gddData={toolData.gdd50.table[0]}
             pageInfo={info}
             todayFromAcis={toolData.todayFromAcis}
+            today={today}
           />
         );
       } else if (info.pageType === 'lawn-watering') {

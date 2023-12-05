@@ -22,6 +22,7 @@ type SoilSaturationPageProps = {
   soilSaturation:  number[] | null;
   soilSaturationDates: string[];
   isLoading: boolean;
+  today: Date;
 } & SoilMoistureOptionsProps & DisplayProps
 
 const renderTools = (toolProps: SoilSaturationPageProps) => {
@@ -60,6 +61,7 @@ const renderTools = (toolProps: SoilSaturationPageProps) => {
           data={data}
           todayFromAcis={toolProps.todayFromAcis}
           numRows={3}
+          today={toolProps.today}
         />
       </>;
   }
