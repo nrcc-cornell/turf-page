@@ -21,7 +21,7 @@ export default function GrowthPotentialConditionalText(props: GPCTProps) {
     const iOfToday = props.gpOutput.dates.findIndex((date) => date === todayStr);
     const value = props.gpOutput.values[iOfToday];
     if (value === undefined) {
-      text = 'Out of season. Mowing is not likely to be required.';
+      text = 'Out of season.';
     } else if (value < props.thresholds[1]) {
       text = 'Mowing frequency can be reduced while still following the one third rule.';
     } else if (value < props.thresholds[2]) {
