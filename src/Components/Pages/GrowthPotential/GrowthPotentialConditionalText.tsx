@@ -12,7 +12,6 @@ type GPCTProps = {
 
 
 export default function GrowthPotentialConditionalText(props: GPCTProps) {
-  console.log(props);
   let text = '';
   if (!props.gpOutput) {
     text = 'There was a problem getting data for this model. Please refresh to try again.';

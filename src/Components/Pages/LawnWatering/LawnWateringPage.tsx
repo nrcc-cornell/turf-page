@@ -36,7 +36,6 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
   } else if (toolProps.soilSaturation.length === 0) {
     return <InvalidText type='badData' />;
   } else {
-    console.log({ lawnToolOutput: { dates: toolProps.soilSaturationDates, values: toolProps.soilSaturation }});
     const todayIdx = toolProps.soilSaturation.length - toolProps.numFcstDays - 1;
     const todaysValue = toolProps.soilSaturation[todayIdx];
     

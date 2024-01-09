@@ -1,10 +1,9 @@
 import React from 'react';
-import { format } from 'date-fns';
-import { addDays } from 'date-fns';
-
+import { format, addDays, isBefore, isAfter } from 'date-fns';
 import { Box, Typography } from '@mui/material';
 
 import { growthPotentialModel } from '../../../Scripts/GrowthPotentialModel';
+import roundXDigits from '../../../Scripts/Rounding';
 
 import StyledCard from '../../StyledCard';
 import GrowthPotentialGraph from './GrowthPotentialGraph';
@@ -13,10 +12,9 @@ import StyledDivider from '../../StyledDivider';
 import InvalidText from '../../InvalidText';
 import MapWithOptions from '../../OverlayMap/MapWithOptions';
 import SoilMoistureOptions, { SoilMoistureOptionsProps } from '../../SoilMoistureOptions/SoilMoistureOptions';
+import GrowthPotentialConditionalText from './GrowthPotentialConditionalText';
 
 import { gpVariableOptions } from '../../OverlayMap/Options';
-import roundXDigits from '../../../Scripts/Rounding';
-import GrowthPotentialConditionalText from './GrowthPotentialConditionalText';
 
 type GrowthPotentialPageProps = DisplayProps& {
   sx: { [key: string]: string };
@@ -56,6 +54,13 @@ const calcGrowthPotential = (soilSats: number[], avgTemps: number[], dates: stri
       dates: [],
       values: [],
     };
+
+    // adjust today if out of season
+    if (isBefore(today, new Date(today.getFullYear(), 2, 10))) {
+      today = new Date(today.getFullYear() - 1, 10, 1);
+    } else if (isAfter(today, new Date(today.getFullYear(), 9, 31))) {
+      today = new Date(today.getFullYear(), 10, 1);
+    }
 
     const thisYear = today.getFullYear();
 
@@ -106,12 +111,10 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
     return <InvalidText type='badData' />;
   } else {
     const THRESHOLDS = [0, 25, 66];
-
     const growthPotentialOutput = calcGrowthPotential(toolProps.soilSaturation, toolProps.avgts, toolProps.soilSaturationDates, toolProps.currentLocation, toolProps.today, numDaysToProcess);
-
     const today = format(toolProps.today, 'MM-dd');
     let todayIdx = toolProps.soilSaturationDates.findIndex(d => d === today) - 4;  // -4 to adjust for 5-day average
-    if (todayIdx < 0) todayIdx = toolProps.soilSaturationDates.length - 4;
+    if (todayIdx < 0) todayIdx = toolProps.soilSaturationDates.length - 5;
 
     const overlayDates = Array.from({length: 5}, (v, i) => format(addDays(toolProps.today, i), 'yyyyMMdd'));
 

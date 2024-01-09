@@ -59,7 +59,7 @@ const fetchETData = (coords: number[], year: number) => {
     .catch(() => null);
 };
 
-const processPrecipTempData = (forecastData: ForecastData, observedData: [string, number, number][]) => {
+const processPrecipTempData = (forecastData: ForecastData, observedData: [string, number, number][], outOfSeason: boolean) => {
   const { precipDates, precipValues, avgts } = observedData.reduce((acc, dayArr) => {
     if (!dayArr.includes(-999)) {
       acc.precipDates.push(dayArr[0]);
@@ -74,13 +74,16 @@ const processPrecipTempData = (forecastData: ForecastData, observedData: [string
   const nextDateIdx = forecastData.dates.findIndex((dateStr: number) => String(dateStr) === nextDate);
   
   let numFcstDays = 0;
-  for (let i = nextDateIdx; i < forecastData.tempChart.mint.length; i++) {
-    const d = forecastData.dates[i];
-    pDates.push(`${String(d).slice(4,6)}-${String(d).slice(6)}`);
-    precipValues.push(forecastData.precipChart.raim[i]);
-    avgts.push(roundXDigits((forecastData.tempChart.mint[i] + forecastData.tempChart.maxt[i]) / 2, 1));
-    numFcstDays++;
+  if (!outOfSeason) {
+    for (let i = nextDateIdx; i < forecastData.tempChart.mint.length; i++) {
+      const d = forecastData.dates[i];
+      pDates.push(`${String(d).slice(4,6)}-${String(d).slice(6)}`);
+      precipValues.push(forecastData.precipChart.raim[i]);
+      avgts.push(roundXDigits((forecastData.tempChart.mint[i] + forecastData.tempChart.maxt[i]) / 2, 1));
+      numFcstDays++;
+    }
   }
+
   return {
     dates: pDates,
     precips: precipValues,
@@ -89,10 +92,19 @@ const processPrecipTempData = (forecastData: ForecastData, observedData: [string
   };
 };
 
-const processEtData = (rawEtData: EtReturn) => {
-  const numFcstDays = rawEtData.dates_pet_fcst.length;
-  const ets = rawEtData.pet.concat(rawEtData.pet_fcst);
-  const dates = rawEtData.dates_pet.concat(rawEtData.dates_pet_fcst).map((str: string) => str.replace('/', '-'));
+const processEtData = (rawEtData: EtReturn, outOfSeason: boolean) => {
+  let dates;
+  let ets;
+  let numFcstDays;
+  if (outOfSeason) {
+    numFcstDays = 0;
+    ets = rawEtData.pet;
+    dates = rawEtData.dates_pet;
+  } else {
+    numFcstDays = rawEtData.dates_pet_fcst.length;
+    ets = rawEtData.pet.concat(rawEtData.pet_fcst);
+    dates = rawEtData.dates_pet.concat(rawEtData.dates_pet_fcst).map((str: string) => str.replace('/', '-'));
+  }
   return {
     dates,
     ets,
@@ -122,13 +134,16 @@ const calcFcstDays = (origFcstDays: number, origArr: number[], newEndIdx: number
 
 async function getWaterDeficitData(targetDate: Date, lngLat: [number, number], coordsIdxs: CoordsIdxObj) {
   let newModelData: WaterDeficitModelData | null = null;
-  const today = targetDate;
+  let today = targetDate;
+  let outOfSeason = false;
 
-  // if (isBefore(today, new Date(today.getFullYear(), 2, 10))) {
-  //   today = new Date(today.getFullYear() - 1, 10, 1);
-  // } else if (isAfter(today, new Date(today.getFullYear(), 9, 31))) {
-  //   today = new Date(today.getFullYear(), 10, 1);
-  // }
+  if (isBefore(today, new Date(today.getFullYear(), 2, 10))) {
+    today = new Date(today.getFullYear() - 1, 10, 1);
+    outOfSeason = true;
+  } else if (isAfter(today, new Date(today.getFullYear(), 9, 31))) {
+    today = new Date(today.getFullYear(), 10, 1);
+    outOfSeason = true;
+  }
 
   const [ forecast, rawEtData, pastPrecipAndTemp ] = await Promise.all([
     getFromProxy<ForecastData>(
@@ -140,8 +155,8 @@ async function getWaterDeficitData(targetDate: Date, lngLat: [number, number], c
   ]);
 
   if (forecast && rawEtData) {
-    const precipAndTempObj = processPrecipTempData(forecast, pastPrecipAndTemp);
-    const etObj = processEtData(rawEtData);
+    const precipAndTempObj = processPrecipTempData(forecast, pastPrecipAndTemp, outOfSeason);
+    const etObj = processEtData(rawEtData, outOfSeason);
 
     const startEndObj = findMatchingStartAndEndPoints(precipAndTempObj.dates, etObj.dates);
     
