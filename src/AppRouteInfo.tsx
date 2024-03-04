@@ -411,8 +411,8 @@ const routeInfo: RouteInfo[] = [
       pageType: 'pollinator',
       maps: [
         {
-          title: 'Dandelion Flower Status',
-          thumbs: constructThumbs('dandelion', 'Dandelion Flower Status maps'),
+          title: 'Pollinator Risk Status',
+          thumbs: constructThumbs('pollinator', 'Pollinator Risk Status maps'),
         }],
       chart: {
         rows: [
@@ -436,11 +436,11 @@ const routeInfo: RouteInfo[] = [
             data: 'daylength',
             colorizer: function (val: number) {
               let backgroundColor = 'rgb(0,170,0)';
-              if (val < 1) {
-                backgroundColor = 'rgb(255,0,0)';
-              } else if (val < 2) {
+              if (val === 1) {
                 backgroundColor = 'rgb(255,215,0)';
-              } else if (val < 3) {
+              } else if (val === 2) {
+                backgroundColor = 'rgb(255,0,0)';
+              } else if (val === 3) {
                 backgroundColor = 'rgb(0,170,0)';
               }
               return backgroundColor;
@@ -448,9 +448,9 @@ const routeInfo: RouteInfo[] = [
           },
         ],
         legend: [
-          ['Low Risk', 'rgb(255,0,0)'],
+          ['Low Risk', 'rgb(0,170,0)'],
           ['Moderate Risk', 'rgb(255,215,0)'],
-          ['Elevated Risk', 'rgb(0,170,0)'],
+          ['Elevated Risk', 'rgb(255,0,0)'],
         ],
         title: '',
       },

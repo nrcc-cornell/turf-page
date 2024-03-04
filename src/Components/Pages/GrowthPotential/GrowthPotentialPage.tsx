@@ -105,7 +105,7 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
     return <InvalidText type='notNY' />;
   } else if (toolProps.isLoading) {
     return <Loading />;
-  } else if (!toolProps.soilSaturation) {
+  } else if (!toolProps.soilSaturation || isBefore(toolProps.today, new Date(toolProps.today.getFullYear(), 2, 10))) {
     return <InvalidText type='outOfSeason' />;
   } else if (toolProps.soilSaturation.length === 0) {
     return <InvalidText type='badData' />;

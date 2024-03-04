@@ -137,7 +137,7 @@ async function getWaterDeficitData(targetDate: Date, lngLat: [number, number], c
   let today = targetDate;
   let outOfSeason = false;
 
-  if (isBefore(today, new Date(today.getFullYear(), 2, 10))) {
+  if (isBefore(today, new Date(today.getFullYear(), 2, 1))) {
     today = new Date(today.getFullYear() - 1, 10, 1);
     outOfSeason = true;
   } else if (isAfter(today, new Date(today.getFullYear(), 9, 31))) {

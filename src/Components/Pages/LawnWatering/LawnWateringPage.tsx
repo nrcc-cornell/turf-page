@@ -38,6 +38,7 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
   } else {
     const todayIdx = toolProps.soilSaturation.length - toolProps.numFcstDays - 1;
     const todaysValue = toolProps.soilSaturation[todayIdx];
+    const dateUsed = toolProps.today.getMonth() < 2 ? new Date(`${toolProps.today.getFullYear() - 1}-${toolProps.soilSaturationDates[todayIdx]}T00:00`) : toolProps.today;
     
     let daysUntilWaterNeeded = 0;
     if (maxEt !== null && maxEt > 0) {
@@ -81,7 +82,7 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
         deficits={toolProps.soilSaturation}
         soilCap={toolProps.soilCap}
         todayIdx={todayIdx}
-        today={toolProps.today}
+        today={dateUsed}
         irrigationDates={toolProps.irrigationDates}
       />
 
@@ -89,7 +90,7 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
         recommendedSoilCap={toolProps.recommendedSoilCap}
         soilCap={toolProps.soilCap}
         setSoilCap={toolProps.setSoilCap}
-        today={toolProps.today}
+        today={dateUsed}
         irrigationDates={toolProps.irrigationDates}
         setIrrigationDates={toolProps.setIrrigationDates}
         irrigationTiming={toolProps.irrigationTiming}
@@ -101,7 +102,7 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
       <WaterSaving
         open={handleOpen}
         close={handleClose}
-        today={toolProps.today}
+        today={dateUsed}
         avoidPlantStressWaterTotal={toolProps.avoidPlantStressWaterTotal}
         avoidDormancyWaterTotal={toolProps.avoidDormancyWaterTotal}
       />

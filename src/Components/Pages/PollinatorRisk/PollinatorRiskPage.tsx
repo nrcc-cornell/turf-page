@@ -39,38 +39,53 @@ type PollinatorProps = {
 
 export default function PollinatorRiskPage(props: PollinatorProps) {
   const sDate = parse(props.gddData[0][0], 'MM-dd-yyyy', new Date());
-  const categoryByDate: [string, number][] = [];
+  const dandelionCats: [string, number][] = [];
+  const cloverCats: [string, number][] = [];
   for (let i = 0; i < props.gddData.length; i++) {
     const currDay = addDays(sDate, i);
+    const currDayStr = format(currDay, 'MM-dd-yyyy');
     const dayOfYear = getDayOfYear(currDay);
     const yesterdayDayLength = calcDaylength(dayOfYear - 1, props.latitude);
     const todayDayLength = calcDaylength(dayOfYear, props.latitude);
+    const gdds = props.gddData[i][1];
 
-    let cat;
-    if (yesterdayDayLength < todayDayLength) {
-      if (todayDayLength < 14.25) {
-        cat = 0;
-      } else if (14.25 <= todayDayLength && todayDayLength < 14.75) {
-        cat = 1;
-      } else {
-        cat = 2;
-      }
+    let dCat, cCat;
+    if (gdds < 350 && todayDayLength > 14.25) {
+      dCat = 349;
+      cCat = 2;
     } else {
-      if (13.5 < todayDayLength) {
-        cat = 2;
+      if (todayDayLength < 14.25) {
+        dCat = 0;
       } else {
-        cat = 3;
+        dCat = gdds;
+      }
+
+      if (yesterdayDayLength < todayDayLength) {
+        if (todayDayLength < 14.25) {
+          cCat = 0;
+        } else if (14.25 <= todayDayLength && todayDayLength < 14.75) {
+          cCat = 1;
+        } else {
+          cCat = 2;
+        }
+      } else {
+        if (13.5 < todayDayLength) {
+          cCat = 2;
+        } else {
+          cCat = 3;
+        }
       }
     }
 
-    categoryByDate.push([format(currDay, 'MM-dd-yyyy'), cat]);
+    dandelionCats.push([currDayStr, dCat]);
+    cloverCats.push([currDayStr, cCat]);
   }
 
   const data = props.pageInfo.chart.rows.reduce((acc, row) => {
     acc.push({
       rowName: row.rowName,
       type: 'dots',
-      data: (row.data === 'daylength' ? categoryByDate : props.gddData).map(arr => row.colorizer(arr[1]))
+      data: (row.rowName === 'Dandelion' ? dandelionCats : cloverCats).map(arr => row.colorizer(arr[1]))
     });
     return acc;
   }, [{
@@ -79,7 +94,7 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
     data: props.gddData.map(arr => arr[0].slice(0,5))
   }] as StringRow[]);
 
-  const todayIdx = data[0].data.findIndex(date => date === format(new Date(), 'MM-dd'));
+  const todayIdx = data[0].data.findIndex(date => date === format(props.today, 'MM-dd'));
   const todayDandelionRisk = data[1].data[todayIdx];
   const todayCloverRisk = data[2].data[todayIdx];
 
