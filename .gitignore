@@ -21,3 +21,4 @@ yarn-error.log*
 
 #production
 /build
+/public/maps

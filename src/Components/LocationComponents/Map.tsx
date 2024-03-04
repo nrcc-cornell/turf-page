@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import mapboxgl from 'mapbox-gl';
 const token =
-  'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2txYjNjMHYxMGF4NTJ1cWhibHNub3BrdiJ9.1T_U5frbnHaHonvFpHenxQ';
+  'pk.eyJ1IjoicHJlY2lwYWRtaW4iLCJhIjoiY2xkdGFiNTVwMXo2cjNycWU1N2syaGw4bSJ9.AGGEeNa70dDIEFL3W6KezQ';
 mapboxgl.accessToken = token;
 import Map, { Popup, ViewState } from 'react-map-gl';
 
@@ -15,11 +15,20 @@ mapboxgl.workerClass =
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker').default;
 
-import Markers from './Markers';
+import Markers, { PopupContent } from './Markers';
 
 import { getLocation } from '../../Scripts/Data';
 import MapBar from './MapBar';
 import roundXDigits from '../../Scripts/Rounding';
+
+export type MapProps = {
+  currentLocation: UserLocation;
+  pastLocations: UserLocation[];
+  handleChangeLocations: (
+    a: 'add' | 'remove' | 'change',
+    b: UserLocation
+  ) => void;
+};
 
 const bounds = { south: 37.09, west: -82.7542 };
 

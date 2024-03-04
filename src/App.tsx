@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Routes,
   Route,
@@ -6,7 +6,6 @@ import {
   useNavigate,
   useLocation,
 } from 'react-router-dom';
-import { format } from 'date-fns';
 
 import { Box } from '@mui/material';
 
@@ -17,26 +16,35 @@ import {
   ShortCuttAd,
   LocationDisplay,
   Home,
-  DailyChart,
-  ConditionalText,
-  RiskGraph,
-  StyledDivider,
-  RiskMaps,
   Loading,
-  StyledButton,
-  Graph,
+  GrowthPotentialPage,
+  PollinatorRiskPage
 } from './Components';
 
-import { AppRouteInfo } from './AppRouteInfo';
-import { usePageTracking } from './Scripts/usePageTracking';
+import { AppRouteInfo, PageInfo } from './AppRouteInfo';
+import { usePageTracking } from './Hooks/usePageTracking';
 
-import { getData } from './Scripts/Data';
-import MultiMapPage from './Components/Pages/MultiMapPage';
-import StyledCard from './Components/Pages/StyledCard';
+import { getData, ToolData } from './Scripts/Data';
+import SoilSaturationPage from './Components/Pages/SoilSaturation/SoilSaturationPage';
+import RunoffRiskPage from './Components/Pages/RunoffRisk/RunoffRiskPage';
+import DiseaseStressRiskPage from './Components/Pages/DiseaseStressRisk/DiseaseStressRiskPage';
+import SeedWeedPage from './Components/Pages/SeedWeed/SeedWeedPage';
+import GraphPage from './Components/Pages/GraphPage/GraphPage';
+import TablePage from './Components/Pages/TablePage/TablePage';
+import GddDiffDaysPage from './Components/Pages/GddDiffDays/GddDiffDaysPage';
+import MapsOnlyPage from './Components/Pages/MapsOnlyPage/MapsOnlyPage';
+import LawnWateringPage from './Components/Pages/LawnWatering/LawnWateringPage';
+import useRunoffApi from './Hooks/useRunoffApi';
+import useSoilInfo, { IrriTimingOption } from './Hooks/useSoilInfo';
+import InvalidText from './Components/InvalidText';
+import { SOIL_DATA } from './Scripts/waterDeficitModel';
+
+
+const today = new Date();
 
 function App() {
-  const [showGraphs, setShowGraphs] = useState(false);
   const [toolData, setToolData] = useState<ToolData | null>(null);
+  const [dataProblem, setDataProblem] = useState(false);
   const [pastLocations, setPastLocations] = useState<UserLocation[]>(() => {
     const pastLocations = localStorage.getItem('pastLocations');
     if (pastLocations) {
@@ -65,6 +73,24 @@ function App() {
   const goTo = useNavigate();
   const reqPage = useLocation().pathname;
   usePageTracking();
+  const {
+    isLoadingCoords,
+    coordsIdxs
+  } = useRunoffApi(currentLocation.lngLat);
+  const {
+    isLoadingSoilInfo,
+    soilSaturation,
+    soilSaturationDates,
+    avgts,
+    recommendedSoilCap,
+    selectedSoilCap,
+    changeSoilCapacity,
+    irrigationDates,
+    setIrrigationDates,
+    irrigationTiming,
+    setIrrigationTiming
+  } = useSoilInfo(today, currentLocation.lngLat, coordsIdxs);
+  const isLoading = isLoadingCoords || isLoadingSoilInfo;
 
   useEffect(() => {
     if (reqPage === '/') {
@@ -79,93 +105,181 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      const data = await getData(currentLocation.lngLat);
-      setToolData(data);
+      try {
+        const data = await getData(currentLocation.lngLat, today);
+        setToolData(data);
+        setDataProblem(false);
+      } catch {
+        setToolData(null);
+        setDataProblem(true);
+      }
     })();
   }, [currentLocation]);
 
-  const renderPage = (info: DataType) => {
+  const renderPage = (info: PageInfo) => {
     if (toolData) {
       let sx = {};
-      if (info.maps.length === 1) {
+      if (info.maps.length === 1 || info.pageType === 'growthPotential') {
         sx = {
           maxWidth: 850,
         };
       }
 
-      let todayIdx = 0;
-      if (info.pageType === 'text') {
-        const today = format(new Date(), 'MM-dd-yyyy');
-        todayIdx = toolData[info.data].table[0].findIndex(arr => arr[0] === today);
+      if (info.pageType === 'risk') {
+        return (
+          <DiseaseStressRiskPage
+            data={toolData[info.chart.rows[0].data]}
+            todayFromAcis={toolData.todayFromAcis}
+            sx={sx}
+            pageInfo={info}
+            today={today}
+          />
+        );
+      } else if (info.pageType === 'seedWeed') {
+        return (
+          <SeedWeedPage
+            data={toolData[info.chart.rows[0].data]}
+            todayFromAcis={toolData.todayFromAcis}
+            sx={sx}
+            pageInfo={info}
+            today={today}
+          />
+        );
+      } else if (info.pageType === 'graph') {
+        return (
+          <GraphPage
+            data={toolData[info.chart.data]}
+            todayFromAcis={toolData.todayFromAcis}
+            sx={sx}
+            pageInfo={info}
+            today={today}
+          />
+        );
+      } else if (info.pageType === 'table') {
+        return (
+          <TablePage
+            data={toolData[info.chart.data]}
+            todayFromAcis={toolData.todayFromAcis}
+            sx={sx}
+            pageInfo={info}
+            today={today}
+          />
+        );
+      } else if (info.pageType === 'text') {
+        return (
+          <GddDiffDaysPage
+            data={toolData[info.data].table}
+            sx={sx}
+            pageInfo={info}
+          />
+        );
+      } else if (info.pageType === 'mapsOnly') {
+        return (
+          <MapsOnlyPage
+            sx={sx}
+            pageInfo={info}
+          />
+        );
+      } else if (info.pageType === 'growthPotential') {
+        return (
+          <GrowthPotentialPage
+            today={today}
+            currentLocation={currentLocation}
+            pastLocations={pastLocations}
+            handleChangeLocations={handleChangeLocations}
+            sx={sx}
+            isLoading={isLoading}
+            setIrrigationDates={setIrrigationDates}
+            setSoilCap={changeSoilCapacity}
+            soilSaturation={soilSaturation ? soilSaturation[irrigationTiming as IrriTimingOption].saturations : null}
+            soilSaturationDates={soilSaturationDates || []}
+            avgts={avgts || []}
+            recommendedSoilCap={recommendedSoilCap}
+            soilCap={selectedSoilCap}
+            irrigationDates={irrigationDates}
+            irrigationTiming={irrigationTiming}
+            setIrrigationTiming={setIrrigationTiming}
+          />
+        );
+      } else if (info.pageType === 'runoffRisk') {
+        return (
+          <RunoffRiskPage
+            today={today}
+            currentLocation={currentLocation}
+            pastLocations={pastLocations}
+            handleChangeLocations={handleChangeLocations}
+            coordsIdxs={coordsIdxs}
+          />
+        );
+      } else if (info.pageType === 'soilSat') {
+        const fc = SOIL_DATA.soilmoistureoptions[selectedSoilCap].fieldcapacity;
+        const deficits = soilSaturation ? soilSaturation[irrigationTiming as IrriTimingOption].deficits.map(deficit => (fc + deficit) / 6) : null;
+        
+        return (
+          <SoilSaturationPage
+            currentLocation={currentLocation}
+            pastLocations={pastLocations}
+            handleChangeLocations={handleChangeLocations}
+            today={today}
+            pageInfo={info}
+            todayFromAcis={toolData.todayFromAcis}
+            isLoading={isLoading}
+            setIrrigationDates={setIrrigationDates}
+            setSoilCap={changeSoilCapacity}
+            soilSaturation={deficits}
+            soilSaturationDates={soilSaturationDates || []}
+            recommendedSoilCap={recommendedSoilCap}
+            soilCap={selectedSoilCap}
+            irrigationDates={irrigationDates}
+            irrigationTiming={irrigationTiming}
+            setIrrigationTiming={setIrrigationTiming}
+          />
+        );
+      } else if (info.pageType === 'pollinator') {
+        return ( 
+          <PollinatorRiskPage
+            latitude={currentLocation.lngLat[1]}
+            gddData={toolData.gdd50.table[0]}
+            pageInfo={info}
+            todayFromAcis={toolData.todayFromAcis}
+            today={today}
+          />
+        );
+      } else if (info.pageType === 'lawn-watering') {
+        let ssVals: number[] = [];
+        let apswt = 0;
+        let adwt = 0;
+        let nfd = 0;
+        if (soilSaturation) {
+          ssVals = soilSaturation[irrigationTiming as IrriTimingOption].deficits;
+          apswt = soilSaturation.avoidPlantStress.wateringTotal[0];
+          adwt = soilSaturation.avoidDormancy.wateringTotal[0];
+          nfd = soilSaturation.numFcstDays;
+        }
+
+        return (
+          <LawnWateringPage
+            today={today}
+            currentLocation={currentLocation}
+            isLoading={isLoading}
+            setIrrigationDates={setIrrigationDates}
+            setSoilCap={changeSoilCapacity}
+            avoidPlantStressWaterTotal={apswt}
+            avoidDormancyWaterTotal={adwt}
+            soilSaturation={soilSaturation ? ssVals : null}
+            soilSaturationDates={soilSaturationDates || []}
+            numFcstDays={nfd}
+            recommendedSoilCap={recommendedSoilCap}
+            soilCap={selectedSoilCap}
+            irrigationDates={irrigationDates}
+            irrigationTiming={irrigationTiming}
+            setIrrigationTiming={setIrrigationTiming}
+            coordsIdxs={coordsIdxs}
+          />
+        );
       }
-
-      return (
-        <StyledCard variant='outlined' sx={sx}>
-          {(info.pageType === 'graph' || info.pageType === 'table') && (
-            <DailyChart
-              data={toolData[info.chart.data].table}
-              rowNames={info.chart.rowNames}
-              todayFromAcis={toolData.todayFromAcis}
-              title={info.chart.title}
-            />
-          )}
-
-          {info.pageType === 'text' && (
-            <ConditionalText
-              fromLast={
-                toolData[info.data].table[0][todayIdx][1]
-              }
-              fromNormal={
-                toolData[info.data].table[1][todayIdx][1]
-              }
-            />
-          )}
-
-          {info.pageType === 'seedWeed' && (
-            <DailyChart
-              {...info.chart}
-              data={toolData[info.chart.data]}
-              todayFromAcis={toolData.todayFromAcis}
-            />
-          )}
-
-          {info.pageType === 'risk' && (
-            <RiskGraph
-              data={toolData[info.chart.data]}
-              todayFromAcis={toolData.todayFromAcis}
-              thresholds={info.chart.rows[0].thresholds}
-              title={info.chart.title}
-            />
-          )}
-
-          {info.pageType !== 'mapsOnly' && <StyledDivider />}
-
-          {info.pageType === 'graph' && (
-            <Box sx={{ width: '100%', textAlign: 'center' }}>
-              {showGraphs ? (
-                <StyledButton onClick={() => setShowGraphs(false)}>
-                  Show Current Maps
-                </StyledButton>
-              ) : (
-                <StyledButton onClick={() => setShowGraphs(true)}>
-                  Show Season Graphs
-                </StyledButton>
-              )}
-            </Box>
-          )}
-
-          {info.pageType === 'risk' || info.pageType === 'seedWeed' ? (
-            <RiskMaps maps={info.maps} text={info.text} />
-          ) : info.pageType === 'graph' && showGraphs ? (
-            <Graph
-              {...toolData[info.chart.data]}
-              units={info.chart.data === 'precip' ? 'inches' : 'GDDs'}
-            />
-          ) : (
-            <MultiMapPage maps={info.maps as MapPageProps[]} />
-          )}
-        </StyledCard>
-      );
+    } else if (dataProblem) {
+      return <InvalidText type='dataProblem' />;
     } else {
       return <Loading />;
     }
@@ -203,16 +317,6 @@ function App() {
     }
   };
 
-  const memoizedRoutes = useMemo(() => {
-    return AppRouteInfo.map((routeInfo) => (
-      <Route
-        key={routeInfo.path}
-        path={routeInfo.path}
-        element={renderPage(routeInfo.props)}
-      />
-    ));
-  }, [toolData, showGraphs, AppRouteInfo]);
-
   return (
     <Box
       sx={{
@@ -240,7 +344,7 @@ function App() {
           '@media (max-width: 862px)': {
             padding: '20px 12px',
           },
-          '@media (max-width: 640px)': {
+          '@media (max-width: 712px)': {
             minHeight: 'calc(100vh - 293px)',
             padding: '20px 6px',
           },
@@ -249,7 +353,13 @@ function App() {
         <Routes>
           <Route path='/' element={<Home />} />
 
-          {memoizedRoutes}
+          {AppRouteInfo.map((routeInfo) => (
+            <Route
+              key={routeInfo.path}
+              path={routeInfo.path}
+              element={renderPage(routeInfo.props)}
+            />
+          ))}
 
           <Route path='*' element={<Navigate to='/' replace />} />
         </Routes>

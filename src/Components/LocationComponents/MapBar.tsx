@@ -7,7 +7,21 @@ import {
 } from '@mui/material';
 
 import { states } from '../../Scripts/Data';
-import StyledButton from '../Pages/StyledBtn';
+import StyledButton from '../StyledBtn';
+
+type MapBarProps = {
+  token: string;
+  bounds: {
+    south: number;
+    west: number;
+  };
+  handleChangeLocations: (
+    a: 'add' | 'change' | 'remove',
+    b: UserLocation
+  ) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mapRef: any;
+};
 
 
 export default function MapBar(props: MapBarProps ) {
@@ -52,7 +66,8 @@ export default function MapBar(props: MapBarProps ) {
         }
       })
       .catch(e => {
-        console.log(e);
+        console.error(e);
+        console.warn('failed mapbar search');
         return false;
       });
   };
