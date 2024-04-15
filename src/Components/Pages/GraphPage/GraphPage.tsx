@@ -128,7 +128,7 @@ export default function GraphPage(props: GraphPageProps) {
 
       {showGraphs ? (
         <Graph
-          {...props.data}
+          {...JSON.parse(JSON.stringify(props.data))}
           units={props.pageInfo.chart.data === 'precip' ? 'inches' : 'GDDs'}
         />
       ) : <MultiMapPage maps={props.pageInfo.maps as MultiMapPageMaps} />}

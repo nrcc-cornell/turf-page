@@ -421,7 +421,7 @@ const routeInfo: RouteInfo[] = [
             data: 'gdd50',
             colorizer: function (val: number) {
               let backgroundColor = 'rgb(0,170,0)';
-              if (val < 40) {
+              if (val < 20) {
                 backgroundColor = 'rgb(0,170,0)';
               } else if (val < 100) {
                 backgroundColor = 'rgb(255,215,0)';
