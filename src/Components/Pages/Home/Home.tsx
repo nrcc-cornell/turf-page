@@ -46,7 +46,7 @@ export default function Home() {
     if (storedFavMaps) {
       setFavMaps(JSON.parse(storedFavMaps));
     } else {
-      setFavMaps([22, 23, 18, 19]);
+      setFavMaps([24, 23, 18, 19]);
     }
   }, []);
 
