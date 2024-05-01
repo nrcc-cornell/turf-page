@@ -61,7 +61,9 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
     }
 
     let cCat;
-    if (yesterdayDayLength < todayDayLength) {
+    if (todayDayLength > 14.75) {
+      cCat = 3;
+    } else if (yesterdayDayLength < todayDayLength) {
       cCat = todayDayLength < 14.25 ? 1 : 2;
     } else {
       cCat = todayDayLength > 13.5 ? 3 : 4;
