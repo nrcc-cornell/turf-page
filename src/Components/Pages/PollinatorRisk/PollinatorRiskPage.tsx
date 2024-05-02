@@ -49,32 +49,24 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
     const todayDayLength = calcDaylength(dayOfYear, props.latitude);
     const gdds = props.gddData[i][1];
 
-    let dCat, cCat;
-    if (gdds < 350 && todayDayLength > 14.25) {
-      dCat = 349;
-      cCat = 2;
+    let dCat;
+    if (gdds < 20) {
+      dCat = 1;
+    } else if (gdds < 100) {
+      dCat = 2;
+    } else if (gdds < 350) {
+      dCat = 3;
     } else {
-      if (todayDayLength < 14.25) {
-        dCat = 0;
-      } else {
-        dCat = gdds;
-      }
+      dCat = 4;
+    }
 
-      if (yesterdayDayLength < todayDayLength) {
-        if (todayDayLength < 14.25) {
-          cCat = 0;
-        } else if (14.25 <= todayDayLength && todayDayLength < 14.75) {
-          cCat = 1;
-        } else {
-          cCat = 2;
-        }
-      } else {
-        if (13.5 < todayDayLength) {
-          cCat = 2;
-        } else {
-          cCat = 3;
-        }
-      }
+    let cCat;
+    if (todayDayLength > 14.75) {
+      cCat = 3;
+    } else if (yesterdayDayLength < todayDayLength) {
+      cCat = todayDayLength < 14.25 ? 1 : 2;
+    } else {
+      cCat = todayDayLength > 13.5 ? 3 : 4;
     }
 
     dandelionCats.push([currDayStr, dCat]);
@@ -94,9 +86,11 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
     data: props.gddData.map(arr => arr[0].slice(0,5))
   }] as StringRow[]);
 
-  const todayIdx = data[0].data.findIndex(date => date === format(props.today, 'MM-dd'));
-  const todayDandelionRisk = data[1].data[todayIdx];
-  const todayCloverRisk = data[2].data[todayIdx];
+  const todayIdx = dandelionCats.findIndex(day => day[0] === format(props.today, 'MM-dd-yyyy'));
+  
+  console.log(dandelionCats);
+  const todayDandelionRisk = dandelionCats[todayIdx][1];
+  const todayCloverRisk = cloverCats[todayIdx][1];
 
   return (
     <StyledCard
@@ -127,7 +121,7 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
         <>
           <StyledDivider />
 
-          <PollinatorConditionalText text={[{ name: 'Dandelion', color: todayDandelionRisk}, { name: 'White Clover', color: todayCloverRisk }]} />
+          <PollinatorConditionalText dandelion={todayDandelionRisk} whiteClover={todayCloverRisk} />
         </>
       }
 

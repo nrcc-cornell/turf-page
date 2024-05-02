@@ -216,7 +216,7 @@ export default function LocationModal(props: ModalProps) {
       >
         <Fade in={open}>
           <Box sx={style}>
-            <Map {...props} />
+            <Map {...props} isVisible={open} />
 
             {showRadar}
 

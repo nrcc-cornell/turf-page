@@ -421,11 +421,9 @@ const routeInfo: RouteInfo[] = [
             data: 'gdd50',
             colorizer: function (val: number) {
               let backgroundColor = 'rgb(0,170,0)';
-              if (val < 40) {
-                backgroundColor = 'rgb(0,170,0)';
-              } else if (val < 100) {
+              if (val === 2) {
                 backgroundColor = 'rgb(255,215,0)';
-              } else if (val < 350) {
+              } else if (val === 3) {
                 backgroundColor = 'rgb(255,0,0)';
               }
               return backgroundColor;
@@ -436,12 +434,10 @@ const routeInfo: RouteInfo[] = [
             data: 'daylength',
             colorizer: function (val: number) {
               let backgroundColor = 'rgb(0,170,0)';
-              if (val === 1) {
+              if (val === 2) {
                 backgroundColor = 'rgb(255,215,0)';
-              } else if (val === 2) {
-                backgroundColor = 'rgb(255,0,0)';
               } else if (val === 3) {
-                backgroundColor = 'rgb(0,170,0)';
+                backgroundColor = 'rgb(255,0,0)';
               }
               return backgroundColor;
             },
@@ -587,7 +583,7 @@ const routeInfo: RouteInfo[] = [
       pageType: 'table',
       chart: {
         data: 'temp',
-        title: 'Temperature Depature',
+        title: 'Temperature Departure',
         rowNames: ['Average', 'Departure'],
       },
       maps: [

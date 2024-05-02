@@ -2,58 +2,65 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 
 type PCTProps = {
-  text: {
-    name: string;
-    color: string;
-  }[];
+  dandelion: number;
+  whiteClover: number;
 }
 
-const colorToText = (type: string, color: string) => {
-  const textType = type.slice(0,1).toUpperCase() + type.slice(1).toLocaleLowerCase();
-  if (color === 'rgb(0,170,0)') {
-    return `${textType} is not yet flowering`;
-  } else if (color === 'rgb(255,215,0)' && textType === 'Dandelion') {
-    return 'Dandelion is beginning to flower. Pollinators will be attracted to dandelion flowers early in the Spring due to the scarcity of other flowering plants. Avoid insecticide applications at this time to reduce risk to pollinators.';
-  } else if (color === 'rgb(255,215,0)' && textType === 'White clover') {
-    return 'White clover is beginning to flower. If insecticide applications are required, mow off clover flowers prior to application, water-in insecticides as label requires, and apply when pollinators are inactive at night, the early morning, or evening.';
-  } else if (color === 'rgb(255,0,0)') {
-    return `${textType} is flowering. If insecticide applications are required, mow off ${textType.toLowerCase()} flowers prior to application, water-in insecticides as label requires, and apply when pollinators are inactive at night, the early morning or evening.`;
-  } else if (color === 'rgb(170,170,170)') {
-    return `${textType} is no longer flowering`;
+export default function PollinatorConditionalText({ dandelion , whiteClover }: PCTProps) {
+  console.log(dandelion, whiteClover);
+  
+  let risk = '';
+  let status = '';
+  let callToAction = 'If insecticide applications are required, mow off flowers prior to application, water-in inseticides as label requires, and apply when pollinators are inactive at night, early morning, or evening.';
+  if ((dandelion === 1 || dandelion === 4) && (whiteClover === 1 || whiteClover === 4)) {
+    risk = 'Pollinator risk in the lawn is low.';
+    status = 'Dandelion and clover are not flowering at this time.';
+    callToAction = '';
+  } else if (dandelion === 3 || whiteClover === 3) {
+    risk = 'Pollinator risk in the lawn is high.';
+    if (dandelion === 3 && whiteClover === 3) {
+      status = 'Clover and Dandelion are in flower';
+    } else if (dandelion === 3 && whiteClover === 2) {
+      status = 'Dandelion is in flower and Clover is beginning to flower.';
+    } else if (dandelion === 3 && (whiteClover === 1 || whiteClover === 4)) {
+      status = 'Dandelion is flowering.';
+    } else if (dandelion === 2 && whiteClover === 3) {
+      status = 'Clover is in flower and Dandelion is beginning to flower.';
+    } else if ((dandelion === 1 || dandelion === 4) && whiteClover === 3) {
+      status = 'Clover is flowering.';
+    }
+  } else {
+    risk = 'Pollinator risk in the lawn is moderate.';
+    if (dandelion === 2) {
+      status = whiteClover === 2 ? 'Clover and Dandelion are beginning to flower.' : 'Dandelion is beginning to flower.';
+    } else {
+      status = 'Clover is beginning to flower.';
+    }
   }
-};
 
-export default function PollinatorConditionalText(props: PCTProps) {
+  console.log(risk, status, callToAction);
+  
   return (
     <Box sx={{
       display: 'flex',
-      justifyContent: 'space-evenly',
-      margin: '0 auto',
-      width: '98%',
-      gap: '10px',
-      '@media (max-width: 558px)': {
-        flexDirection: 'column',
-        gap: '20px'
-      }
+      justifyContent: 'center'
     }}>
-      {props.text.map(({name, color}, i) => (
-        <Box key={name + i} sx={{
-          width: '50%',
-          '@media (max-width: 558px)': {
-            width: '100%',
-          }
-        }}>
-          <Typography variant='h5'>Pollinator Protection - {name}</Typography>
-          <Box sx={{ paddingLeft: '20px' }}>
-            <Typography
-              variant='mapPage'
-              sx={{
-                lineHeight: '1.2'
-              }}
-            >{colorToText(name, color)}</Typography>
-          </Box>
+      <Box sx={{
+        width: '50%',
+        '@media (max-width: 558px)': {
+          width: '100%',
+        }
+      }}>
+        <Typography variant='h5'>Pollinator Protection</Typography>
+        <Box sx={{ paddingLeft: '20px' }}>
+          <Typography
+            variant='mapPage'
+            sx={{
+              lineHeight: '1.2'
+            }}
+          >{risk} {status} {callToAction}</Typography>
         </Box>
-      ))}
+      </Box>
     </Box>
   );
 }

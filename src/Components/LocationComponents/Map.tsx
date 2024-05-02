@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 import { Box } from '@mui/material';
 
@@ -21,7 +21,8 @@ import { getLocation } from '../../Scripts/Data';
 import MapBar from './MapBar';
 import roundXDigits from '../../Scripts/Rounding';
 
-export type MapProps = {
+type MapProps = {
+  isVisible: boolean;
   currentLocation: UserLocation;
   pastLocations: UserLocation[];
   handleChangeLocations: (
@@ -89,6 +90,12 @@ export default function MapComp(props: MapProps) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any | null>(null);
+
+  useEffect(() => {
+    if (mapRef && mapRef.current && props.isVisible) {
+      mapRef.current.resize();
+    }
+  }, [mapRef, props.isVisible]);
 
   const handlePanning = (view: ViewState) => {
     if (view.latitude > 47.53 || view.latitude < bounds.south) {
