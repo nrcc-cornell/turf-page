@@ -583,7 +583,7 @@ const routeInfo: RouteInfo[] = [
       pageType: 'table',
       chart: {
         data: 'temp',
-        title: 'Temperature Depature',
+        title: 'Temperature Departure',
         rowNames: ['Average', 'Departure'],
       },
       maps: [
