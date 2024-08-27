@@ -53,9 +53,7 @@ const fetchTempPrcpData = async (loc: [number, number], eDate: string) => {
 
 const fetchETData = (coords: number[], year: number) => {
   return fetch(
-    `https:///csf-irrigation-api-worker.rcc-acis.workers.dev/?lat=${coords[1]}&lon=${coords[0]}&year=${year}`,
-    // `https://x6xfv2cdrl.execute-api.us-east-1.amazonaws.com/production/irrigation?lat=${coords[1]}&lon=${coords[0]}&year=${year}`
-    { headers: { 'Authorization': 'api-4a0607-token' } }
+    `https:///csf-irrigation-api-worker.rcc-acis.workers.dev/?lat=${coords[1]}&lon=${coords[0]}&year=${year}`
   )
     .then((response) => response.json())
     .catch(() => null);
