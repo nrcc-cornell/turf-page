@@ -36,12 +36,18 @@ const renderTools = (toolProps: LawnWateringPageProps,  handleOpen: (event: Reac
   } else if (toolProps.soilSaturation.length === 0) {
     return <InvalidText type='badData' />;
   } else {
-    const todayIdx = toolProps.soilSaturation.length - toolProps.numFcstDays - 1;
-    const todaysValue = toolProps.soilSaturation[todayIdx];
+    let todayIdx = toolProps.soilSaturation.length - toolProps.numFcstDays - 1;
+    if (toolProps.soilSaturation.length <= todayIdx) {
+      todayIdx = toolProps.soilSaturation.length - 1;
+    }
+
     const dateUsed = toolProps.today.getMonth() < 2 ? new Date(`${toolProps.today.getFullYear() - 1}-${toolProps.soilSaturationDates[todayIdx]}T00:00`) : toolProps.today;
+    const todaysValue = dateUsed.getMonth() < 3 ? null : toolProps.soilSaturation[todayIdx];
     
     let daysUntilWaterNeeded = 0;
-    if (maxEt !== null && maxEt > 0) {
+    if (todaysValue === null) {
+      daysUntilWaterNeeded = -1;
+    } else if (maxEt !== null && maxEt > 0) {
       const endPoint = toolProps.irrigationTiming === 'avoidPlantStress' ? SOIL_DATA.soilmoistureoptions[toolProps.soilCap].stressthreshold : SOIL_DATA.soilmoistureoptions[toolProps.soilCap].prewiltingpoint;
       const wateringThreshold = endPoint - SOIL_DATA.soilmoistureoptions[toolProps.soilCap].fieldcapacity;
       let deficit = todaysValue;
