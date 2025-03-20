@@ -65,10 +65,11 @@ const calcGrowthPotential = (soilSats: number[], avgTemps: number[], dates: stri
     const thisYear = today.getFullYear();
 
     const tempValues: number[] = [];
-    for (let i = 0; i < soilSats.length; i++) {
-      const date = thisYear + dates[i].split('-').join('');
-      const ssValue = soilSats[i];
-      const atValue = avgTemps[i];
+    for (let i = numDaysToProcess; i > 0; i--) {
+      const targetIdx = dates.length - i;
+      const date = thisYear + dates[targetIdx].split('-').join('');
+      const ssValue = soilSats[targetIdx];
+      const atValue = avgTemps[targetIdx];
 
       const gp = growthPotentialModel(
         loc.lngLat[1],
@@ -112,15 +113,15 @@ const renderTools = (toolProps: GrowthPotentialPageProps, numDaysToProcess: numb
   } else {
     const THRESHOLDS = [0, 25, 66];
     const growthPotentialOutput = calcGrowthPotential(toolProps.soilSaturation, toolProps.avgts, toolProps.soilSaturationDates, toolProps.currentLocation, toolProps.today, numDaysToProcess);
-    const today = format(toolProps.today, 'MM-dd');
-    let todayIdx = toolProps.soilSaturationDates.findIndex(d => d === today) - 4;  // -4 to adjust for 5-day average
-    if (todayIdx < 0) todayIdx = toolProps.soilSaturationDates.length - 5;
+    const today = format(toolProps.today, 'yyyyMMdd');
+    let todayIdx = growthPotentialOutput === null ? null : growthPotentialOutput.dates.findIndex(d => d === today);
+    if (todayIdx !== null && todayIdx < 0) todayIdx = null;
 
     const overlayDates = Array.from({length: 5}, (v, i) => format(addDays(toolProps.today, i), 'yyyyMMdd'));
 
     return (<>
       <GrowthPotentialConditionalText
-        today={toolProps.today}
+        todayIdx={todayIdx}
         gpOutput={growthPotentialOutput}
         thresholds={THRESHOLDS}
       />
