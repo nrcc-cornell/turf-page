@@ -1,12 +1,11 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { format } from 'date-fns';
 
 import { GrowthPotentialModelOutput } from './GrowthPotentialPage';
 
 type GPCTProps = {
   gpOutput: GrowthPotentialModelOutput | null,
-  today: Date,
+  todayIdx: number|null,
   thresholds: number[]
 }
 
@@ -16,18 +15,19 @@ export default function GrowthPotentialConditionalText(props: GPCTProps) {
   if (!props.gpOutput) {
     text = 'There was a problem getting data for this model. Please refresh to try again.';
   } else {
-    const todayStr = format(props.today, 'yyyyMMdd');
-    const iOfToday = props.gpOutput.dates.findIndex((date) => date === todayStr);
-    const value = props.gpOutput.values[iOfToday];
-    if (value === undefined) {
-      text = 'Out of season.';
-    } else if (value < props.thresholds[1]) {
+    const idx = props.todayIdx === null ? props.gpOutput.values.length - 1 : props.todayIdx;
+    const value = props.gpOutput.values[idx];
+    if (value < props.thresholds[1]) {
       text = 'Mowing frequency can be reduced while still following the one third rule.';
     } else if (value < props.thresholds[2]) {
       text = 'Maintain standard mowing frequency.';
     } else {
       text = 'Mowing frequency can be increased.';
     }
+
+    const date = props.gpOutput.dates[idx].slice(4).split('');
+    date.splice(2,0,'-');
+    text = `For ${date.join('')}: ` + text;
   }
   
   return (

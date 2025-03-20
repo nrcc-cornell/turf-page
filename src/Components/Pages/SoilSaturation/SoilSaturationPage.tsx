@@ -33,14 +33,17 @@ const renderTools = (toolProps: SoilSaturationPageProps) => {
   } else if (!toolProps.soilSaturation) {
     return <InvalidText type='outOfSeason' />;
   } else {
-    const data = toolProps.soilSaturation.length > 0 ? [{
+    const ssDates = toolProps.soilSaturationDates;
+    const ssValues = toolProps.soilSaturation.slice(0, ssDates.length);
+
+    const data = ssDates.length > 0 ? [{
       rowName: 'As of 8am On',
       type: 'dates',
-      data: toolProps.soilSaturationDates.slice(-6)
+      data: ssDates.slice(-6)
     },{
       rowName: toolProps.pageInfo.chart.rowNames[0],
       type: 'numbers',
-      data: toolProps.soilSaturation.slice(-6).map(val => roundXDigits(val, 2))
+      data: ssValues.slice(-6).map(val => roundXDigits(val, 2))
     }] as (StringRow | NumberRow)[] : null;
 
     return data === null ? <InvalidText type='badData' /> :

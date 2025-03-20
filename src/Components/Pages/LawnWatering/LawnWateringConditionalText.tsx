@@ -6,7 +6,7 @@ import roundXDigits from '../../../Scripts/Rounding';
 
 type LWCTProps = {
   soilcap: SoilMoistureOptionLevel;
-  today: number;
+  today: number|null;
   daysUntilWaterNeeded: number;
   open: (event: React.MouseEvent<SVGSVGElement>, desc: string) => void;
   close: () => void;
@@ -31,8 +31,8 @@ export default function LawnWateringConditionalText(props: LWCTProps) {
   ];
 
   const adjustment = SOIL_DATA.soilmoistureoptions[props.soilcap].fieldcapacity - SOIL_DATA.soilmoistureoptions[props.soilcap].stressthreshold;
-  const todayAdjusted = props.today + adjustment;
-  
+  const todayAdjusted = props.today === null ? null : props.today + adjustment;
+
   return (
     <Box
       sx={{
@@ -60,7 +60,7 @@ export default function LawnWateringConditionalText(props: LWCTProps) {
             sx={{
               lineHeight: '1.2', fontWeight: 'bold'
             }}
-          >{valueToText(todayAdjusted, breakpoints, SOIL_DATA.soilRecommendations.text)}</Typography>
+          >{todayAdjusted === null ? 'Too early in the season to water' : valueToText(todayAdjusted, breakpoints, SOIL_DATA.soilRecommendations.text)}</Typography>
         </Box>
       </Box>
 

@@ -7,8 +7,6 @@ type PCTProps = {
 }
 
 export default function PollinatorConditionalText({ dandelion , whiteClover }: PCTProps) {
-  console.log(dandelion, whiteClover);
-  
   let risk = '';
   let status = '';
   let callToAction = 'If insecticide applications are required, mow off flowers prior to application, water-in inseticides as label requires, and apply when pollinators are inactive at night, early morning, or evening.';
@@ -38,8 +36,6 @@ export default function PollinatorConditionalText({ dandelion , whiteClover }: P
     }
   }
 
-  console.log(risk, status, callToAction);
-  
   return (
     <Box sx={{
       display: 'flex',

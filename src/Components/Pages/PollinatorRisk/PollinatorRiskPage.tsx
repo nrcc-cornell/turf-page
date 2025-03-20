@@ -87,8 +87,6 @@ export default function PollinatorRiskPage(props: PollinatorProps) {
   }] as StringRow[]);
 
   const todayIdx = dandelionCats.findIndex(day => day[0] === format(props.today, 'MM-dd-yyyy'));
-  
-  console.log(dandelionCats);
   const todayDandelionRisk = dandelionCats[todayIdx][1];
   const todayCloverRisk = cloverCats[todayIdx][1];
 

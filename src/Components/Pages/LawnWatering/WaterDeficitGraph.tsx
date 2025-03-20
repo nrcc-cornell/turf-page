@@ -122,9 +122,7 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
   // Shift deficits to have stress threshold be 0 on the new scale (instead of field capacity as is output from the model)
   const adjustment = SOIL_DATA.soilmoistureoptions[props.soilCap].fieldcapacity - SOIL_DATA.soilmoistureoptions[props.soilCap].stressthreshold;
   const adjustedDeficits = props.deficits.map(val => val + adjustment);
-  const defMin = Math.min(...adjustedDeficits) - 0.1;
-  const defMax = Math.max(...adjustedDeficits) + 0.1;
-
+  
   const { plotLines, plotBands, breakpoints }  = getPlotBandsLinesBreakpoints(adjustedDeficits[props.todayIdx], props.soilCap);
   const observedDeficits = colorPoints(breakpoints, adjustedDeficits.slice(0,props.todayIdx + 1).concat(Array(adjustedDeficits.length - (props.todayIdx + 1)).fill(null)));
   const forecastedDeficits = colorPoints(breakpoints, Array(props.todayIdx + 1).fill(null).concat(adjustedDeficits.slice(props.todayIdx + 1)));
@@ -137,6 +135,17 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
       dates.pop();
     }
   }
+  
+  let lastVal = observedDeficits[observedDeficits.length - 1].y;
+  while (typeof lastVal === 'number' && isNaN(lastVal)) {
+    adjustedDeficits.pop();
+    observedDeficits.pop();
+    forecastedDeficits.pop();
+    lastVal = observedDeficits[observedDeficits.length - 1].y;
+  }
+  
+  const defMin = Math.min(...adjustedDeficits) - 0.1;
+  const defMax = Math.max(...adjustedDeficits) + 0.1;
 
   const options = {
     credits: {
