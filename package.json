@@ -27,8 +27,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build --remote ghpages"
+    "replaceStatic": "aws s3 sync --delete build/static/ s3://turf.eas.cornell.edu/static/",
+    "replaceManifest": "aws s3 cp build/asset-manifest.json s3://turf.eas.cornell.edu/asset-manifest.json",
+    "replaceIndexHtml": "aws s3 cp build/index.html s3://turf.eas.cornell.edu/index.html",
+    "predeploy": "react-scripts build",
+    "deploy": "npm run replaceStatic && npm run replaceManifest && npm run replaceIndexHtml"
   },
   "eslintConfig": {
     "extends": [
