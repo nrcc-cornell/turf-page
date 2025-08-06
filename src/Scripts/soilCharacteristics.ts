@@ -100,6 +100,8 @@ const fetchSoilColumnDataViaPostRest = (lngLat: [number, number]) => {
 };
 
 const convertIntoSoilTypes = (soilColumnData: SDMReturn) => {
+  if (!soilColumnData) return [];
+  
   const sortedByName = soilColumnData.reduce((acc: SoilTypeReduce, horizon: string[]) => {
     if (!(horizon[6] in acc)) acc[horizon[6]] = { percent: parseInt(horizon[5]), horizons: [] };
     acc[horizon[6]].horizons.push(horizon.slice(0,5).map(val => val === null ? null : parseInt(val)));
