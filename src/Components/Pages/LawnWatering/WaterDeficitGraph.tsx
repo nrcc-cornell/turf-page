@@ -51,14 +51,14 @@ const colorPoints = (bounds: number[], values: (number | null)[]) => {
   });
 };
 
-const getPlotBandsLinesBreakpoints = (todayDeficit: number, soilCap: SoilMoistureOptionLevel, ) => {
+const getPlotBandsLinesBreakpoints = (todayMoisture: number, soilCap: SoilMoistureOptionLevel, ) => {
   const soilConstants = SOIL_DATA.soilmoistureoptions[soilCap];
 
   const breakpoints = [
-    roundXDigits(soilConstants.saturation - soilConstants.stressthreshold, 3),
-    roundXDigits(soilConstants.fieldcapacity - soilConstants.stressthreshold, 3),
-    roundXDigits(soilConstants.stressthreshold - soilConstants.stressthreshold, 3),
-    roundXDigits(soilConstants.prewiltingpoint - soilConstants.stressthreshold, 3)
+    roundXDigits(100 * soilConstants.saturation / SOIL_DATA.soilDepth, 3),
+    roundXDigits(100 * soilConstants.fieldcapacity / SOIL_DATA.soilDepth, 3),
+    roundXDigits(100 * soilConstants.stressthreshold / SOIL_DATA.soilDepth, 3),
+    roundXDigits(100 * soilConstants.prewiltingpoint / SOIL_DATA.soilDepth, 3)
   ];
 
   const plotLines = breakpoints.map((bp, i) => ({
@@ -83,7 +83,7 @@ const getPlotBandsLinesBreakpoints = (todayDeficit: number, soilCap: SoilMoistur
   const plotBands = breakpoints.map((bp, i) => {
     const high = i === 0 ? 99 : bp;
     const low = breakpoints[i + 1] === undefined ? -99 : breakpoints[i + 1];
-    const todayInBand = low <= todayDeficit && todayDeficit < high;
+    const todayInBand = low <= todayMoisture && todayMoisture < high;
 
     return {
       to: high,
@@ -120,32 +120,32 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
   };
 
   // Shift deficits to have stress threshold be 0 on the new scale (instead of field capacity as is output from the model)
-  const adjustment = SOIL_DATA.soilmoistureoptions[props.soilCap].fieldcapacity - SOIL_DATA.soilmoistureoptions[props.soilCap].stressthreshold;
-  const adjustedDeficits = props.deficits.map(val => val + adjustment);
+  const fc = SOIL_DATA.soilmoistureoptions[props.soilCap].fieldcapacity;
+  const soilMoistures = props.deficits.map(val => (val + fc) / SOIL_DATA.soilDepth * 100);
   
-  const { plotLines, plotBands, breakpoints }  = getPlotBandsLinesBreakpoints(adjustedDeficits[props.todayIdx], props.soilCap);
-  const observedDeficits = colorPoints(breakpoints, adjustedDeficits.slice(0,props.todayIdx + 1).concat(Array(adjustedDeficits.length - (props.todayIdx + 1)).fill(null)));
-  const forecastedDeficits = colorPoints(breakpoints, Array(props.todayIdx + 1).fill(null).concat(adjustedDeficits.slice(props.todayIdx + 1)));
+  const { plotLines, plotBands, breakpoints }  = getPlotBandsLinesBreakpoints(soilMoistures[props.todayIdx], props.soilCap);
+  const observedMoistures = colorPoints(breakpoints, soilMoistures.slice(0,props.todayIdx + 1).concat(Array(soilMoistures.length - (props.todayIdx + 1)).fill(null)));
+  const forecastedMoistures = colorPoints(breakpoints, Array(props.todayIdx + 1).fill(null).concat(soilMoistures.slice(props.todayIdx + 1)));
   const irrigationIdxs = props.irrigationDates.length > 0 ? props.irrigationDates.map(irriDate => props.dates.findIndex(d => d === irriDate?.slice(5))) : [];
   const dates = [...props.dates];
   if (props.dates.findIndex(d => d ==='10-31') === props.todayIdx) {
-    for (let i = 0; i < adjustedDeficits.length - (props.todayIdx + 1); i++) {
-      observedDeficits.pop();
-      forecastedDeficits.pop();
+    for (let i = 0; i < soilMoistures.length - (props.todayIdx + 1); i++) {
+      observedMoistures.pop();
+      forecastedMoistures.pop();
       dates.pop();
     }
   }
   
-  let lastVal = observedDeficits[observedDeficits.length - 1].y;
+  let lastVal = observedMoistures[observedMoistures.length - 1].y;
   while (typeof lastVal === 'number' && isNaN(lastVal)) {
-    adjustedDeficits.pop();
-    observedDeficits.pop();
-    forecastedDeficits.pop();
-    lastVal = observedDeficits[observedDeficits.length - 1].y;
+    soilMoistures.pop();
+    observedMoistures.pop();
+    forecastedMoistures.pop();
+    lastVal = observedMoistures[observedMoistures.length - 1].y;
   }
   
-  const defMin = Math.min(...adjustedDeficits) - 0.1;
-  const defMax = Math.max(...adjustedDeficits) + 0.1;
+  const defMin = 0;
+  const defMax = Math.max(...soilMoistures) + 3;
 
   const options = {
     credits: {
@@ -184,7 +184,7 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
     series: [
       {
         type: 'line',
-        data: observedDeficits,
+        data: observedMoistures,
         name: 'Observed',
         zIndex: 2,
         color: 'black',
@@ -198,7 +198,7 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
       },
       {
         type: 'line',
-        data: forecastedDeficits,
+        data: forecastedMoistures,
         name: 'Forecast',
         zIndex: 2,
         color: 'black',
@@ -232,11 +232,11 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
     },
     yAxis: {
       title: {
-        text: 'Water Deficit (in water/6in soil)',
+        text: 'Soil Moisture (% of water in soil, by volume)',
       },
       max: defMax,
       min: defMin,
-      tickInterval: 0.5,
+      tickInterval: 5,
       gridLineWidth : 0,
       plotBands,
       plotLines
@@ -254,7 +254,7 @@ export default function WaterDeficitGraph(props: WaterDeficitGraphProps) {
             <Fragment key={p.series.name}>
               <Box>{p.series.name}</Box>
               <Box style={{ justifySelf: 'right' }}>
-                <span style={{ fontWeight: 'bold' }}>{typeof p.y === 'number' ? roundXDigits(p.y, 2) : ''}</span> in
+                <span style={{ fontWeight: 'bold' }}>{typeof p.y === 'number' ? roundXDigits(p.y, 2) : ''}</span> %
               </Box>
             </Fragment>
           );

@@ -2,7 +2,7 @@
   "name": "turf-grass",
   "version": "1.1.1",
   "private": true,
-  "homepage": "https://turf.eas.cornell.edu/",
+  "homepage": "https://pages.github.coecis.cornell.edu/be99/scan-temp/",
   "dependencies": {
     "@emotion/react": "^11.8.2",
     "@emotion/styled": "^11.8.1",
@@ -31,7 +31,9 @@
     "replaceManifest": "aws s3 cp build/asset-manifest.json s3://turf.eas.cornell.edu/asset-manifest.json",
     "replaceIndexHtml": "aws s3 cp build/index.html s3://turf.eas.cornell.edu/index.html",
     "predeploy": "react-scripts build",
-    "deploy": "npm run replaceStatic && npm run replaceManifest && npm run replaceIndexHtml"
+    "deploy": "npm run replaceStatic && npm run replaceManifest && npm run replaceIndexHtml",
+    "preghdeploy": "npm run build",
+    "ghdeploy": "gh-pages -d build -r git@github.coecis.cornell.edu:be99/turf-temp"
   },
   "eslintConfig": {
     "extends": [

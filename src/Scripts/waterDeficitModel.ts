@@ -15,6 +15,7 @@ type SoilCharacteristics = {
 // soildata:
 // soil moisture and drainage characteristics for different levels of soil water capacity
 export const SOIL_DATA = {
+  soilDepth: 6,
   soilmoistureoptions: {
     low: {
       wiltingpoint: 0.4,
